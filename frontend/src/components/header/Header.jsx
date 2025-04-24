@@ -1,7 +1,8 @@
 "use client";
 import React from "react";
+// import Header from "../product/Header";
 
-function ExploreHeader({ searchQuery, handleSearch }) {
+function Header({ searchQuery, handleSearch }) {
   return (
     <header className="flex items-center justify-between w-full max-w-[1331px] px-4 py-4 mx-auto gap-4 flex-wrap max-md:flex-col max-md:items-start">
       {/* Search Bar */}
@@ -42,4 +43,4 @@ function ExploreHeader({ searchQuery, handleSearch }) {
   );
 }
 
-export default ExploreHeader;
+export default Header;

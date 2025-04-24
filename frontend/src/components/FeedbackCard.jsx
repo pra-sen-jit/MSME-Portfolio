@@ -1,26 +1,21 @@
 import React from "react";
 
-function FeedbackCard({ avatar, name, time, feedback, className = "" }) {
+function FeedbackCard({ avatar, name, time, feedback }) {
   return (
-    <article
-      className={`flex flex-col w-full text-xl font-extralight text-black max-md:mt-10 ${className}`}
-    >
-      {avatar && (
-        <div className="flex gap-1.5 self-start">
-          <img
-            src={avatar}
-            alt={name || "Customer"}
-            className="object-contain overflow-hidden shrink-0 rounded-full aspect-square w-[52px]"
-          />
-          {time && <time className="self-end mt-6 basis-auto">{time}</time>}
-          {name && !time && <div className="text-2xl">{name}</div>}
+    <div className="flex flex-col items-start p-4 border rounded-lg shadow-sm bg-white">
+      <div className="flex items-center gap-4 mb-2">
+        <img
+          src={avatar}
+          alt={name}
+          className="w-12 h-12 rounded-full object-cover border"
+        />
+        <div>
+          <p className="font-semibold text-black">{name}</p>
+          <p className="text-xs text-gray-500">{time}</p>
         </div>
-      )}
-
-      {!avatar && time && <time className="self-center">{time}</time>}
-
-      <p className="mt-12 max-md:mt-10">{feedback}</p>
-    </article>
+      </div>
+      <p className="text-sm text-gray-700">{feedback}</p>
+    </div>
   );
 }
 

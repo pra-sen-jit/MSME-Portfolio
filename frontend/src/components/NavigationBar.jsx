@@ -8,7 +8,7 @@ function NavigationBar({ activeNavItem, handleNavClick }) {
     { id: "ABOUT", label: "ABOUT" },
     { id: "PRODUCT", label: "PRODUCT" },
     { id: "ARTISAN", label: "ARTISAN" },
-    { id: "CONTACT_US", label: "CONTACT US" },
+    { id: "CONTACT", label: "CONTACT" },
   ];
 
   return (
@@ -17,10 +17,12 @@ function NavigationBar({ activeNavItem, handleNavClick }) {
         <ul className="flex justify-between text-white text-lg font-semibold">
           {navItems.map((item) => (
             <li key={item.id}>
-              {item.id === "PRODUCT" ? (
-                // Use Link for the PRODUCT item
+              {item.id === "PRODUCT" ||
+              item.id === "ABOUT" ||
+              item.id === "ARTISAN" ||
+              item.id === "CONTACT" ? (
                 <Link
-                  to="/products"
+                  to={`/${item.id.toLowerCase()}`}
                   className={`cursor-pointer transition-colors duration-300 ${
                     activeNavItem === item.id
                       ? "text-yellow-400"
@@ -30,7 +32,6 @@ function NavigationBar({ activeNavItem, handleNavClick }) {
                   {item.label}
                 </Link>
               ) : (
-                // Use button for other items
                 <button
                   onClick={() => handleNavClick(item.id)}
                   className={`cursor-pointer transition-colors duration-300 ${

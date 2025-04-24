@@ -4,7 +4,7 @@ import LandingPage from "./components/LandingPage";
 
 const App = () => {
   return (
-    <div className="w-full h-screen">
+    <div>
       <LandingPage />
     </div>
   );

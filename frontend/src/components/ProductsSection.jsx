@@ -27,7 +27,7 @@ function ProductsSection() {
   ];
 
   return (
-    <section className="w-full px-4 py-12" aria-labelledby="products-heading">
+    <section className="w-full px-6 py-16 bg-white" aria-labelledby="products-heading">
       <h2
         id="products-heading"
         className="text-4xl font-semibold text-center text-black mb-12"
@@ -35,18 +35,15 @@ function ProductsSection() {
         Featured Products
       </h2>
 
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-wrap justify-center gap-6">
-          {products.map((product) => (
-            <div key={product.id} className="w-full sm:w-[48%] md:w-[30%]">
-              <ProductCard
-                image={product.image}
-                title={product.title}
-                artisan={product.artisan}
-              />
-            </div>
-          ))}
-        </div>
+      <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+        {products.map((product) => (
+          <ProductCard
+            key={product.id}
+            image={product.image}
+            title={product.title}
+            artisan={product.artisan}
+          />
+        ))}
       </div>
     </section>
   );

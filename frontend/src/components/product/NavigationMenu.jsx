@@ -3,24 +3,38 @@ import React from "react";
 function NavigationMenu() {
   return (
     <nav
-      className="px-4 py-4 mt-4 text-white bg-black rounded-lg border border-white max-md:max-w-full"
+      className="w-full mt-6 bg-black text-white rounded-lg border border-white shadow-lg"
       aria-label="Main navigation"
     >
-      <ul className="flex flex-wrap justify-around items-center gap-6 text-xl">
+      <ul className="flex justify-between items-center px-10 py-4 text-lg font-medium max-md:flex-wrap max-md:gap-4 max-md:px-4">
         <li>
-          <a href="/" className="hover:underline">HOME</a>
+          <a href="/" className="hover:text-gray-300 transition-colors">
+            HOME
+          </a>
         </li>
         <li>
-          <a href="#" className="hover:underline">ABOUT</a>
+          <a href="/about" className="hover:text-gray-300 transition-colors">
+            ABOUT
+          </a>
         </li>
         <li>
-          <a href="#" className="text-2xl font-bold hover:underline" aria-current="page">PRODUCT</a>
+          <a
+            href="#"
+            className="text-2xl font-bold border-b-2 border-white pb-1"
+            aria-current="page"
+          >
+            PRODUCT
+          </a>
         </li>
         <li>
-          <a href="#" className="hover:underline">ARTISAN</a>
+          <a href="/artisan" className="hover:text-gray-300 transition-colors">
+            ARTISAN
+          </a>
         </li>
         <li>
-          <a href="#" className="hover:underline">CONTACT US</a>
+          <a href="/contact" className="hover:text-gray-300 transition-colors">
+            CONTACT US
+          </a>
         </li>
       </ul>
     </nav>

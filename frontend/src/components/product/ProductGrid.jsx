@@ -2,84 +2,103 @@ import React from "react";
 import ProductCard from "./ProductCard";
 
 function ProductGrid() {
-  const products = [
+  const artisanAProducts = [
     {
       id: 1,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/3af4fc347bb8e7d0bafcc9c2f73c93108b8d33e6?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade",
-      title: "Elegant Silver Earings",
+      image: "https://cdn.builder.io/api/v1/image/assets/TEMP/3af4fc347bb8e7d0bafcc9c2f73c93108b8d33e6?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade",
+      title: "Elegant Silver Earrings",
       price: "₹1200",
     },
     {
       id: 2,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/c7d308ef00daeadfac1d1504148acb4c9527335a?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade",
+      image: "https://cdn.builder.io/api/v1/image/assets/TEMP/c7d308ef00daeadfac1d1504148acb4c9527335a?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade",
       title: "Elegant Silver Necklace",
       price: "₹1200",
     },
     {
       id: 3,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/6a49c3fe49cd483ac197b3432affb4471fbd71a9?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade",
+      image: "https://cdn.builder.io/api/v1/image/assets/TEMP/6a49c3fe49cd483ac197b3432affb4471fbd71a9?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade",
       title: "Elegant Silver Bangles",
       price: "₹1200",
     },
   ];
 
-  return (
-    <main className="grow px-px pb-16 w-full bg-black bg-opacity-0 max-md:mt-10 max-md:max-w-full">
-      <section
-        className="pt-7 pb-2 bg-black bg-opacity-0 max-md:pr-5 max-md:max-w-full"
-        aria-labelledby="artisan-heading"
-      >
-        <div className="w-full bg-black bg-opacity-0 max-md:max-w-full">
-          {/* Artisan Information */}
-          <div className="flex flex-wrap gap-4 pr-20 w-full bg-black bg-opacity-0 max-md:pr-5 max-md:max-w-full">
-            <div className="flex justify-center items-center min-h-12">
-              <img
-                src="https://cdn.builder.io/api/v1/image/assets/TEMP/34fbe49fedb3f3ad1ef298c86acfa3a9e3af21ba?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade"
-                alt="Artisan profile"
-                className="object-contain self-stretch my-auto w-12 rounded-full aspect-square"
-              />
-            </div>
-            <div className="flex flex-col pt-0.5 pb-2 text-base leading-none bg-black bg-opacity-0">
-              <h2 id="artisan-heading" className="self-start text-black">
-                Artisan A
-              </h2>
-              <p className="mt-3 text-neutral-600">
-                Silver Ornaments Specialist
-              </p>
-            </div>
-          </div>
+  const artisanBProducts = [
+    {
+      id: 4,
+      image: "https://cdn.builder.io/api/v1/image/assets/TEMP/3af4fc347bb8e7d0bafcc9c2f73c93108b8d33e6?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade",
+      title: "Golden Earrings",
+      price: "₹1500",
+    },
+    {
+      id: 5,
+      image: "https://cdn.builder.io/api/v1/image/assets/TEMP/c7d308ef00daeadfac1d1504148acb4c9527335a?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade",
+      title: "Golden Necklace",
+      price: "₹1800",
+    },
+    {
+      id: 6,
+      image: "https://cdn.builder.io/api/v1/image/assets/TEMP/6a49c3fe49cd483ac197b3432affb4471fbd71a9?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade",
+      title: "Golden Bangles",
+      price: "₹1400",
+    },
+  ];
 
-          {/* Product Grid */}
-          <div className="pb-3 mt-4 bg-black bg-opacity-0 max-md:max-w-full">
-            <div className="flex gap-5 max-md:flex-col">
-              {products.map((product) => (
-                <div
-                  key={product.id}
-                  className="w-[33%] max-md:ml-0 max-md:w-full"
-                >
-                  <ProductCard
-                    image={product.image}
-                    title={product.title}
-                    price={product.price}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
+  const artisanCProducts = [
+    {
+      id: 7,
+      image: "https://cdn.builder.io/api/v1/image/assets/TEMP/3af4fc347bb8e7d0bafcc9c2f73c93108b8d33e6?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade",
+      title: "Mixed Metal Anklet",
+      price: "₹900",
+    },
+    {
+      id: 8,
+      image: "https://cdn.builder.io/api/v1/image/assets/TEMP/c7d308ef00daeadfac1d1504148acb4c9527335a?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade",
+      title: "Beaded Necklace",
+      price: "₹1100",
+    },
+    {
+      id: 9,
+      image: "https://cdn.builder.io/api/v1/image/assets/TEMP/6a49c3fe49cd483ac197b3432affb4471fbd71a9?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade",
+      title: "Handmade Bracelet",
+      price: "₹1000",
+    },
+  ];
+
+  const renderArtisanSection = (name, role, products, borderColor = "indigo") => (
+    <section className="max-w-7xl mx-auto px-6 mb-16">
+      <div className="flex flex-wrap items-center gap-6 mb-8">
+        <div className={`w-16 h-16 rounded-full overflow-hidden border-2 border-${borderColor}-100 shadow-sm`}>
+          <img
+            src="https://cdn.builder.io/api/v1/image/assets/TEMP/34fbe49fedb3f3ad1ef298c86acfa3a9e3af21ba?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade"
+            alt={name}
+            className="object-cover w-full h-full"
+          />
         </div>
-      </section>
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800">{name}</h2>
+          <p className="text-gray-600 mt-1">{role}</p>
+        </div>
+      </div>
 
-      {/* Banner Image */}
-      <section className="pt-20 mt-2 max-w-full bg-black bg-opacity-0 w-[960px]">
-        <img
-          src="https://cdn.builder.io/api/v1/image/assets/TEMP/fbca83ce66d9c0e6b18c0f47e2f13153ce4aaa55?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade"
-          alt="Promotional banner"
-          className="object-contain w-full aspect-[2.7] max-md:max-w-full"
-        />
-      </section>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {products.map((product) => (
+          <ProductCard
+            key={product.id}
+            image={product.image}
+            title={product.title}
+            price={product.price}
+          />
+        ))}
+      </div>
+    </section>
+  );
+
+  return (
+    <main className="bg-gray-50 py-12">
+      {renderArtisanSection("Artisan A", "Silver Ornaments Specialist", artisanAProducts, "indigo")}
+      {renderArtisanSection("Artisan B", "Gold Ornaments Specialist", artisanBProducts, "amber")}
+      {renderArtisanSection("Artisan C", "Handmade & Mixed Metals", artisanCProducts, "rose")}
     </main>
   );
 }

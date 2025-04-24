@@ -24,11 +24,31 @@ function ExploreHero() {
           className="absolute top-0 left-0 z-10 w-full px-10 py-6"
         >
           <ul className="flex justify-around gap-20 text-lg font-medium max-md:gap-6">
-            <li><a href="/" className="hover:underline">HOME</a></li>
-            <li><a href="/about" className="hover:underline font-bold">ABOUT</a></li>
-            <li><a href="/product" className="hover:underline">PRODUCT</a></li>
-            <li><a href="/artisan" className="hover:underline">ARTISAN</a></li>
-            <li><a href="/contact" className="hover:underline">CONTACT US</a></li>
+            <li>
+              <a href="/" className="hover:underline">
+                HOME
+              </a>
+            </li>
+            <li>
+              <a href="/about" className="hover:underline font-bold">
+                ABOUT
+              </a>
+            </li>
+            <li>
+              <a href="/product" className="hover:underline">
+                PRODUCT
+              </a>
+            </li>
+            <li>
+              <a href="/artisan" className="hover:underline">
+                ARTISAN
+              </a>
+            </li>
+            <li>
+              <a href="/contact" className="hover:underline">
+                CONTACT US
+              </a>
+            </li>
           </ul>
         </nav>
 
