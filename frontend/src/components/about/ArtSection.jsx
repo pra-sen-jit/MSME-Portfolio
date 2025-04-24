@@ -15,7 +15,7 @@ function ArtSection() {
           </div>
           <h2
             id="art-heading"
-            className="text-3xl sm:text-4xl md:text-5xl font-bold text-center text-gray-900 relative"
+            className="text-3xl sm:text-4xl font-bold text-center text-gray-900 relative"
           >
             The Art of Silver Filigree
             <span className="absolute -bottom-2 sm:-bottom-3 left-1/2 transform -translate-x-1/2 w-16 sm:w-20 md:w-24 h-1 bg-blue-600 rounded-full"></span>
