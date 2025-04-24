@@ -3,74 +3,107 @@ import React from "react";
 function EmployeeTable() {
   return (
     <section
-      className="self-stretch py-1 w-full bg-white rounded-lg border border-solid border-neutral-200 max-md:max-w-full"
+      className="w-full mb-6 bg-white border border-solid border-neutral-200 rounded-lg"
       aria-labelledby="employee-table-heading"
     >
       <h2 id="employee-table-heading" className="sr-only">
         Employee Information
       </h2>
 
-      <div className="flex flex-wrap gap-10 py-3.5 pr-11 pl-4 max-w-full text-base rounded-lg border-b bg-neutral-50 border-neutral-200 text-neutral-700 w-[1332px] max-md:pr-5">
-        <div className="flex flex-wrap flex-auto max-md:max-w-full">
-          <div className="pt-0.5 pb-2.5 whitespace-nowrap bg-opacity-0 font-medium">
-            Name
-          </div>
-          <div className="py-1.5 ml-20 whitespace-nowrap  bg-opacity-0 font-medium">
-            Specialization
-          </div>
-          <div className="pt-0.5 pb-2.5 ml-20  bg-opacity-0 font-medium">
-            Contact Details
-          </div>
-        </div>
-        <div className="pt-0.5 pb-2.5 whitespace-nowrap  bg-opacity-0 font-medium">
-          Actions
-        </div>
+      {/* Table Header */}
+      <div className="grid grid-cols-12 gap-2 py-3 px-4 md:px-6 text-sm font-medium text-neutral-700 bg-neutral-50 border-b border-neutral-200 rounded-t-lg">
+        <div className="col-span-3">Name</div>
+        <div className="col-span-4">Specialization</div>
+        <div className="col-span-4">Contact Details</div>
+        <div className="col-span-1 text-center">Actions</div>
       </div>
 
-      <div className="flex flex-wrap gap-10 py-3.5 pr-11 pl-4 w-full  bg-opacity-0 max-md:pr-5 max-md:max-w-full">
-        <div className="flex flex-wrap flex-auto max-md:max-w-full">
-          <div className="flex gap-3 bg-opacity-0">
-            <div className="flex justify-center items-center min-h-8">
-              <img
-                src="https://cdn.builder.io/api/v1/image/assets/TEMP/30e8d0f98f086f2e60ad1a5b4ed65ccbd54198e9?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade"
-                alt="Artisan A profile"
-                className="object-contain self-stretch my-auto w-8 rounded-full aspect-square"
-              />
-            </div>
-            <div className="flex-auto self-start text-base leading-none text-neutral-800">
-              Artisan A
-            </div>
+      {/* Table Row */}
+      <div className="grid grid-cols-12 gap-2 py-3 px-4 md:px-6 text-sm">
+        {/* Name Column */}
+        <div className="col-span-3 flex items-center gap-3">
+          <div className="flex justify-center items-center w-8 h-8">
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets/TEMP/30e8d0f98f086f2e60ad1a5b4ed65ccbd54198e9?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade"
+              alt="Artisan A profile"
+              className="w-8 h-8 rounded-full object-cover"
+            />
           </div>
-          <div className="py-2.5 ml-10 text-base  bg-opacity-0 text-neutral-600">
-            Silver Ornaments expert
-          </div>
-          <div className="flex gap-2 py-2 ml-10  bg-opacity-0">
-            <div className="flex overflow-hidden justify-center items-center self-start min-h-4">
-              <img
-                src="https://cdn.builder.io/api/v1/image/assets/TEMP/21b23fe47b3b2f96f45b5dbe6a5b03433d75f859?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade"
-                alt="Email icon"
-                className="object-contain self-stretch my-auto w-4 aspect-square"
-              />
-            </div>
-            <div className="flex-auto text-base text-neutral-600">
-              maria@example.com
-            </div>
-          </div>
+          <div className="font-normal text-neutral-800">Artisan A</div>
         </div>
-        <div className="flex gap-3 py-2 pr-10  bg-opacity-0">
-          <button aria-label="Edit artisan">
-            <img
-              src="https://cdn.builder.io/api/v1/image/assets/TEMP/7d324e187af406572646d02163a6b5e417dee121?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade"
-              alt="Edit"
-              className="object-contain shrink-0 w-4 aspect-square"
-            />
+
+        {/* Specialization Column */}
+        <div className="col-span-4 flex items-center font-normal text-neutral-600">
+          Silver Ornaments expert
+        </div>
+
+        {/* Contact Details Column */}
+        <div className="col-span-4 flex items-center gap-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-neutral-600"
+          >
+            <rect width="20" height="16" x="2" y="4" rx="2" />
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+          </svg>
+          <a
+            href="mailto:maria@example.com"
+            className="font-normal text-neutral-600 hover:text-blue-600 hover:underline transition-colors duration-200 active:text-blue-800"
+          >
+            maria@example.com
+          </a>
+        </div>
+
+        {/* Actions Column */}
+        <div className="col-span-1 flex justify-center items-center gap-3">
+          <button
+            aria-label="Edit artisan"
+            className="p-1 rounded-full hover:bg-gray-100 transition-colors duration-200 active:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-gray-600 hover:text-blue-600 transition-colors duration-200"
+            >
+              <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+              <path d="m15 5 4 4" />
+            </svg>
           </button>
-          <button aria-label="Delete artisan">
-            <img
-              src="https://cdn.builder.io/api/v1/image/assets/TEMP/232f39f16f9f4ac86be1b8d5e666b9f3956a1d37?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade"
-              alt="Delete"
-              className="object-contain shrink-0 w-3.5 aspect-[0.87]"
-            />
+          <button
+            aria-label="Delete artisan"
+            className="p-1 rounded-full hover:bg-gray-100 transition-colors duration-200 active:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-gray-600 hover:text-red-500 transition-colors duration-200"
+            >
+              <path d="M3 6h18" />
+              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+            </svg>
           </button>
         </div>
       </div>
