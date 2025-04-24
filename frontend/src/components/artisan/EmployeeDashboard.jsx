@@ -10,7 +10,7 @@ function EmployeeDashboard() {
   return (
     <div className="overflow-hidden pt-3 bg-white">
       <div className="flex flex-col px-8 w-full max-md:px-5 max-md:max-w-full">
-        <Header />
+        {/* <Header /> */}
         <Navigation />
         <h1 className="self-center mt-1.5 text-3xl text-black max-md:max-w-full">
           Employee / Artisan Dash-Board
@@ -39,7 +39,7 @@ function EmployeeDashboard() {
         <ProductForm productNumber={3} hasImage={false} />
       </div>
 
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 }
