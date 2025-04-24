@@ -8,36 +8,38 @@ import Footer from "./Footer";
 
 function EmployeeDashboard() {
   return (
-    <div className="overflow-hidden pt-3 bg-white">
-      <div className="flex flex-col px-8 w-full max-md:px-5 max-md:max-w-full">
-        {/* <Header /> */}
-        <Navigation />
-        <h1 className="self-center mt-1.5 text-3xl text-black max-md:max-w-full">
+    <div className="flex flex-col min-h-screen bg-white">
+      {/* <Header /> */}
+      <Navigation />
+
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 className="text-center mt-4 mb-6 text-2xl md:text-3xl text-black font-normal">
           Employee / Artisan Dash-Board
         </h1>
-      </div>
-      <div className="flex flex-col items-start px-11 w-full max-md:px-5 max-md:max-w-full">
+
         <EmployeeTable />
 
-        <div className="mt-5 w-full max-w-[1305px] max-md:max-w-full">
-          <div className="flex gap-5 max-md:flex-col">
-            <div className="w-[36%] max-md:ml-0 max-md:w-full">
-              <div className="flex flex-col grow items-start font-light text-black max-md:mt-8 max-md:max-w-full">
-                <h2 className="text-3xl font-bold">Add Products</h2>
-                <p className="z-10 text-xl">Max Limit: 3</p>
+        <div className="mt-8 w-full">
+          <div className="flex flex-col">
+            <div className="w-full">
+              <div className="flex flex-col text-black">
+                <h2 className="text-xl md:text-2xl font-semibold">
+                  Add Products
+                </h2>
+                <p className="text-sm md:text-base">Max Limit: 3</p>
               </div>
             </div>
           </div>
         </div>
 
         <ProductForm productNumber={1} hasImage={true} />
-        <hr className="shrink-0 mt-14 max-w-full h-px border border-black border-solid w-[1300px] max-md:mt-10" />
+        <hr className="my-8 h-px border-t border-black w-full" />
 
         <ProductForm productNumber={2} hasImage={false} />
-        <hr className="shrink-0 mt-11 max-w-full h-px border border-black border-solid w-[1300px] max-md:mt-10" />
+        <hr className="my-8 h-px border-t border-black w-full" />
 
         <ProductForm productNumber={3} hasImage={false} />
-      </div>
+      </main>
 
       {/* <Footer /> */}
     </div>

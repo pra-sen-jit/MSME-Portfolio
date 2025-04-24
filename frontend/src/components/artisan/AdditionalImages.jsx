@@ -3,54 +3,30 @@ import React from "react";
 function AdditionalImages({ productNumber }) {
   return (
     <div>
-      <h3 className="mt-5 text-xl font-bold leading-none text-black">
+      <h3 className="text-sm font-normal leading-tight text-black mb-2">
         Add more pictures
       </h3>
 
-      <div className="flex flex-wrap gap-10 mt-6 ml-3.5">
-        <button
-          className="flex flex-col justify-center px-5 py-4 rounded-2xl bg-zinc-300"
-          aria-label={`Add additional image 1 for product ${productNumber}`}
-        >
-          <img
-            src="https://cdn.builder.io/api/v1/image/assets/TEMP/e07580ef94d2287a8b600e61b9ebbb605b0314d6?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade"
-            alt="Add image"
-            className="object-contain aspect-square w-[55px]"
-          />
-        </button>
-
-        <button
-          className="flex flex-col justify-center px-5 py-4 rounded-2xl bg-zinc-300"
-          aria-label={`Add additional image 2 for product ${productNumber}`}
-        >
-          <img
-            src="https://cdn.builder.io/api/v1/image/assets/TEMP/e07580ef94d2287a8b600e61b9ebbb605b0314d6?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade"
-            alt="Add image"
-            className="object-contain aspect-square w-[55px]"
-          />
-        </button>
-
-        <button
-          className="flex flex-col justify-center px-5 py-4 rounded-2xl bg-zinc-300"
-          aria-label={`Add additional image 3 for product ${productNumber}`}
-        >
-          <img
-            src="https://cdn.builder.io/api/v1/image/assets/TEMP/e07580ef94d2287a8b600e61b9ebbb605b0314d6?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade"
-            alt="Add image"
-            className="object-contain aspect-square w-[55px]"
-          />
-        </button>
-
-        <button
-          className="flex flex-col justify-center px-5 py-4 rounded-2xl bg-zinc-300"
-          aria-label={`Add additional image 4 for product ${productNumber}`}
-        >
-          <img
-            src="https://cdn.builder.io/api/v1/image/assets/TEMP/e07580ef94d2287a8b600e61b9ebbb605b0314d6?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade"
-            alt="Add image"
-            className="object-contain aspect-square w-[55px]"
-          />
-        </button>
+      <div className="flex flex-wrap gap-2">
+        {[1, 2, 3, 4].map((index) => (
+          <button
+            key={index}
+            className="flex items-center justify-center w-10 h-10 bg-zinc-300 sm:w-10 sm:h-10 xs:w-8 xs:h-8"
+            aria-label={`Add additional image ${index} for product ${productNumber}`}
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-4 h-4 sm:w-4 sm:h-4 xs:w-3 xs:h-3"
+            >
+              <path d="M8 0V16" stroke="#888888" strokeWidth="2" />
+              <path d="M0 8H16" stroke="#888888" strokeWidth="2" />
+            </svg>
+          </button>
+        ))}
       </div>
     </div>
   );
