@@ -3,7 +3,6 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import LandingPage from "./components/LandingPage.jsx";
 import ProductsPage from "./components/product/ProductsPage.jsx";
 import Footer from "./components/header/Footer.jsx";
 import Explore from "./components/about/Explore.jsx";
@@ -15,22 +14,12 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
-  },
-  {
-    path: "/about",
-    element: <Explore />,
-  },
-  {
-    path: "/product",
-    element: <ProductsPage />,
-  },
-  {
-    path: "/artisan",
-    element: <EmployeeDashboard />,
-  },
-  {
-    path: "/contact",
-    element: <ContactForm />,
+    children: [
+      { path: "about", element: <Explore /> },
+      { path: "product", element: <ProductsPage /> },
+      { path: "artisan", element: <EmployeeDashboard /> },
+      { path: "contact", element: <ContactForm /> },
+    ],
   },
 ]);
 
