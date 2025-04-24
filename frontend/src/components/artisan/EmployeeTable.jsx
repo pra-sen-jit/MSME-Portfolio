@@ -29,7 +29,7 @@ function EmployeeTable() {
 
       <div className="flex flex-wrap gap-10 py-3.5 pr-11 pl-4 w-full  bg-opacity-0 max-md:pr-5 max-md:max-w-full">
         <div className="flex flex-wrap flex-auto max-md:max-w-full">
-          <div className="flex gap-3 bg-black bg-opacity-0">
+          <div className="flex gap-3 bg-opacity-0">
             <div className="flex justify-center items-center min-h-8">
               <img
                 src="https://cdn.builder.io/api/v1/image/assets/TEMP/30e8d0f98f086f2e60ad1a5b4ed65ccbd54198e9?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade"
