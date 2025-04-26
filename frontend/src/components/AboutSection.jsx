@@ -15,13 +15,12 @@ function AboutSection() {
 
       <div className="mt-20 max-md:mt-10 max-md:max-w-full">
         <div className="flex gap-5 max-md:flex-col">
-          <div className="w-[46%] max-md:ml-0 max-md:w-full">
+        <div className="w-full md:w-1/2 flex justify-center items-center">
             <img
-              src="https://cdn.builder.io/api/v1/image/assets/TEMP/48f7141c56b657fd9d1b9ce97586536c2a3f3fda?placeholderIfAbsent=true"
-              alt="Silver filigree craftsmanship"
-              className="object-contain overflow-hidden grow w-full aspect-square rounded-[29px] max-md:mt-10 max-md:max-w-full"
-            />
-          </div>
+                src="https://cdn.builder.io/api/v1/image/assets/TEMP/48f7141c56b657fd9d1b9ce97586536c2a3f3fda?placeholderIfAbsent=true"
+                  alt="Silver filigree craftsmanship"
+                className="w-full h-auto max-w-[600px] rounded-3xl object-cover"/>
+        </div>
 
           <div className="ml-5 w-[54%] max-md:ml-0 max-md:w-full">
             <article className="text-xl text-black max-md:mt-10 max-md:max-w-full">

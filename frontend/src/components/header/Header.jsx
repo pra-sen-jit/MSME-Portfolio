@@ -125,12 +125,12 @@ const Navbar = () => {
 
       {/* Navigation Menu - Desktop */}
       <nav
-        className={`bg-gradient-to-r from-black via-gray-900 to-black text-white shadow-lg transition-transform duration-500 ease-in-out ${
+        className={` bg-gradient-to-r from-black via-gray-900 to-black text-white shadow-lg transition-transform duration-500 ease-in-out ${
           showHeader ? "" : "transform -translate-y-full"
         }`}
       >
         {/* Desktop Menu */}
-        <ul className="hidden md:flex justify-center items-center h-16">
+        <ul className="hidden md:flex justify-around items-center h-16">
           {navItems.map(({ label, path }) => (
             <li key={label} className="relative mx-1 lg:mx-4 group">
               <Link
