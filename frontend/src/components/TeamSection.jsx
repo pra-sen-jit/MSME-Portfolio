@@ -24,19 +24,19 @@ function TeamSection() {
       id: 4,
       image:
         "https://cdn.builder.io/api/v1/image/assets/TEMP/fb72e9710c0983c2045d1019e2769be396b89d19?placeholderIfAbsent=true",
-      name: "Ankita Das",
+      name: "Prem Ghosh",
     },
     {
       id: 5,
       image:
         "https://cdn.builder.io/api/v1/image/assets/TEMP/edc42b7f8c3a8712d466f393b8505b43399915a0?placeholderIfAbsent=true",
-      name: "Ravi Kumar",
+      name: "Gourav Majumder",
     },
     {
       id: 6,
       image:
         "https://cdn.builder.io/api/v1/image/assets/TEMP/a09b62c2b9477a2b98b80098c56741034f8f1fc5?placeholderIfAbsent=true",
-      name: "Sanya Gupta",
+      name: "Subhobrata Maity",
     },
   ];
 
