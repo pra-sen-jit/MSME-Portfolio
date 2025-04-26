@@ -1,7 +1,5 @@
 "use client";
 import React from "react";
-import Header from "./Header";
-import Navigation from "./Navigation";
 import EmployeeTable from "./EmployeeTable";
 import ProductForm from "./ProductForm";
 import Footer from "./Footer";
@@ -9,9 +7,6 @@ import Footer from "./Footer";
 function EmployeeDashboard() {
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      {/* <Header /> */}
-      <Navigation />
-
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-center mt-4 mb-6 text-2xl md:text-3xl text-black font-normal">
           Employee / Artisan Dash-Board
