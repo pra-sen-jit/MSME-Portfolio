@@ -40,14 +40,17 @@ function CustomerFeedback() {
 
   return (
     <section
-      className="flex overflow-hidden flex-col px-20 py-9 w-full bg-white max-md:px-5 max-md:max-w-full"
+      className="flex flex-col items-center w-full px-8 py-16 bg-white max-md:px-5 max-md:py-12"
       aria-labelledby="feedback-heading"
     >
-      <h2 id="feedback-heading" className="self-center text-4xl font-semibold text-black">
+      <h2
+        id="feedback-heading"
+        className="text-4xl font-bold text-black mb-12 text-center"
+      >
         Customer Feedback
       </h2>
 
-      <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-md:mt-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 w-full max-w-7xl">
         {feedbacks.map((feedback) => (
           <FeedbackCard
             key={feedback.id}

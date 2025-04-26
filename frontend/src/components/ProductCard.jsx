@@ -2,19 +2,19 @@ import React from "react";
 
 function ProductCard({ image, title, artisan }) {
   return (
-    <article className="w-full max-w-[240px] bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
-      <div className="w-full aspect-square">
+    <div className="flex flex-col items-center bg-white rounded-3xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 cursor-pointer">
+      <div className="w-full h-64 overflow-hidden">
         <img
           src={image}
           alt={title}
-          className="w-full h-full object-cover rounded-t-xl"
+          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
         />
       </div>
-      <div className="px-4 py-3 bg-gray-100">
-        <h3 className="text-lg font-semibold text-black truncate">{title}</h3>
-        <p className="text-sm text-gray-600 mt-1 truncate">{artisan}</p>
+      <div className="flex flex-col items-center p-6 text-center">
+        <h3 className="text-2xl font-semibold text-black mb-2">{title}</h3>
+        <p className="text-gray-600 text-sm">{artisan}</p>
       </div>
-    </article>
+    </div>
   );
 }
 

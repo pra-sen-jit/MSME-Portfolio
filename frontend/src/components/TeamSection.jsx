@@ -1,5 +1,4 @@
 import React from "react";
-import TeamMember from "./TeamMember";
 
 function TeamSection() {
   const teamMembers = [
@@ -21,21 +20,30 @@ function TeamSection() {
         "https://cdn.builder.io/api/v1/image/assets/TEMP/ec510b4fc4b1a055857fd4084f2bc9990808829e?placeholderIfAbsent=true",
       name: "Subhrajit Ghosh",
     },
-  ];
-
-  const otherImages = [
-    "https://cdn.builder.io/api/v1/image/assets/TEMP/1e74a2e0f8c5719968568504fceb5e17626c4822?placeholderIfAbsent=true",
-    "https://cdn.builder.io/api/v1/image/assets/TEMP/8fafce07dbfaca2ddad847343fd3c44d56373477?placeholderIfAbsent=true",
-    "https://cdn.builder.io/api/v1/image/assets/TEMP/99a361848dbb5029c887dfbe824cc4ade66fcc4e?placeholderIfAbsent=true",
+    {
+      id: 4,
+      image:
+        "https://cdn.builder.io/api/v1/image/assets/TEMP/fb72e9710c0983c2045d1019e2769be396b89d19?placeholderIfAbsent=true",
+      name: "Ankita Das",
+    },
+    {
+      id: 5,
+      image:
+        "https://cdn.builder.io/api/v1/image/assets/TEMP/edc42b7f8c3a8712d466f393b8505b43399915a0?placeholderIfAbsent=true",
+      name: "Ravi Kumar",
+    },
+    {
+      id: 6,
+      image:
+        "https://cdn.builder.io/api/v1/image/assets/TEMP/a09b62c2b9477a2b98b80098c56741034f8f1fc5?placeholderIfAbsent=true",
+      name: "Sanya Gupta",
+    },
   ];
 
   return (
     <section className="bg-white py-20 px-6" aria-labelledby="team-heading">
       <div className="max-w-7xl mx-auto text-center">
-        <h2
-          id="team-heading"
-          className="text-4xl font-bold text-black mb-12"
-        >
+        <h2 id="team-heading" className="text-4xl font-bold text-black mb-12">
           Meet The Development Team
         </h2>
 
@@ -50,18 +58,6 @@ function TeamSection() {
               />
               <p className="mt-4 text-lg font-medium">{member.name}</p>
             </div>
-          ))}
-        </div>
-
-        {/* Other team images */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 place-items-center mt-16">
-          {otherImages.map((imgUrl, index) => (
-            <img
-              key={index}
-              src={imgUrl}
-              alt={`Team image ${index + 1}`}
-              className="w-40 h-40 object-cover rounded-full aspect-square border border-gray-300 shadow-md"
-            />
           ))}
         </div>
       </div>

@@ -24,18 +24,28 @@ function ProductsSection() {
       title: "Silver Idol",
       artisan: "Mention Artisan name",
     },
+    {
+      id: 4,
+      image:
+        "https://cdn.builder.io/api/v1/image/assets/TEMP/f130a4a975bede490244df79d209a58ded7a1c95?placeholderIfAbsent=true",
+      title: "Silver Bracelet",
+      artisan: "Mention Artisan name",
+    },
   ];
 
   return (
-    <section className="w-full px-6 py-16 bg-white" aria-labelledby="products-heading">
+    <section
+      className="flex flex-col items-center justify-center w-full px-8 py-16 bg-white max-md:px-4 max-md:py-10 overflow-hidden"
+      aria-labelledby="products-heading"
+    >
       <h2
         id="products-heading"
-        className="text-4xl font-semibold text-center text-black mb-12"
+        className="text-4xl font-bold text-center text-black mb-14 max-md:text-3xl"
       >
         Featured Products
       </h2>
 
-      <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10 max-w-7xl w-full">
         {products.map((product) => (
           <ProductCard
             key={product.id}
