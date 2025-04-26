@@ -1,7 +1,5 @@
 "use client";
 import React from "react";
-import Header from "./Header";
-import NavigationMenu from "./NavigationMenu";
 import Sidebar from "./Sidebar";
 import ProductGrid from "./ProductGrid";
 
@@ -10,9 +8,6 @@ function ProductsPage() {
     <div className="bg-gray-50 min-h-screen">
       {/* Main Wrapper */}
       <div className="flex flex-col px-6 lg:px-8 w-full max-w-screen-2xl mx-auto">
-        {/* Header and Navigation */}
-        <NavigationMenu />
-
         {/* Main Content */}
         <div className="mt-12 w-full max-w-[1316px] mx-auto">
           {/* Layout: Sidebar and Product Grid */}
