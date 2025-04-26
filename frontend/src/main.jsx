@@ -9,6 +9,7 @@ import ProductsPage from "./components/product/ProductsPage.jsx";
 import EmployeeDashboard from "./components/artisan/EmployeeDashboard.jsx";
 import ContactForm from "./components/ContactForm.jsx";
 import NotFound from "./components/NotFound.jsx";
+import { Analytics } from "@vercel/analytics/react";
 
 const router = createBrowserRouter([
   {
@@ -27,8 +28,7 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    {/* <Header /> */}
     <RouterProvider router={router} />
-    {/* <Footer /> */}
+    <Analytics />
   </StrictMode>
 );
