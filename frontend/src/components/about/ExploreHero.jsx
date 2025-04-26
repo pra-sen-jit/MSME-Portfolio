@@ -18,40 +18,6 @@ function ExploreHero() {
         {/* Overlay */}
         <div className="absolute inset-0 bg-opacity-60 z-0" />
 
-        {/* Navigation Bar */}
-        <nav
-          aria-label="Main Navigation"
-          className="absolute top-0 left-0 z-10 w-full px-10 py-6"
-        >
-          <ul className="flex justify-around gap-20 text-lg font-medium max-md:gap-6">
-            <li>
-              <a href="/" className="hover:underline">
-                HOME
-              </a>
-            </li>
-            <li>
-              <a href="/about" className="hover:underline font-bold">
-                ABOUT
-              </a>
-            </li>
-            <li>
-              <a href="/product" className="hover:underline">
-                PRODUCT
-              </a>
-            </li>
-            <li>
-              <a href="/artisan" className="hover:underline">
-                ARTISAN
-              </a>
-            </li>
-            <li>
-              <a href="/contact" className="hover:underline">
-                CONTACT US
-              </a>
-            </li>
-          </ul>
-        </nav>
-
         {/* Hero Text */}
         <div className="relative z-10 px-20 mt-48 max-w-3xl max-md:px-5 max-md:mt-32">
           <h2
