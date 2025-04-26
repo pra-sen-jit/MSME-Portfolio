@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
 import SearchBar from "./SearchBar";
-import NavigationBar from "./NavigationBar";
 import AboutSection from "./AboutSection";
 import ProductsSection from "./ProductsSection";
 import CustomerFeedback from "./CustomerFeedback";
@@ -47,11 +46,6 @@ function LandingPage() {
             src="https://cdn.builder.io/api/v1/image/assets/TEMP/8b2cd4d8230ec436778f1c4599ca00505db2f958?placeholderIfAbsent=true"
             alt="Hero background"
             className="absolute inset-0 object-cover size-full"
-          />
-
-          <NavigationBar
-            activeNavItem={activeNavItem}
-            handleNavClick={handleNavClick}
           />
 
           <h2 className="relative mt-36 text-5xl text-white max-md:mt-10 max-md:max-w-full max-md:text-4xl">
