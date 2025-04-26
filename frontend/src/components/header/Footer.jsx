@@ -1,30 +1,36 @@
 import React from "react";
+import { FaFacebookF, FaInstagram, FaXTwitter } from "react-icons/fa6"; // Using stylish icons
 
 function Footer() {
   return (
-    <footer className="w-full bg-neutral-800 text-white px-6 py-10">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
+    <footer className="w-full bg-neutral-900 text-white px-8 py-16">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
         {/* Brand Section */}
         <div>
-          <h3 className="text-xl font-semibold">Magrahat Filigree</h3>
-          <p className="mt-4 text-neutral-400">
-            Preserving the art of silver filigree craftsmanship
+          <h3 className="text-2xl font-bold text-white mb-4">
+            Magrahat Filigree
+          </h3>
+          <p className="text-neutral-400 leading-relaxed">
+            Preserving the art of silver filigree craftsmanship.
           </p>
         </div>
 
         {/* Quick Links */}
         <div>
-          <h3 className="text-lg font-semibold">Quick Links</h3>
-          <ul className="mt-4 space-y-2 text-neutral-400">
+          <h3 className="text-xl font-semibold text-white mb-4">Quick Links</h3>
+          <ul className="space-y-3 text-neutral-400">
             <li>
-              <a href="#about" className="hover:text-white transition-colors">
+              <a
+                href="#about"
+                className="hover:text-white transition-colors duration-200"
+              >
                 About
               </a>
             </li>
             <li>
               <a
                 href="#products"
-                className="hover:text-white transition-colors"
+                className="hover:text-white transition-colors duration-200"
               >
                 Products
               </a>
@@ -32,7 +38,7 @@ function Footer() {
             <li>
               <a
                 href="#artisans"
-                className="hover:text-white transition-colors"
+                className="hover:text-white transition-colors duration-200"
               >
                 Artisans
               </a>
@@ -42,20 +48,23 @@ function Footer() {
 
         {/* Contact Section */}
         <div>
-          <h3 className="text-lg font-semibold">Contact</h3>
-          <address className="mt-4 not-italic space-y-3 text-neutral-400">
+          <h3 className="text-xl font-semibold text-white mb-4">Contact</h3>
+          <address className="not-italic text-neutral-400 space-y-3">
             <p>
               Email:{" "}
               <a
                 href="mailto:info@magrahatfiligree.com"
-                className="hover:text-white"
+                className="hover:text-white transition-colors duration-200"
               >
                 info@magrahatfiligree.com
               </a>
             </p>
             <p>
               Phone:{" "}
-              <a href="tel:+911234567890" className="hover:text-white">
+              <a
+                href="tel:+911234567890"
+                className="hover:text-white transition-colors duration-200"
+              >
                 +91 1234567890
               </a>
             </p>
@@ -65,19 +74,38 @@ function Footer() {
 
         {/* Social Media */}
         <div>
-          <h3 className="text-lg font-semibold">Follow Us</h3>
-          <div className="mt-4">
-            <img
-              src="https://cdn.builder.io/api/v1/image/assets/TEMP/4ec1ea75be34c3cf60c4c6b723e1353aaf1b9cf4?placeholderIfAbsent=true"
-              alt="Social media icons"
-              className="w-40 h-auto object-contain"
-            />
+          <h3 className="text-xl font-semibold text-white mb-4">Follow Us</h3>
+          <div className="flex space-x-6 mt-4">
+            <a
+              href="https://facebook.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-neutral-400 hover:text-white transition-colors duration-300 text-2xl"
+            >
+              <FaFacebookF />
+            </a>
+            <a
+              href="https://instagram.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-neutral-400 hover:text-white transition-colors duration-300 text-2xl"
+            >
+              <FaInstagram />
+            </a>
+            <a
+              href="https://twitter.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-neutral-400 hover:text-white transition-colors duration-300 text-2xl"
+            >
+              <FaXTwitter />
+            </a>
           </div>
         </div>
       </div>
 
       {/* Footer Bottom */}
-      <div className="mt-12 text-center text-neutral-400 text-sm">
+      <div className="mt-16 border-t border-neutral-700 pt-6 text-center text-neutral-500 text-sm">
         © 2025 Magrahat Silver Filigree. All rights reserved.
       </div>
     </footer>
