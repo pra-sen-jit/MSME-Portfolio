@@ -10,6 +10,7 @@ import EmployeeDashboard from "./components/artisan/EmployeeDashboard.jsx";
 import ContactForm from "./components/ContactForm.jsx";
 import NotFound from "./components/NotFound.jsx";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 const router = createBrowserRouter([
   {
@@ -30,5 +31,6 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <RouterProvider router={router} />
     <Analytics />
+    <SpeedInsights />
   </StrictMode>
 );
