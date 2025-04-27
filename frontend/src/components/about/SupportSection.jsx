@@ -3,7 +3,7 @@ import React from "react";
 function SupportSection() {
   return (
     <section
-      className="w-full bg-indigo-600 text-white px-4 py-20 sm:px-8 md:px-16 lg:px-24 text-center"
+      className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 py-20 sm:px-8 md:px-16 lg:px-24 text-center"
       aria-labelledby="support-heading"
     >
       <div className="max-w-4xl mx-auto">
@@ -14,7 +14,7 @@ function SupportSection() {
           Support Our Artisans
         </h2>
 
-        <p className="text-lg sm:text-xl text-indigo-100 leading-relaxed mb-10">
+        <p className="text-lg sm:text-xl text-white leading-relaxed mb-10">
           Discover unique pieces of silver filigree art and help preserve this
           timeless craft for future generations.
         </p>

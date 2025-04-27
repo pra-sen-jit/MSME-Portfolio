@@ -68,7 +68,7 @@ function ProductsPage() {
 
           {/* Promotional Banner */}
           <div className="mt-16 mb-8">
-            <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div className="bg-gradient-to-r from-black via-gray-900 to-black rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
               <div className="p-8 md:p-12 text-white">
                 <h2 className="text-2xl md:text-3xl font-bold mb-4">
                   Special Collection
