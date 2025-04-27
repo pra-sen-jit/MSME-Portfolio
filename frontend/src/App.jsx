@@ -8,13 +8,21 @@ import Footer from "./components/header/Footer";
 const App = () => {
   const location = useLocation();
 
+  // Define the routes where Navbar and Footer should NOT be shown
+  const noNavFooterRoutes = ["/login", "/signup"];
+
   return (
     <>
-      <Navbar />
+      {/* Conditionally render Navbar */}
+      {!noNavFooterRoutes.includes(location.pathname) && <Navbar />}
+
       <AnimatePresence mode="wait">
+        {/* Render the matched child route */}
         <Outlet key={location.pathname} />
       </AnimatePresence>
-      <Footer />
+
+      {/* Conditionally render Footer */}
+      {!noNavFooterRoutes.includes(location.pathname) && <Footer />}
     </>
   );
 };

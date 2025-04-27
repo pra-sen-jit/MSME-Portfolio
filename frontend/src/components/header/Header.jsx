@@ -82,7 +82,11 @@ const Navbar = () => {
 
         {/* Icons */}
         <div className="flex items-center gap-5">
-          <button aria-label="User account" className="relative group">
+          <Link
+            to="/login"
+            aria-label="User account"
+            className="relative group"
+          >
             <div className="absolute inset-0 bg-gray-800 rounded-full scale-0 group-hover:scale-100 transition-transform duration-300 opacity-20"></div>
             <svg
               className="w-6 h-6 md:w-7 md:h-7 text-gray-700 group-hover:text-black transition-colors duration-200"
@@ -98,7 +102,7 @@ const Navbar = () => {
                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
               ></path>
             </svg>
-          </button>
+          </Link>
 
           <button aria-label="Shopping cart" className="relative group">
             <span className="absolute -top-2 -right-2 flex items-center justify-center w-5 h-5 bg-gray-800 text-white text-xs font-bold rounded-full">

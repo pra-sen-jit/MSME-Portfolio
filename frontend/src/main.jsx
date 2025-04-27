@@ -8,6 +8,8 @@ import Explore from "./components/about/Explore.jsx";
 import ProductsPage from "./components/product/ProductsPage.jsx";
 import EmployeeDashboard from "./components/artisan/EmployeeDashboard.jsx";
 import ContactForm from "./components/ContactForm.jsx";
+import LoginPage from "./components/login/LoginPage.jsx";
+import SignUpPage from "./components/login/SignUpPage.jsx";
 import NotFound from "./components/NotFound.jsx";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
@@ -22,6 +24,8 @@ const router = createBrowserRouter([
       { path: "product", element: <ProductsPage /> },
       { path: "artisan", element: <EmployeeDashboard /> },
       { path: "contact", element: <ContactForm /> },
+      { path: "login", element: <LoginPage /> },
+      { path: "signup", element: <SignUpPage /> },
       { path: "*", element: <NotFound /> },
     ],
   },
