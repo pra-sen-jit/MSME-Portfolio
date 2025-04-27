@@ -67,14 +67,14 @@ const Navbar = () => {
         </div>
 
         {/* Title */}
-        <h1 className="absolute left-1/2 transform -translate-x-1/2 text-2xl md:text-3xl lg:text-4xl font-bold tracking-wider text-gray-800 font-serif hidden md:block">
+        <h1 className="absolute left-1/2 transform -translate-x-1/2 text-2xl md:text-3xl lg:text-4xl font-bold tracking-wider text-gray-800 font-piedra hidden md:block">
           <span className="bg-clip-text text-transparent bg-gradient-to-r from-black via-gray-800 to-black">
             MAGRAHAT
           </span>
         </h1>
 
         {/* Mobile Title - Visible only on mobile */}
-        <h1 className="text-xl font-bold tracking-wider text-gray-800 font-serif md:hidden">
+        <h1 className="text-xl font-bold tracking-wider text-gray-800 font-piedra md:hidden">
           <span className="bg-clip-text text-transparent bg-gradient-to-r from-black via-gray-800 to-black">
             MAGRAHAT
           </span>

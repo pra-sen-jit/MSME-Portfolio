@@ -1,2 +1,7 @@
+@import url("https://fonts.googleapis.com/css2?family=Piedra&display=swap");
 @import "tailwindcss";
 @import "animate.css";
+
+@theme {
+  --font-piedra: "Piedra", "serif";
+}

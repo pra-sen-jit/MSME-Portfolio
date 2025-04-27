@@ -6,6 +6,7 @@ import CustomerFeedback from "./CustomerFeedback";
 import ContactSection from "./ContactSection";
 import TeamSection from "./TeamSection";
 import AnimatedPage from "./AnimatedPage";
+import { Link } from "react-router-dom";
 
 function LandingPage() {
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -54,12 +55,12 @@ function LandingPage() {
             <p className="mt-6 text-2xl font-light text-white md:text-3xl">
               Uncover Handcrafted Brilliance
             </p>
-            <a
-              href="/about"
+            <Link
+              to="/about"
               className="mt-10 inline-block px-8 py-4 text-lg font-semibold text-black bg-yellow-400 rounded-full shadow-lg hover:bg-yellow-300 transition duration-300"
             >
               Explore Now
-            </a>
+            </Link>
           </div>
         </section>
 
