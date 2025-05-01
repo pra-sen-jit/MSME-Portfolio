@@ -1,17 +1,39 @@
 import { useState } from "react";
-import { Lock, Mail } from "lucide-react";
-import { Link } from "react-router-dom";
+import axios from "axios";
+import { Lock } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const [PhoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log({ email, password, rememberMe });
-    // Handle login logic here
+    setError("");
+    try {
+      const response = await axios.post("http://localhost:3000/auth/login", {
+        PhoneNumber,
+        password,
+      });
+      if (response.status === 200) {
+        // Save token and username to localStorage
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("username", response.data.username);
+        alert("Login successful!");
+        // Navigate back to previous page so the Navbar updates (or change to a specific route)
+        navigate("/");
+      }
+    } catch (err) {
+      console.log(err.message);
+      setError(err.response?.data?.message || "Something went wrong, please try again.");
+    }
+    
   };
+  
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
@@ -27,18 +49,22 @@ export default function LoginPage() {
           Enter your credentials to access your account
         </p>
 
+        {error && (
+          <p className="mb-4 text-center text-red-600">{error}</p>
+        )}
+
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label htmlFor="email" className="block text-gray-700 mb-2">
-              Email
+            <label htmlFor="PhoneNumber" className="block text-gray-700 mb-2">
+              PhoneNumber
             </label>
             <input
-              id="email"
-              type="email"
+              id="PhoneNumber"
+              type="text"
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="name@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your phone number"
+              value={PhoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
               required
             />
           </div>

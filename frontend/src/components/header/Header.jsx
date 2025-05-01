@@ -1,11 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const [showHeader, setShowHeader] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [username, setUsername] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Update username from localStorage on location change (or you can use a global auth context)
+    const storedUsername = localStorage.getItem("username");
+    setUsername(storedUsername || "");
+  }, [location]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,6 +39,17 @@ const Navbar = () => {
     { label: "ARTISAN", path: "/artisan" },
     { label: "CONTACT US", path: "/contact" },
   ];
+  //Logout function : clear localStorage and navigate to login page
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
+    setUsername(""); // Use state setter; do not reassign directl
+    setDropdownOpen(false);
+    navigate("/");
+  };
+  
+  // Toggle dropdown menu
+  const toggleDropdown = () => setDropdownOpen((prev) => !prev);
 
   return (
     <div className="sticky top-0 z-50 w-full">
@@ -82,28 +102,91 @@ const Navbar = () => {
 
         {/* Icons */}
         <div className="flex items-center gap-5">
-          <Link
-            to="/login"
-            aria-label="User account"
-            className="relative group"
-          >
-            <div className="absolute inset-0 bg-gray-800 rounded-full scale-0 group-hover:scale-100 transition-transform duration-300 opacity-20"></div>
-            <svg
-              className="w-6 h-6 md:w-7 md:h-7 text-gray-700 group-hover:text-black transition-colors duration-200"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
+        {username ? (
+            // If logged in, show username with a dropdown
+            <div className="relative">
+              <button
+                onClick={toggleDropdown}
+                className="text-gray-700 font-semibold focus:outline-none"
+              >
+                {username}
+              </button>
+              {dropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white text-gray-800 z-50 rounded-md shadow-lg">
+                  <Link
+                    to="/artisan"
+                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    Profile
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            // If not logged in, show login icon linking to "/login"
+            <Link
+              to="/login"
+              aria-label="User account"
+              className="relative group"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-              ></path>
-            </svg>
-          </Link>
+              <div className="absolute inset-0 bg-gray-800 rounded-full scale-0 group-hover:scale-100 transition-transform duration-300 opacity-20"></div>
+              <svg
+                className="w-6 h-6 md:w-7 md:h-7 text-gray-700 group-hover:text-black transition-colors duration-200"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                ></path>
+              </svg>
+            </Link>
+          )}
+          {/** Conditionally render username or login icon */}
+          {/* {username ? (
+            <Link
+              to="/artisan"
+              aria-label="User account"
+              className="relative group text-gray-700 font-semibold"
+            >
+              {username}
+            </Link>
+          ) : (
+            <Link
+              to="/login"
+              aria-label="User account"
+              className="relative group"
+            >
+              <div className="absolute inset-0 bg-gray-800 rounded-full scale-0 group-hover:scale-100 transition-transform duration-300 opacity-20"></div>
+              <svg
+                className="w-6 h-6 md:w-7 md:h-7 text-gray-700 group-hover:text-black transition-colors duration-200"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                ></path>
+              </svg>
+            </Link>
+          )} */}
 
+          {/* Shopping Cart Icon */}
           <button aria-label="Shopping cart" className="relative group">
             <span className="absolute -top-2 -right-2 flex items-center justify-center w-5 h-5 bg-gray-800 text-white text-xs font-bold rounded-full">
               0

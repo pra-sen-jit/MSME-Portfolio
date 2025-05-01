@@ -13,6 +13,7 @@ import SignUpPage from "./components/login/SignUpPage.jsx";
 import NotFound from "./components/NotFound.jsx";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
+import PrivateRoute from "./components/PrivateRoute/PrivateRoute.jsx";
 
 const router = createBrowserRouter([
   {
@@ -22,7 +23,7 @@ const router = createBrowserRouter([
       { index: true, element: <LandingPage /> },
       { path: "about", element: <Explore /> },
       { path: "product", element: <ProductsPage /> },
-      { path: "artisan", element: <EmployeeDashboard /> },
+      { path: "artisan", element: (<PrivateRoute> <EmployeeDashboard /> </PrivateRoute>) },
       { path: "contact", element: <ContactForm /> },
       { path: "login", element: <LoginPage /> },
       { path: "signup", element: <SignUpPage /> },

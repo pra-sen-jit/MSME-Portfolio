@@ -32,7 +32,8 @@ export const connectToDatabase = async () => {
         CREATE TABLE IF NOT EXISTS users (
           id INT AUTO_INCREMENT PRIMARY KEY,
           username VARCHAR(255) NOT NULL,
-          phone_number VARCHAR(20) NOT NULL UNIQUE,
+          artisanId VARCHAR(50) UNIQUE,
+          PhoneNumber VARCHAR(20) NOT NULL UNIQUE,
           password VARCHAR(255) NOT NULL,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
