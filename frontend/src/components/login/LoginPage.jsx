@@ -9,13 +9,15 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const loginUrl = `${backendUrl}/auth/login`;
 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     try {
-      const response = await axios.post("http://localhost:3000/auth/login", {
+      const response = await axios.post(loginUrl, {
         PhoneNumber,
         password,
       });
