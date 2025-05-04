@@ -1,18 +1,20 @@
 import { useState } from "react";
+import axios from "axios";
 import { UserPlus } from "lucide-react";
-import { Link } from "react-router-dom";
-import AnimatedPage from "../AnimatedPage";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function SignUpPage() {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
-    email: "",
+    PhoneNumber: "",
     artisanId: "",
     password: "",
     confirmPassword: "",
     agreeToTerms: false,
   });
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -22,10 +24,22 @@ export default function SignUpPage() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData);
-    // Handle sign up logic here
+    setError("");
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/auth/signup",
+        formData
+      );
+      if (response.status === 201) {
+        alert("Signup successful !!!");
+        navigate("/");
+      }
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.message || "Something went wrong.");
+    }
   };
 
   return (
@@ -44,6 +58,8 @@ export default function SignUpPage() {
           <p className="text-center text-gray-600 mb-8">
             Enter your details to get started
           </p>
+
+          {error && <p className="mb-4 text-center text-red-600">{error}</p>}
 
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-2 gap-4 mb-4">
@@ -80,16 +96,16 @@ export default function SignUpPage() {
             </div>
 
             <div className="mb-4">
-              <label htmlFor="email" className="block text-gray-700 mb-2">
-                Email
+              <label htmlFor="PhoneNumber" className="block text-gray-700 mb-2">
+                PhoneNumber
               </label>
               <input
-                id="email"
-                name="email"
-                type="email"
+                id="PhoneNumber"
+                name="PhoneNumber"
+                type="text"
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="name@example.com"
-                value={formData.email}
+                placeholder="Enter your phone number"
+                value={formData.PhoneNumber}
                 onChange={handleChange}
                 required
               />
@@ -104,7 +120,7 @@ export default function SignUpPage() {
                 name="artisanId"
                 type="text"
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="••••••••"
+                placeholder="Enter your Artisan id"
                 value={formData.artisanId}
                 onChange={handleChange}
                 required
