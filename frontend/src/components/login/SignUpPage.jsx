@@ -15,6 +15,8 @@ export default function SignUpPage() {
   });
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const signupurl = `${backendUrl}/auth/signup`;
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -28,8 +30,11 @@ export default function SignUpPage() {
     e.preventDefault();
     setError("");
     try {
-      const response = await axios.post("http://localhost:3000/auth/signup", formData);
+      const response = await axios.post(signupurl, formData);
       if (response.status === 201) {
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("username", response.data.username);
+        localStorage.setItem("ArtisanId", response.data.artisanId);
         alert("Signup successful !!!");
         navigate("/");
       }

@@ -25,6 +25,7 @@ export default function LoginPage() {
         // Save token and username to localStorage
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("username", response.data.username);
+        localStorage.setItem("ArtisanId", response.data.artisanId);
         alert("Login successful!");
         // Navigate back to previous page so the Navbar updates (or change to a specific route)
         navigate("/");
