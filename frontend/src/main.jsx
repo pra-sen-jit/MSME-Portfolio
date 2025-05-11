@@ -7,7 +7,7 @@ import LandingPage from "./components/LandingPage.jsx";
 import Explore from "./components/about/Explore.jsx";
 import ProductsPage from "./components/product/ProductsPage.jsx";
 import EmployeeDashboard from "./components/artisan/EmployeeDashboard.jsx";
-import ContactForm from "./components/comtact/ContactUs.jsx";
+import ContactForm from "./components/contact/ContactUs.jsx";
 import LoginPage from "./components/login/LoginPage.jsx";
 import SignUpPage from "./components/login/SignUpPage.jsx";
 import NotFound from "./components/NotFound.jsx";

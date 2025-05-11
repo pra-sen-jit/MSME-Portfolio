@@ -1,25 +1,13 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AnimatedPage from "../AnimatedPage";
 import axios from "axios";
-import { Edit2, Save, UploadCloud } from "lucide-react";
+import { Edit2, Save, UploadCloud, Trash2 } from "lucide-react";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 const productUrl = `${backendUrl}/products`;
 
-function AdditionalImages({ productNumber }) {
-  const [extraImages, setExtraImages] = useState([null, null, null, null]);
-
-  const handleExtraImageChange = (index, event) => {
-    if (event.target.files && event.target.files[0]) {
-      const file = event.target.files[0];
-      const newImages = [...extraImages];
-      newImages[index] = file;
-      setExtraImages(newImages);
-      console.log(`Product #${productNumber}, Extra image #${index + 1}`, file);
-    }
-  };
-
+function AdditionalImages({ productNumber, images, onImageChange, disabled }) {
   return (
     <div className="mb-4">
       <h3 className="text-sm font-normal leading-tight text-black mb-2">
@@ -29,20 +17,21 @@ function AdditionalImages({ productNumber }) {
         {[0, 1, 2, 3].map((index) => (
           <label
             key={index}
-            className="flex flex-col items-center justify-center w-10 h-10 bg-zinc-300
-                       transition-all duration-200 hover:bg-zinc-400 active:bg-zinc-500
-                       hover:shadow-md focus:outline-none focus:ring-2 focus:ring-gray-400
-                       cursor-pointer"
+            className={`flex flex-col items-center justify-center w-10 h-10 bg-zinc-300
+              transition-all duration-200 hover:bg-zinc-400 active:bg-zinc-500
+              hover:shadow-md focus:outline-none focus:ring-2 focus:ring-gray-400
+              ${disabled ? "opacity-50 pointer-events-none" : "cursor-pointer"}`}
             aria-label={`Add additional image ${index + 1} for product ${productNumber}`}
           >
             <input
               type="file"
               className="hidden"
-              onChange={(e) => handleExtraImageChange(index, e)}
+              onChange={(e) => onImageChange(index, e)}
+              disabled={disabled}
             />
-            {extraImages[index] ? (
+            {images[index]?.preview ? (
               <img
-                src={URL.createObjectURL(extraImages[index])}
+                src={images[index].preview}
                 alt={`Extra ${index + 1}`}
                 className="w-full h-full object-cover rounded"
               />
@@ -66,324 +55,374 @@ function AdditionalImages({ productNumber }) {
   );
 }
 
-function ProductSpecifications({ productNumber }) {
+function ProductSpecifications({ productNumber, specs, onChange, disabled }) {
   return (
     <div className="w-full mb-4">
       <h3 className="text-sm font-normal text-black mb-3">Product Specifications</h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div>
-          <label
-            htmlFor={`material-${productNumber}`}
-            className="block text-sm mb-1"
-          >
-            Material
-          </label>
-          <input
-            id={`material-${productNumber}`}
-            type="text"
-            className="w-full h-10 px-3 rounded border border-black shadow-sm
-                       transition-shadow duration-200 focus:shadow-md focus:outline-none
-                       focus:ring-1 focus:ring-gray-400"
-            aria-required="true"
-          />
-        </div>
-        <div>
-          <label
-            htmlFor={`height-${productNumber}`}
-            className="block text-sm mb-1"
-          >
-            Height
-          </label>
-          <input
-            id={`height-${productNumber}`}
-            type="text"
-            className="w-full h-10 px-3 rounded border border-black shadow-sm
-                       transition-shadow duration-200 focus:shadow-md focus:outline-none
-                       focus:ring-1 focus:ring-gray-400"
-          />
-        </div>
-        <div>
-          <label
-            htmlFor={`width-${productNumber}`}
-            className="block text-sm mb-1"
-          >
-            Width
-          </label>
-          <input
-            id={`width-${productNumber}`}
-            type="text"
-            className="w-full h-10 px-3 rounded border border-black shadow-sm
-                       transition-shadow duration-200 focus:shadow-md focus:outline-none
-                       focus:ring-1 focus:ring-gray-400"
-          />
-        </div>
-        <div>
-          <label
-            htmlFor={`weight-${productNumber}`}
-            className="block text-sm mb-1"
-          >
-            Weight
-          </label>
-          <input
-            id={`weight-${productNumber}`}
-            type="text"
-            className="w-full h-10 px-3 rounded border border-black shadow-sm
-                       transition-shadow duration-200 focus:shadow-md focus:outline-none
-                       focus:ring-1 focus:ring-gray-400"
-          />
-        </div>
+        {['material', 'height', 'width', 'weight'].map((field) => (
+          <div key={field}>
+            <label
+              htmlFor={`${field}-${productNumber}`}
+              className="block text-sm mb-1"
+            >
+              {field.charAt(0).toUpperCase() + field.slice(1)}
+            </label>
+            <input
+              id={`${field}-${productNumber}`}
+              type="text"
+              value={specs[field] || ''}
+              onChange={(e) => onChange(field, e.target.value)}
+              className={`w-full h-10 px-3 rounded border border-black shadow-sm
+                transition-shadow duration-200 focus:shadow-md focus:outline-none
+                focus:ring-1 focus:ring-gray-400 ${disabled ? 'bg-gray-100' : ''}`}
+              disabled={disabled}
+            />
+          </div>
+        ))}
       </div>
     </div>
   );
 }
 
-function ProductForm({ productNumber }) {
-  // main image
-  const [mainImageFile, setMainImageFile] = useState(null);
-  const [mainImagePreview, setMainImagePreview] = useState(null);
-  const [isVisible, setIsVisible] = useState(true);
-
-  const handleSaveProduct = async () => {
-  const name = document.getElementById(`product-name-${productNumber}`).value;
-  const price = document.getElementById(`product-price-${productNumber}`).value;
-  const description = document.getElementById(`product-description-${productNumber}`).value;
-
-  const material = document.getElementById(`material-${productNumber}`).value;
-  const height = document.getElementById(`height-${productNumber}`).value;
-  const width = document.getElementById(`width-${productNumber}`).value;
-  const weight = document.getElementById(`weight-${productNumber}`).value;
-
-  const formData = new FormData();
-  formData.append("name", name);
-  formData.append("price", price);
-  formData.append("description", description);
-  formData.append("specifications[material]", material);
-  formData.append("specifications[height]", height);
-  formData.append("specifications[width]", width);
-  formData.append("specifications[weight]", weight);
-
-  if (mainImageFile) {
-    formData.append("mainImage", mainImageFile);
-  }
-
-  // Append extra images with unique keys
-  extraImages.forEach((img, idx) => {
-    if (img) formData.append(`extraImages[${idx}]`, img);
+function ProductForm({ productNumber, product, onDelete, maxProducts }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    productName: product?.productName || '',
+    productPrice: product?.productPrice || '',
+    specs: {
+      material: product?.material || '',
+      height: product?.height || '',
+      width: product?.width || '',
+      weight: product?.weight || '',
+    },
+    description: product?.productDescription || '',
+    mainImage: product?.image1 ? { preview: `${backendUrl}${product.image1}` } : null,
+    extraImages: [2, 3, 4, 5].map(i => 
+      product?.[`image${i}`] ? { preview: `${backendUrl}${product[`image${i}`]}` } : null
+    )
   });
 
-  try {
-    const response = await axios.post(productUrl, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-         Authorization: `Bearer ${localStorage.getItem("token")}`
-      },
-    });
-    alert("Product saved successfully!");
-    console.log("Saved:", response.data);
-  } catch (error) {
-    console.error("Error saving product:", error);
-    alert("Failed to save product.");
-  }
-};
- const handleDeleteProduct = async () => {
-  if (window.confirm("Are you sure you want to delete this product?")) {
-    try {
-      await axios.delete(`productUrl${productId}`);
-      // Instead of hiding the box:
-      setProductName("");
-      setProductPrice("");
-      setProductDescription("");
-      setMainImageFile(null);
-      setMainImagePreview(null);
-      // Possibly show an alert:
-      alert("Product deleted from DB. The UI is now blank.");
-    } catch (error) {
-      alert("Error deleting product: " + error.message);
+  useEffect(() => {
+   if (product?.id) {
+    const cleanImagePath = (imgPath) => {
+      if (!imgPath) return null;
+      // Remove any existing /uploads/ prefix from database path
+      return imgPath.replace(/^\/?uploads\//, '');
+    };
+      setFormData({
+        productName: product.productName,
+        productPrice: product.productPrice,
+        specs: {
+          material: product.material,
+          height: product.height,
+          width: product.width,
+          weight: product.weight,
+        },
+        description: product.productDescription,
+        mainImage: product.image1 ? { 
+          preview: `${backendUrl}${product.image1.startsWith('/') ? '' : '/'}${product.image1}`
+          } : null,
+        extraImages: [2, 3, 4, 5].map(i => 
+          product[`image${i}`] ? { 
+            preview: `${backendUrl}${product[`image${i}`].startsWith('/') ? '' : '/'}${product[`image${i}`]}`
+            } : null
+        )
+      });
     }
-  }
-};
+  }, [product]);
 
-  const handleMainImageChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
+  const handleSpecChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      specs: { ...prev.specs, [field]: value }
+    }));
+  };
+
+  const handleMainImage = e => {
+    if (e.target.files[0]) {
       const file = e.target.files[0];
-      setMainImageFile(file);
-      setMainImagePreview(URL.createObjectURL(file));
-      console.log(`Product #${productNumber}, main image`, file);
+      setFormData(prev => ({
+        ...prev,
+        mainImage: { file, preview: URL.createObjectURL(file) }
+      }));
     }
   };
 
-  const handleProductDelete = () => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
-      console.log(`Product #${productNumber} (UI only) deleted.`);
-      // If you want to call a backend DELETE, do it here
-      setIsVisible(false);
+  const handleExtraImage = (index, e) => {
+    if (e.target.files[0]) {
+      const file = e.target.files[0];
+      setFormData(prev => {
+        const newExtras = [...prev.extraImages];
+        newExtras[index] = { file, preview: URL.createObjectURL(file) };
+        return { ...prev, extraImages: newExtras };
+      });
     }
   };
 
-  if (!isVisible) return null;
+  const handleSave = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const formPayload = new FormData();
+      const isUpdate = !!product?.id;
+
+      if (isUpdate) {
+        formPayload.append('id', product.id);
+      }
+
+      formPayload.append('productName', formData.productName);
+      formPayload.append('productPrice', formData.productPrice);
+      formPayload.append('material', formData.specs.material);
+      formPayload.append('height', formData.specs.height);
+      formPayload.append('width', formData.specs.width);
+      formPayload.append('weight', formData.specs.weight);
+      formPayload.append('productDescription', formData.description);
+
+      if (formData.mainImage?.file) {
+        formPayload.append('image1', formData.mainImage.file);
+      } else if (formData.mainImage?.preview) {
+        formPayload.append('image1', formData.mainImage.preview);
+      }
+
+      formData.extraImages.forEach((img, index) => {
+        const fieldName = `image${index + 2}`;
+        if (img?.file) {
+          formPayload.append(fieldName, img.file);
+        } else if (product?.[fieldName]) {
+          // Use the existing path from correct field
+          formPayload.append('fieldName', product[fieldName]);
+        }
+      });
+
+      const response = await axios.post(
+        `${productUrl}${isUpdate ? `/${product.id}` : ''}`,
+        formPayload,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      setIsEditing(false);
+      onDelete();
+      alert(`Product ${isUpdate ? 'updated' : 'saved'} successfully!`);
+    } catch (error) {
+      alert(error.response?.data?.message || 'Operation failed');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!product?.id) return;
+    if (window.confirm('Delete this product permanently?')) {
+      try {
+        await axios.delete(`${productUrl}/${product.id}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+        onDelete();
+        alert('Product deleted successfully!');
+      } catch (error) {
+        alert('Delete failed: ' + error.message);
+      }
+    }
+  };
+
+  const isNewSlot = !product?.id;
+  const saveDisabled = isNewSlot && maxProducts >= 3;
 
   return (
-    <section
-      className="w-full mb-8 relative"
-      aria-labelledby={`product-${productNumber}-heading`}
-    >
-      <h2
-        id={`product-${productNumber}-heading`}
-        className="mt-6 mb-4 text-lg font-normal text-black"
-      >
-        Product No: {productNumber}
-      </h2>
-
-      <button
-        type="button"
-        aria-label="Delete this product"
-        onClick={handleDeleteProduct}
-        className="absolute right-4 top-4 text-red-600 hover:text-red-800 focus:outline-none"
-      >
-        {/* trash icon */}
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="w-6 h-6"
-        >
-          <path d="M3 6h18" />
-          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-        </svg>
-      </button>
+    <section className="w-full mb-8 relative">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-normal text-black">
+          Product No: {productNumber}
+        </h2>
+        <div className="flex gap-2">
+          {!isEditing && (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="flex items-center gap-1 bg-black text-white px-3 py-2 rounded hover:bg-gray-800"
+              disabled={saveDisabled}
+            >
+              <Edit2 size={16} /> Edit
+            </button>
+          )}
+          {isEditing && (
+            <button
+              onClick={handleSave}
+              className="flex items-center gap-1 bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700"
+            >
+              <Save size={16} /> Save
+            </button>
+          )}
+          {(product?.id || isEditing) && (
+            <button
+              onClick={product?.id ? handleDelete : () => setIsEditing(false)}
+              className="flex items-center gap-1 bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700"
+            >
+              <Trash2 size={16} /> {product?.id ? 'Delete' : 'Cancel'}
+            </button>
+          )}
+        </div>
+      </div>
 
       <div className="flex flex-col md:flex-row gap-6">
-        {/* Left Column: main image & small images */}
         <div className="w-full md:w-1/3 flex flex-col gap-4">
-          {/* main image */}
           <label
-            htmlFor={`product-image-${productNumber}`}
-            className="block w-full cursor-pointer"
+            htmlFor={`main-image-${productNumber}`}
+            className={`block w-full ${isEditing ? 'cursor-pointer' : ''}`}
           >
             <input
               type="file"
-              id={`product-image-${productNumber}`}
+              id={`main-image-${productNumber}`}
               className="hidden"
-              onChange={handleMainImageChange}
+              onChange={handleMainImage}
+              disabled={!isEditing}
             />
-            {/* default placeholder if no file */}
-            {mainImagePreview ? (
+            {(formData.mainImage?.preview || product?.image1) ? (
               <img
-                src={mainImagePreview}
-                alt={`Product ${productNumber} preview`}
-                className="w-full object-cover rounded bg-gray-100 aspect-square"
+                src={formData.mainImage?.preview || `${backendUrl}${product.image1}`}
+                alt="Main preview"
+                className="w-full aspect-square object-cover rounded bg-gray-100"
               />
             ) : (
-              <div className="flex flex-col justify-center items-center p-6 w-full aspect-square bg-zinc-300 rounded">
-                <svg
-                  width="64"
-                  height="64"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="text-gray-500"
-                >
-                  <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" />
-                </svg>
+              <div className="aspect-square bg-zinc-300 rounded flex items-center justify-center">
+                <UploadCloud size={24} className="text-gray-500" />
               </div>
             )}
           </label>
-
-          {/* additional images below main */}
-          <AdditionalImages productNumber={productNumber} />
+          <AdditionalImages
+            productNumber={productNumber}
+            images={formData.extraImages}
+            onImageChange={handleExtraImage}
+            disabled={!isEditing}
+          />
         </div>
 
-        {/* Right Column */}
         <div className="w-full md:w-2/3 flex flex-col gap-4">
-          {/* Name / Price / Specs in one vertical flow */}
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
             <div className="flex-grow">
-              <label
-                htmlFor={`product-name-${productNumber}`}
-                className="block text-sm mb-1"
-              >
-                Product Name
-              </label>
               <input
-                id={`product-name-${productNumber}`}
-                type="text"
-                className="w-full h-10 px-3 rounded border border-black shadow-sm"
-                aria-required="true"
+                value={formData.productName}
+                onChange={(e) => setFormData(prev => ({ ...prev, productName: e.target.value }))}
+                placeholder="Product Name"
+                className={`w-full h-10 px-3 rounded border border-black shadow-sm ${
+                  !isEditing ? 'bg-gray-100' : ''
+                }`}
+                disabled={!isEditing}
               />
             </div>
-
-            <div className="w-full sm:w-32">
-              <label
-                htmlFor={`product-price-${productNumber}`}
-                className="block text-sm mb-1"
-              >
-                Price
-              </label>
-              <div className="relative">
+            <div className="relative">
+              <div className="flex items-center">
+                <span className="absolute left-3">₹</span>
                 <input
-                  id={`product-price-${productNumber}`}
-                  type="text"
-                  className="w-full h-10 pl-6 pr-3 rounded border border-black shadow-sm"
-                  aria-required="true"
+                  value={formData.productPrice}
+                  onChange={(e) => setFormData(prev => ({ ...prev, productPrice: e.target.value }))}
+                  placeholder="Price"
+                  className={`w-full h-10 pl-6 pr-3 rounded border border-black shadow-sm ${
+                    !isEditing ? 'bg-gray-100' : ''
+                  }`}
+                  disabled={!isEditing}
                 />
-                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base">
-                  ₹
-                </span>
               </div>
             </div>
           </div>
 
           <hr className="border-t border-black" />
-          <ProductSpecifications productNumber={productNumber} />
+          <ProductSpecifications
+            productNumber={productNumber}
+            specs={formData.specs}
+            onChange={handleSpecChange}
+            disabled={!isEditing}
+          />
 
           <hr className="border-t border-black" />
-          {/* product description below all specs */}
-          <div>
-            <label
-              htmlFor={`product-description-${productNumber}`}
-              className="block text-sm mb-1"
-            >
-              Product Description
-            </label>
-            <textarea
-              id={`product-description-${productNumber}`}
-              rows={3}
-              className="w-full p-2 rounded border border-black shadow-sm
-                         transition-shadow duration-200 focus:shadow-md focus:outline-none
-                         focus:ring-1 focus:ring-gray-400"
-            ></textarea>
-          </div>
+          <textarea
+            value={formData.description}
+            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+            placeholder="Product Description"
+            rows={3}
+            className={`w-full p-2 rounded border border-black shadow-sm ${
+              !isEditing ? 'bg-gray-100' : ''
+            }`}
+            disabled={!isEditing}
+          />
         </div>
       </div>
-      {/* Save Button */}
-    <button
-      type="button"
-      onClick={handleSaveProduct}
-      className="mt-4 flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-    >
-      <Save size={16} /> Save Product
-    </button>
     </section>
   );
 }
 
 function EmployeeTable() {
-  return (
-    <section
-      className="w-full mb-6 bg-white border border-solid border-neutral-200 rounded-lg"
-      aria-labelledby="employee-table-heading"
-    >
-      <h2 id="employee-table-heading" className="sr-only">
-        Employee Information
-      </h2>
+  const [profile, setProfile] = useState({
+    name: "",
+    specialization: "Silver Ornaments Expert", // Default value
+    contact: "",
+    artisanId: "",
+    isEditing: false
+  });
+  const handleEditToggle = () => {
+    setProfile(prev => ({...prev, isEditing: !prev.isEditing}));
+  };
 
+   const handleSaveProfile = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.put(`${backendUrl}/auth/profile`, {
+        username: profile.name,
+        specialization: profile.specialization,
+        contact: profile.contact
+      }, {
+        headers: {Authorization: `Bearer ${token}`}
+      });
+
+      // Update local storage with new values
+      localStorage.setItem('username', profile.name);
+      localStorage.setItem('phoneNumber', profile.contact);
+      
+      setProfile(prev => ({
+        ...prev,
+        isEditing: false,
+        name: profile.name,
+        specialization: profile.specialization,
+        contact: profile.contact
+      }));
+      
+      alert('Profile updated successfully!');
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.error || 
+                          error.message;
+      alert(`Error updating profile: ${errorMessage}`);
+    }
+  };
+
+   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const decoded = JSON.parse(atob(token.split('.')[1]));
+        setProfile({
+          name: decoded.username || localStorage.getItem('username') || "Artisan",
+          specialization: decoded.specialization || "Silver Ornaments Expert",
+          contact: decoded.PhoneNumber || localStorage.getItem('phoneNumber') || "",
+          artisanId: decoded.artisanId || ""
+        });
+      } catch (error) {
+        console.error('Token decode error:', error);
+        setProfile(prev => ({
+          ...prev,
+          name: localStorage.getItem('username') || "Artisan",
+          contact: localStorage.getItem('phoneNumber') || ""
+        }));
+      }
+    }
+  }, []);
+
+  // Removed delete functionality
+
+  return (
+    <section className="w-full mb-6 bg-white border border-solid border-neutral-200 rounded-lg">
       {/* Table Header */}
       <div className="grid grid-cols-12 gap-2 py-3 px-4 md:px-6 text-sm font-medium text-neutral-700 bg-neutral-50 border-b border-neutral-200 rounded-t-lg">
         <div className="col-span-3">Name</div>
@@ -392,21 +431,37 @@ function EmployeeTable() {
         <div className="col-span-1 text-center">Actions</div>
       </div>
 
-      {/* Table Row */}
+      {/* Profile Row */}
       <div className="grid grid-cols-12 gap-2 py-3 px-4 md:px-6 text-sm">
         <div className="col-span-3 flex items-center gap-3">
-          <div className="flex justify-center items-center w-8 h-8">
-            <img
-              src="https://cdn.builder.io/api/v1/image/assets/TEMP/30e8d0f98f086f2e60ad1a5b4ed65ccbd54198e9?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade"
-              alt="Artisan A profile"
-              className="w-8 h-8 rounded-full object-cover"
-            />
+          <div className="w-8 h-8 bg-zinc-300 rounded-full flex items-center justify-center">
+            {profile.name?.[0]?.toUpperCase() || 'A'}
           </div>
-          <div className="font-normal text-neutral-800">Artisan A</div>
+          {profile.isEditing ? (
+            <input
+              value={profile.name}
+              onChange={(e) => setProfile(p => ({...p, name: e.target.value}))}
+              className="border rounded px-2 py-1 w-32"
+            />
+          ) : (
+            <div className="font-normal text-neutral-800">
+              {profile.name || "Artisan Profile"}
+            </div>
+          )}
         </div>
+
         <div className="col-span-4 flex items-center font-normal text-neutral-600">
-          Silver Ornaments expert
+          {profile.isEditing ? (
+            <input
+              value={profile.specialization}
+              onChange={(e) => setProfile(p => ({...p, specialization: e.target.value}))}
+              className="border rounded px-2 py-1 w-full"
+            />
+          ) : (
+            profile.specialization
+          )}
         </div>
+
         <div className="col-span-4 flex items-center gap-2">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -416,67 +471,48 @@ function EmployeeTable() {
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="text-neutral-600"
           >
             <rect width="20" height="16" x="2" y="4" rx="2" />
             <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
           </svg>
-          <a
-            href="mailto:maria@example.com"
-            className="font-normal text-neutral-600 hover:text-blue-600 hover:underline 
-                       transition-colors duration-200 active:text-blue-800"
-          >
-            maria@example.com
-          </a>
+          {profile.isEditing ? (
+            <input
+              value={profile.contact}
+              onChange={(e) => setProfile(p => ({...p, contact: e.target.value}))}
+              className="border rounded px-2 py-1 w-full"
+            />
+          ) : (
+            <span className="text-neutral-600">{profile.contact}</span>
+          )}
         </div>
-        <div className="col-span-1 flex justify-center items-center gap-3">
-          <button
-            aria-label="Edit artisan"
-            className="p-1 rounded-full hover:bg-gray-100 transition-colors
-                       duration-200 active:bg-gray-200 focus:outline-none
-                       focus:ring-2 focus:ring-gray-300"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-gray-600 hover:text-blue-600 transition-colors duration-200"
+
+        <div className="col-span-1 flex justify-center items-center gap-2">
+          {profile.isEditing ? (
+            <>
+              <button
+                onClick={handleSaveProfile}
+                className="p-1 text-green-600 hover:text-green-800"
+                title="Save"
+              >
+                <Save size={16} />
+              </button>
+              <button
+                onClick={handleEditToggle}
+                className="p-1 text-gray-600 hover:text-gray-800"
+                title="Cancel"
+              >
+                ✕
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={handleEditToggle}
+              className="p-1 text-blue-600 hover:text-blue-800"
+              title="Edit"
             >
-              <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-              <path d="m15 5 4 4" />
-            </svg>
-          </button>
-          <button
-            aria-label="Delete artisan"
-            className="p-1 rounded-full hover:bg-gray-100 transition-colors
-                       duration-200 active:bg-gray-200 focus:outline-none
-                       focus:ring-2 focus:ring-gray-300"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-gray-600 hover:text-red-500 transition-colors duration-200"
-            >
-              <path d="M3 6h18" />
-              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-            </svg>
-          </button>
+              <Edit2 size={16} />
+            </button>
+          )}
         </div>
       </div>
     </section>
@@ -484,79 +520,31 @@ function EmployeeTable() {
 }
 
 export default function EmployeeDashboard() {
-  const handleEditAll = () => {
-    console.log("Editing all products as one...");
-    alert("Edit mode enabled for all products.");
-  };
+  const [products, setProducts] = useState([]);
+  const [artisanId, setArtisanId] = useState('');
 
-  const handleSaveAll = async () => {
+  const fetchProducts = async () => {
     try {
-      for (let i = 1; i <= 3; i++) {
-        const artisanId = localStorage.getItem("ArtisanId");
-        const productName = document.getElementById(`product-name-${i}`)?.value;
-        const productPrice = document.getElementById(`product-price-${i}`)?.value;
-        const productDescription =
-          document.getElementById(`product-description-${i}`)?.value || "";
-        const material = document.getElementById(`material-${i}`)?.value || "";
-        const height = document.getElementById(`height-${i}`)?.value || "";
-        const width = document.getElementById(`width-${i}`)?.value || "";
-        const weight = document.getElementById(`weight-${i}`)?.value || "";
-
-        // Debug info
-        console.log(
-          `(DEBUG) For product #${i}: artisanId=`,
-          artisanId,
-          " productName=",
-          productName
-        );
-
-        if (!artisanId || !productName) {
-          throw new Error(`Product ${i}: artisanId and productName are required.`);
-        }
-
-        // main image
-        const mainImageInput = document.getElementById(`product-image-${i}`);
-        const mainImageFile =
-          mainImageInput?.files && mainImageInput.files[0]
-            ? mainImageInput.files[0]
-            : null;
-
-        const formData = new FormData();
-        formData.append("artisanId", artisanId);
-        formData.append("productName", productName);
-        formData.append("productPrice", productPrice);
-        formData.append("material", material);
-        formData.append("height", height);
-        formData.append("width", width);
-        formData.append("weight", weight);
-        formData.append("productDescription", productDescription);
-        if (mainImageFile) {
-          formData.append("image1", mainImageFile);
-        }
-
-        await axios.post(productUrl, formData, {
-          headers: {
-                    "Content-Type": "multipart/form-data",
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
-          }, 
-          
-        });
-      }
-      alert("All products saved successfully.");
+      const token = localStorage.getItem('token');
+      const decoded = JSON.parse(atob(token.split('.')[1]));
+      setArtisanId(decoded.artisanId);
+      
+      const res = await axios.get(`${productUrl}/${decoded.artisanId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setProducts(res.data);
     } catch (error) {
-      console.error("Error saving products", error);
-      alert("Error saving products: " + error.message);
+      console.error('Fetch error:', error);
+      alert('Failed to load products');
     }
   };
 
-  const handleListAll = async () => {
-    try {
-      await handleSaveAll();
-      alert("Products have been listed for customers.");
-    } catch (error) {
-      console.error("Error listing products", error);
-      alert("Error listing products: " + error.message);
-    }
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const handleListAll = () => {
+    alert('Products listed successfully! They are now visible to customers.');
   };
 
   return (
@@ -569,42 +557,32 @@ export default function EmployeeDashboard() {
 
           <EmployeeTable />
 
-          <div className="mt-8 w-full flex items-center justify-between text-black">
-            <div className="flex flex-col">
-              <h2 className="text-xl md:text-2xl font-semibold">Add Products</h2>
-              <p className="text-sm md:text-base">Max Limit: 3</p>
-            </div>
-
-            <div className="flex gap-4">
-              <button
-                className="flex items-center gap-1 bg-black text-white px-5 py-2 rounded-md hover:bg-gray-800 transition-colors"
-                onClick={handleEditAll}
-              >
-                <Edit2 size={16} /> <span>Edit</span>
-              </button>
-              <button
-                className="flex items-center gap-1 bg-black text-white px-5 py-2 rounded-md hover:bg-gray-800 transition-colors"
-                onClick={handleSaveAll}
-              >
-                <Save size={16} /> <span>Save</span>
-              </button>
-              <button
-                className="flex items-center gap-1 bg-black text-white px-5 py-2 rounded-md hover:bg-gray-800 transition-colors"
-                onClick={handleListAll}
-              >
-                <UploadCloud size={16} /> <span>List</span>
-              </button>
-            </div>
+          <div className="mt-4 flex justify-end gap-4">
+            <button
+              onClick={handleListAll}
+              className="flex items-center gap-2 bg-green-600 text-white px-5 py-2 rounded-md hover:bg-green-700 transition-colors"
+            >
+              <UploadCloud size={16} /> List All Products
+            </button>
           </div>
 
-          {/* 3 product boxes */}
-          <ProductForm productNumber={1} />
-          <hr className="my-8 h-px border-t border-black w-full" />
-
-          <ProductForm productNumber={2} />
-          <hr className="my-8 h-px border-t border-black w-full" />
-
-          <ProductForm productNumber={3} />
+          <div className="mt-8 w-full">
+            <h2 className="text-xl md:text-2xl font-semibold text-black mb-4">
+              Manage Products
+            </h2>
+            
+            {[0, 1, 2].map((index) => (
+              <React.Fragment key={index}>
+                <ProductForm
+                  productNumber={index + 1}
+                  product={products[index] || {}}
+                  onDelete={fetchProducts}
+                  maxProducts={products.length}
+                />
+                {index < 2 && <hr className="my-8 border-t border-black" />}
+              </React.Fragment>
+            ))}
+          </div>
         </main>
       </div>
     </AnimatedPage>
