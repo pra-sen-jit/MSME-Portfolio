@@ -2,6 +2,6 @@
 @import "tailwindcss";
 /* @import "animate.css"; */
 
-@theme {
+:root {
   --font-piedra: "Piedra", "serif";
 }

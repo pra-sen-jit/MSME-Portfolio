@@ -36,7 +36,7 @@ const Navbar = () => {
     { label: "HOME", path: "/" },
     { label: "ABOUT", path: "/about" },
     { label: "PRODUCT", path: "/product" },
-    { label: "ARTISAN", path: "/artisan" },
+    { label: "ARTISAN", path: "/artisandb" },
     { label: "CONTACT US", path: "/contact" },
   ];
   //Logout function : clear localStorage and navigate to login page
