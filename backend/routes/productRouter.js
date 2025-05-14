@@ -81,6 +81,81 @@ router.post(
     }
   }
 );
+// UPDATE existing product
+router.put(
+  "/:productId",
+  verifyToken,
+  upload.fields([
+    { name: "image1" }, { name: "image2" },
+    { name: "image3" }, { name: "image4" },
+    { name: "image5" }
+  ]),
+  async (req, res) => {
+    try {
+      const productId = req.params.productId;
+      const artisanId = req.artisanId;
+      const db = await connectToDatabase();
+       if (isNaN(productId)) {
+    return res.status(400).json({ message: "Invalid product ID" });
+  }
+      
+      // Verify product exists and belongs to artisan
+      const [[product]] = await db.query(
+        "SELECT * FROM products WHERE id = ? AND artisanId = ?",
+        [productId, artisanId]
+      );
+      if (!product) return res.status(404).json({ message: "Product not found" });
+
+      // Process updates
+      const { productName, productPrice, material, height, width, weight, productDescription } = req.body;
+      
+      // Handle file updates (keep existing if no new file)
+      const updateData = {
+        productName: productName || product.productName,
+        productPrice: productPrice || product.productPrice,
+        material: material || product.material,
+        height: height || product.height,
+        width: width || product.width,
+        weight: weight || product.weight,
+        productDescription: productDescription || product.productDescription,
+        image1: req.files.image1?.[0]?.filename ? `/uploads/${req.files.image1[0].filename}` : product.image1,
+        image2: req.files.image2?.[0]?.filename ? `/uploads/${req.files.image2[0].filename}` : product.image2,
+        image3: req.files.image3?.[0]?.filename ? `/uploads/${req.files.image3[0].filename}` : product.image3,
+        image4: req.files.image4?.[0]?.filename ? `/uploads/${req.files.image4[0].filename}` : product.image4,
+        image5: req.files.image5?.[0]?.filename ? `/uploads/${req.files.image5[0].filename}` : product.image5,
+      };
+
+      await db.query(
+        `UPDATE products SET 
+          productName = ?, productPrice = ?, material = ?,
+          height = ?, width = ?, weight = ?,
+          image1 = ?, image2 = ?, image3 = ?,
+          image4 = ?, image5 = ?, productDescription = ?
+         WHERE id = ?`,
+        [
+          updateData.productName,
+          updateData.productPrice,
+          updateData.material,
+          updateData.height,
+          updateData.width,
+          updateData.weight,
+          updateData.image1,
+          updateData.image2,
+          updateData.image3,
+          updateData.image4,
+          updateData.image5,
+          updateData.productDescription,
+          productId
+        ]
+      );
+
+      return res.status(200).json({ message: "Product updated successfully" });
+    } catch (err) {
+      console.error("PUT /products error:", err);
+      return res.status(500).json({ message: err.message });
+    }
+  }
+);
 
 // DELETE /products/:productId — remove a single row
 router.delete("/:productId", verifyToken, async (req, res) => {
@@ -96,6 +171,33 @@ router.delete("/:productId", verifyToken, async (req, res) => {
   } catch (err) {
     console.error("DELETE /products/:productId error:", err);
     return res.status(500).json({ message: err.message });
+  }
+});
+// Add after DELETE endpoint
+router.post('/unlist-product/:productId', verifyToken, async (req, res) => {
+  try {
+    const db = await connectToDatabase();
+    await db.query(
+      'UPDATE products SET is_listed = FALSE WHERE id = ? AND artisanId = ?',
+      [req.params.productId, req.artisanId]
+    );
+    
+    // Check remaining products
+    const [[{ count }]] = await db.query(
+      'SELECT COUNT(*) AS count FROM products WHERE artisanId = ? AND is_listed = TRUE',
+      [req.artisanId]
+    );
+    
+    if (count < 3) {
+      await db.query(
+        'UPDATE users SET listed = FALSE WHERE artisanId = ?',
+        [req.artisanId]
+      );
+    }
+    
+    res.json({ message: "Product unlisted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 });
 
@@ -117,5 +219,43 @@ router.get("/:artisanId", verifyToken, async (req, res) => {
     return res.status(500).json({ message: err.message });
   }
 });
+
+// Update the list-products endpoint
+router.post('/list-products', verifyToken, async (req, res) => {
+  try {
+    const db = await connectToDatabase();
+    
+    // Verify exactly 3 products exist (regardless of listing status)
+    const [[{ count }]] = await db.query(
+      `SELECT COUNT(*) AS count FROM products 
+       WHERE artisanId = ?`,
+      [req.artisanId]
+    );
+
+    if (count !== 3) {
+      return res.status(400).json({ 
+        message: 'You must have exactly 3 products to list' 
+      });
+    }
+
+    // Update database
+    await db.query(`
+      UPDATE products 
+      SET is_listed = TRUE, listed_at = NOW() 
+      WHERE artisanId = ?
+    `, [req.artisanId]);
+
+    await db.query(`
+      UPDATE users 
+      SET listed = TRUE 
+      WHERE artisanId = ?
+    `, [req.artisanId]);
+
+    res.json({ message: "Products listed successfully!" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 
 export default router;

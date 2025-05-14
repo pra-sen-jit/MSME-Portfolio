@@ -6,6 +6,7 @@ import authRouter from './routes/authRouter.js';
 import productRouter from './routes/productRouter.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import publicRouter from './routes/publicRouter.js';
 
 
 dotenv.config();
@@ -36,6 +37,8 @@ app.use('/products', productRouter);
 app.get('/', (req, res) => {
   res.send("Hello! Server is running!");
 });
+// Add before app.listen
+app.use('/public', publicRouter);
 
 // Start the server
 app.listen(port, () => {
