@@ -38,6 +38,7 @@ export const connectToDatabase = async () => {
           password VARCHAR(255) NOT NULL,
           specialization VARCHAR(255) DEFAULT NULL,
           profileImage VARCHAR(2083) DEFAULT NULL,
+          listed BOOLEAN DEFAULT FALSE,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `);
@@ -59,6 +60,8 @@ export const connectToDatabase = async () => {
           image5 VARCHAR(2083),
           productDescription TEXT,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          is_listed BOOLEAN NOT NULL DEFAULT FALSE,  -- New column
+          listed_at DATETIME DEFAULT NULL,           -- New column
           FOREIGN KEY (artisanId) REFERENCES users(artisanId)
         )
       `);
