@@ -13,17 +13,8 @@ function AboutSection() {
         About Magrahat Silver Filigree
       </h2>
 
-      <div className="flex flex-wrap items-center justify-center gap-10 max-w-7xl w-full">
-        {/* Image */}
-        <div className="flex justify-center w-full md:w-1/2">
-          <img
-            src="https://cdn.builder.io/api/v1/image/assets/TEMP/48f7141c56b657fd9d1b9ce97586536c2a3f3fda?placeholderIfAbsent=true"
-            alt="Silver filigree craftsmanship"
-            className="w-full max-w-md rounded-3xl object-cover shadow-lg"
-          />
-        </div>
-
-        {/* Text Content */}
+      <div className="flex flex-wrap items-center justify-center gap-10 max-w-7xl w-full md:flex-nowrap">
+        {/* Text Content (Left) */}
         <div className="w-full md:w-1/2 px-4">
           <article className="text-lg leading-relaxed text-gray-700">
             <p className="mb-6">
@@ -42,6 +33,15 @@ function AboutSection() {
               every piece.
             </p>
           </article>
+        </div>
+
+        {/* Image (Right) */}
+        <div className="flex justify-center w-full md:w-1/2">
+          <img
+            src="https://cdn.builder.io/api/v1/image/assets/TEMP/48f7141c56b657fd9d1b9ce97586536c2a3f3fda?placeholderIfAbsent=true"
+            alt="Silver filigree craftsmanship"
+            className="w-full max-w-md rounded-3xl object-cover shadow-lg transition-all duration-300 hover:translate-y-[-5px] hover:shadow-xl"
+          />
         </div>
       </div>
     </section>

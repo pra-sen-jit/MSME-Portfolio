@@ -4,9 +4,26 @@ import Swal from "sweetalert2";
 function App() {
   const onSubmit = async (event) => {
     event.preventDefault();
-    const email_key = "import.meta.env.VITE_EMAIL_KEY";
 
     const formData = new FormData(event.target);
+
+    // Trim and validate fields manually
+    const name = formData.get("name")?.trim();
+    const email = formData.get("email")?.trim();
+    const message = formData.get("message")?.trim();
+
+    if (!name || !email || !message) {
+      Swal.fire({
+        icon: "warning",
+        title: "Validation Error",
+        text: "Please fill out all fields properly.",
+      });
+      return;
+    }
+
+    // Replace this with your actual key, NOT in quotes as a string
+    const email_key = import.meta.env.VITE_EMAIL_KEY;
+
     formData.append("access_key", email_key);
 
     const object = Object.fromEntries(formData);
@@ -40,7 +57,7 @@ function App() {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 mb-10 p-4 border rounded shadow"> {/* Add mb-20 for spacing from footer */}
+    <div className="max-w-md mx-auto mt-10 mb-10 p-4 border rounded shadow">
       <form onSubmit={onSubmit} className="space-y-4">
         <div>
           <label className="block mb-1 font-medium">Name</label>
@@ -68,9 +85,9 @@ function App() {
           <label className="block mb-1 font-medium">Message</label>
           <textarea
             name="message"
-            required
             placeholder="Enter your message"
-            className="w-full px-3 py-2 border rounded h-32" // Increased height here
+            required
+            className="w-full px-3 py-2 border rounded h-32"
           ></textarea>
         </div>
 

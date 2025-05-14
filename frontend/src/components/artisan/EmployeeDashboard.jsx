@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import AnimatedPage from "../AnimatedPage";
 import axios from "axios";
-import { Edit2, Save, UploadCloud, Trash2 } from "lucide-react";
+import { Edit2, Save, UploadCloud, Trash2, Plus } from "lucide-react";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 const productUrl = `${backendUrl}/products`;
@@ -85,8 +85,8 @@ function ProductSpecifications({ productNumber, specs, onChange, disabled }) {
   );
 }
 
-function ProductForm({ productNumber, product, onDelete, maxProducts }) {
-  const [isEditing, setIsEditing] = useState(false);
+function ProductForm({ productNumber, product, onDelete, maxProducts, isNewSlot, fetchProducts }) {
+  const [isEditing, setIsEditing] = useState(isNewSlot);
   const [formData, setFormData] = useState({
     productName: product?.productName || '',
     productPrice: product?.productPrice || '',
@@ -103,14 +103,24 @@ function ProductForm({ productNumber, product, onDelete, maxProducts }) {
     )
   });
 
-  useEffect(() => {
-   if (product?.id) {
-    const cleanImagePath = (imgPath) => {
-      if (!imgPath) return null;
-      // Remove any existing /uploads/ prefix from database path
-      return imgPath.replace(/^\/?uploads\//, '');
-    };
-      setFormData({
+// useEffect(() => {
+//     if (product?.id && !isDraft) {
+//       // Load existing product data
+//     } else {
+//       // Reset for new draft or empty slot
+//       setFormData({
+//         productName: '',
+//         productPrice: '',
+//         specs: { material: '', height: '', width: '', weight: '' },
+//         description: '',
+//         mainImage: null,
+//         extraImages: [null, null, null, null]
+//       });
+//     }
+//   }, [product, isDraft]);
+useEffect(() => {
+  if (product?.id) {
+    setFormData({
         productName: product.productName,
         productPrice: product.productPrice,
         specs: {
@@ -121,17 +131,27 @@ function ProductForm({ productNumber, product, onDelete, maxProducts }) {
         },
         description: product.productDescription,
         mainImage: product.image1 ? { 
-          preview: `${backendUrl}${product.image1.startsWith('/') ? '' : '/'}${product.image1}`
-          } : null,
+          preview: `${backendUrl}${product.image1.startsWith('/') ? product.image1 : '/' + product.image1}`
+        } : null,
         extraImages: [2, 3, 4, 5].map(i => 
           product[`image${i}`] ? { 
             preview: `${backendUrl}${product[`image${i}`].startsWith('/') ? '' : '/'}${product[`image${i}`]}`
-            } : null
+          } : null
         )
       });
-    }
-  }, [product]);
-
+    // Load existing product data
+  } else {
+    // Reset for new slot
+    setFormData({
+      productName: '',
+      productPrice: '',
+      specs: { material: '', height: '', width: '', weight: '' },
+      description: '',
+      mainImage: null,
+      extraImages: [null, null, null, null]
+    });
+  }
+}, [product, isNewSlot]); // Change isDraft to isNewSlot
   const handleSpecChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -161,78 +181,81 @@ function ProductForm({ productNumber, product, onDelete, maxProducts }) {
   };
 
   const handleSave = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const formPayload = new FormData();
-      const isUpdate = !!product?.id;
+  try {
+    const token = localStorage.getItem('token');
+    const formPayload = new FormData();
+    const isUpdate = !!product?.id && !isNaN(product.id);
 
-      if (isUpdate) {
-        formPayload.append('id', product.id);
-      }
+    // For updates, use PUT and correct endpoint
+    const method = isUpdate ? 'put' : 'post';
+    const url = isUpdate ? `${productUrl}/${product.id}` : productUrl;
 
-      formPayload.append('productName', formData.productName);
-      formPayload.append('productPrice', formData.productPrice);
-      formPayload.append('material', formData.specs.material);
-      formPayload.append('height', formData.specs.height);
-      formPayload.append('width', formData.specs.width);
-      formPayload.append('weight', formData.specs.weight);
-      formPayload.append('productDescription', formData.description);
+    // Common fields
+    formPayload.append('productName', formData.productName);
+    formPayload.append('productPrice', formData.productPrice);
+    formPayload.append('material', formData.specs.material);
+    formPayload.append('height', formData.specs.height);
+    formPayload.append('width', formData.specs.width);
+    formPayload.append('weight', formData.specs.weight);
+    formPayload.append('productDescription', formData.description);
 
-      if (formData.mainImage?.file) {
-        formPayload.append('image1', formData.mainImage.file);
-      } else if (formData.mainImage?.preview) {
-        formPayload.append('image1', formData.mainImage.preview);
-      }
-
-      formData.extraImages.forEach((img, index) => {
-        const fieldName = `image${index + 2}`;
-        if (img?.file) {
-          formPayload.append(fieldName, img.file);
-        } else if (product?.[fieldName]) {
-          // Use the existing path from correct field
-          formPayload.append('fieldName', product[fieldName]);
-        }
-      });
-
-      const response = await axios.post(
-        `${productUrl}${isUpdate ? `/${product.id}` : ''}`,
-        formPayload,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
-
-      setIsEditing(false);
-      onDelete();
-      alert(`Product ${isUpdate ? 'updated' : 'saved'} successfully!`);
-    } catch (error) {
-      alert(error.response?.data?.message || 'Operation failed');
+    // Handle main image (send file or existing path)
+    if (formData.mainImage?.file) {
+      formPayload.append('image1', formData.mainImage.file);
+    } else if (product?.image1) {
+      formPayload.append('image1', product.image1.split('/uploads/')[1]); // Extract filename
     }
-  };
+    if (isUpdate && !isNaN(product.id)) {
+  formPayload.append('id', product.id); // Only append ID for valid updates
+}
+
+    // Handle extra images
+    formData.extraImages.forEach((img, index) => {
+      const fieldName = `image${index + 2}`;
+      if (img?.file) {
+        formPayload.append(fieldName, img.file);
+      } else if (product?.[fieldName]) {
+        formPayload.append(fieldName, product[fieldName].split('/uploads/')[1]);
+      }
+    });
+
+    const response = await axios[method](url, formPayload, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    setIsEditing(false);
+    fetchProducts(); // Refresh list after save
+    alert(`Product ${isUpdate ? 'updated' : 'saved'} successfully!`);
+  } catch (error) {
+    alert(error.response?.data?.message || 'Operation failed');
+  }
+};
 
   const handleDelete = async () => {
-    if (!product?.id) return;
-    if (window.confirm('Delete this product permanently?')) {
-      try {
+  const confirmMsg = isNewSlot ? 'Discard this draft?' : 'Delete this product permanently?';
+  if (window.confirm(confirmMsg)) {
+    try {
+      if (!isNewSlot) {
+        const token = localStorage.getItem('token');
         await axios.delete(`${productUrl}/${product.id}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          headers: { Authorization: `Bearer ${token}` } // Add this
         });
-        onDelete();
-        alert('Product deleted successfully!');
-      } catch (error) {
-        alert('Delete failed: ' + error.message);
       }
+      onDelete(isNewSlot ? product.id : String(product.id));
+    } catch (error) {
+      alert(`Delete failed: ${error.response?.data?.message || error.message}`);
     }
-  };
+  }
+};
 
-  const isNewSlot = !product?.id;
+  //const isNewSlot = !product?.id;
   const saveDisabled = isNewSlot && maxProducts >= 3;
 
   return (
-    <section className="w-full mb-8 relative">
+    <section className="w-full mb-8 relative bg-gray-50 p-6 rounded-lg border border-gray-200">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-normal text-black">
           Product No: {productNumber}
@@ -519,33 +542,75 @@ function EmployeeTable() {
   );
 }
 
+// In EmployeeDashboard component
 export default function EmployeeDashboard() {
   const [products, setProducts] = useState([]);
-  const [artisanId, setArtisanId] = useState('');
+  const [drafts, setDrafts] = useState([{ id: 'initial-draft' }]); // Default draft
+  // const [showEmptySlot, setShowEmptySlot] = useState(false);
 
   const fetchProducts = async () => {
     try {
       const token = localStorage.getItem('token');
       const decoded = JSON.parse(atob(token.split('.')[1]));
-      setArtisanId(decoded.artisanId);
-      
       const res = await axios.get(`${productUrl}/${decoded.artisanId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setProducts(res.data);
+      setDrafts(prev => res.data.length === 0 ? [{ id: 'initial-draft' }] : []);
     } catch (error) {
       console.error('Fetch error:', error);
       alert('Failed to load products');
     }
   };
-
   useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const handleListAll = () => {
-    alert('Products listed successfully! They are now visible to customers.');
+  const loadData = async () => {
+    await fetchProducts();
+    // Only show drafts if there are no products
+    setDrafts(prev => products.length === 0 ? [] : prev);
   };
+  loadData();
+}, [products.length]);// Add dependency
+
+// Update handleAddSlot
+const handleAddSlot = () => {
+  if (products.length + drafts.length < 3) {
+    setDrafts(prev => [...prev, {}]);
+    // Force immediate UI update
+    setProducts(p => [...p]);
+  }
+};
+
+  const handleDelete = (deletedId) => {
+  // Convert to string for consistent type handling
+  const idString = String(deletedId);
+  
+  if (idString.startsWith('draft-')) {
+    setDrafts(prev => prev.filter(d => d.id !== idString));
+  } else {
+    // Optimistically remove from UI
+    setProducts(prev => prev.filter(p => String(p.id) !== idString));
+  }
+  // Then sync with backend
+  fetchProducts();
+};
+
+
+  const handleListAll = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await axios.post(
+      `${backendUrl}/products/list-products`,
+      {},
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    alert(response.data.message);
+    // Refresh products to show listed status
+    fetchProducts();
+  } catch (error) {
+    alert(error.response?.data?.message || 'Listing failed. Please try again.');
+  }
+};
 
   return (
     <AnimatedPage>
@@ -560,28 +625,54 @@ export default function EmployeeDashboard() {
           <div className="mt-4 flex justify-end gap-4">
             <button
               onClick={handleListAll}
-              className="flex items-center gap-2 bg-green-600 text-white px-5 py-2 rounded-md hover:bg-green-700 transition-colors"
+              disabled={products.length !== 3}
+              className={`flex items-center gap-2 
+                ${products.length === 3  
+                  ? 'bg-green-600 hover:bg-green-700' 
+                  : 'bg-gray-400 cursor-not-allowed'} text-white px-5 py-2 rounded-md`}
             >
-              <UploadCloud size={16} /> List All Products
+              <UploadCloud size={16} /> 
+              {products[0]?.is_listed ? 'Update Listing' : 'List All Products'}
             </button>
           </div>
 
           <div className="mt-8 w-full">
-            <h2 className="text-xl md:text-2xl font-semibold text-black mb-4">
-              Manage Products
-            </h2>
-            
-            {[0, 1, 2].map((index) => (
-              <React.Fragment key={index}>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl md:text-2xl font-semibold text-black">
+                Manage Products
+              </h2>
+              {products.length + drafts.length < 3 && (
+                <button
+                  onClick={handleAddSlot}
+                  className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                >
+                  <Plus size={16} /> Add More Products
+                </button>
+              )}
+            </div>
+
+            {/* Product Forms Container */}
+            <div className="space-y-8">
+              {products.map((product, index) => (
                 <ProductForm
+                  key={product.id}
                   productNumber={index + 1}
-                  product={products[index] || {}}
-                  onDelete={fetchProducts}
-                  maxProducts={products.length}
+                  product={product}
+                  onDelete={() => handleDelete(product.id)}
                 />
-                {index < 2 && <hr className="my-8 border-t border-black" />}
-              </React.Fragment>
+              ))}
+              
+              {drafts.map((draft, index) => (
+                <ProductForm
+                  key={draft.id}
+                  productNumber={products.length + index + 1}
+                  product={{ ...draft, id: draft.id }}
+                  onDelete={handleDelete}
+                  isNewSlot={true}
+                  fetchProducts={fetchProducts} // Pass down
+                />
             ))}
+            </div>
           </div>
         </main>
       </div>

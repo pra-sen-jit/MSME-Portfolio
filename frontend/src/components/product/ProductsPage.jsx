@@ -1,5 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from 'axios';
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
 // import Sidebar from "./Sidebar";
 // import ProductGrid from "./ProductGrid";
 import AnimatedPage from "../AnimatedPage";
@@ -297,306 +299,188 @@ function Sidebar() {
   );
 }
 
-
-//PRODUCT CARD COMPONENT
-function ProductCard({ image, title, price }) {
-  const [isHovered, setIsHovered] = useState(false);
-  const [isClicked, setIsClicked] = useState(false);
-  const [viewButtonClicked, setViewButtonClicked] = useState(false);
-  const [cartButtonClicked, setCartButtonClicked] = useState(false);
-
-  const handleCardClick = () => {
-    setIsClicked(true);
-    setTimeout(() => setIsClicked(false), 300);
-  };
-
-  const handleViewDetailsClick = (e) => {
-    e.stopPropagation(); // Prevent triggering the card click
-    setViewButtonClicked(true);
-    setTimeout(() => setViewButtonClicked(false), 300);
-    // Add your view details logic here
-    console.log("View details clicked");
-  };
-
-  const handleAddToCartClick = (e) => {
-    e.stopPropagation(); // Prevent triggering the card click
-    setCartButtonClicked(true);
-    setTimeout(() => setCartButtonClicked(false), 300);
-    // Add your add to cart logic here
-    console.log("Add to cart clicked");
-  };
+function ArtisanSection({ artisan, index }) {
+  // Safe data access with fallbacks
+  const username = artisan?.username || "Artisan";
+  const products = artisan?.products || [];
+  const initial = username[0]?.toUpperCase() || "A";
+  const color = `hsl(${index * 60}, 70%, 30%)`;
 
   return (
-    <article
-      className={`bg-white rounded-lg shadow-md overflow-hidden border border-gray-200
-        transition-all duration-300
-        ${isHovered ? "shadow-xl transform scale-[1.02]" : "shadow-md"}
-        ${isClicked ? "scale-95" : ""}
-        hover:border-gray-300`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onClick={handleCardClick}
+    <section 
+      className="bg-white p-6 rounded-xl shadow-sm mb-8 transition-all duration-300 hover:shadow-md"
+      style={{ borderLeft: `4px solid ${color}` }}
     >
-      <div className="relative overflow-hidden">
-        <img
-          src={image}
-          alt={title}
-          className={`object-cover w-full h-64 transition-all duration-500
-            ${isHovered ? "transform scale-105 brightness-90" : ""}`}
-        />
-        <div
-          className={`absolute inset-0 bg-black bg-opacity-0 flex items-center justify-center transition-opacity duration-300
-          ${isHovered ? "bg-opacity-20" : "opacity-0"}`}
+      {/* Artisan Header */}
+      <div className="flex items-center gap-4 mb-6">
+        <div 
+          className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center border-2"
+          style={{ borderColor: color }}
         >
-          <button
-            onClick={handleViewDetailsClick}
-            className={`bg-white text-gray-800 font-medium py-2 px-4 rounded-md
-              transition-all duration-300 shadow-md hover:bg-gray-100 cursor-pointer
-              ${
-                isHovered
-                  ? "translate-y-0 opacity-100"
-                  : "translate-y-4 opacity-0"
-              }
-              ${viewButtonClicked ? "bg-gray-200 scale-95" : ""}
-              focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50`}
+          <span 
+            className="text-xl font-bold"
+            style={{ color }}
           >
-            View Details
-          </button>
+            {initial}
+          </span>
+        </div>
+        
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800">
+            {username}
+          </h2>
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <span>Listed Products:</span>
+            <span 
+              className="px-2 py-1 rounded-full"
+              style={{ backgroundColor: `${color}20`, color }}
+            >
+              {products.length} items
+            </span>
+          </div>
         </div>
       </div>
-      <div className="p-4">
-        <h3 className="text-lg font-semibold text-gray-800 mb-2 line-clamp-2 transition-colors duration-300">
-          {title}
-        </h3>
-        <div className="flex justify-between items-center">
-          <p className="text-lg font-medium text-indigo-600">{price}</p>
+
+      {/* Products Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {products.map(product => (
+          <ProductCard 
+            key={product?.id || Math.random()} 
+            product={product}
+            color={color}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+//PRODUCT CARD COMPONENT
+function ProductCard({ product, color }) {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <div 
+      className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 relative"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{
+        transform: isHovered ? 'translateY(-4px)' : 'none',
+        borderTop: `3px solid ${color}`
+      }}
+    >
+      {/* Product Image */}
+      <div className="relative h-64 overflow-hidden">
+        <img
+          src={`${backendUrl}${product.image1}`}
+          alt={product.productName}
+          className={`w-full h-full object-cover transition-transform duration-300 ${
+            isHovered ? 'scale-105' : 'scale-100'
+          }`}
+        />
+        
+        {/* Hover Overlay */}
+        <div 
+          className="absolute inset-0 bg-black/10 flex items-center justify-center transition-opacity duration-300"
+          style={{ opacity: isHovered ? 1 : 0 }}
+        >
           <button
-            onClick={handleAddToCartClick}
-            className={`px-3 py-1 text-sm font-medium rounded-md
-              transition-all duration-200 cursor-pointer
-              ${
-                cartButtonClicked
-                  ? "scale-95 bg-indigo-700"
-                  : "hover:bg-indigo-700"
-              }
-              text-white bg-indigo-600 hover:shadow-md
-              focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50`}
+            className="px-4 py-2 bg-white rounded-md shadow-md flex items-center gap-2"
+            style={{ color }}
           >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"/>
+            </svg>
             Add to Cart
           </button>
         </div>
       </div>
-    </article>
+
+      {/* Product Details */}
+      <div className="p-4">
+        <h3 className="text-lg font-semibold text-gray-800 mb-2">{product.productName}</h3>
+        <p className="text-gray-600 text-sm line-clamp-3 mb-4">{product.productDescription}</p>
+        
+        <div className="flex justify-between items-center">
+          <span 
+            className="text-xl font-bold"
+            style={{ color }}
+          >
+            ₹{Number(product.productPrice).toLocaleString('en-IN')}
+          </span>
+          {product.listed_at && (
+            <span className="text-xs text-gray-500">
+              Listed: {new Date(product.listed_at).toLocaleDateString()}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
 //PRODUCT GRID COMPONENT
 function ProductGrid() {
-  const [activeArtisan, setActiveArtisan] = useState(null);
+  const [artisans, setArtisans] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  const artisanAProducts = [
-    {
-      id: 1,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/3af4fc347bb8e7d0bafcc9c2f73c93108b8d33e6?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade",
-      title: "Elegant Silver Earrings",
-      price: "₹1200",
-    },
-    {
-      id: 2,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/c7d308ef00daeadfac1d1504148acb4c9527335a?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade",
-      title: "Elegant Silver Necklace",
-      price: "₹1200",
-    },
-    {
-      id: 3,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/6a49c3fe49cd483ac197b3432affb4471fbd71a9?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade",
-      title: "Elegant Silver Bangles",
-      price: "₹1200",
-    },
-  ];
+  useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const artisansRes = await axios.get(`${backendUrl}/public/artisans`);
+      const artisanPromises = artisansRes.data.map(async (artisan) => {
+        try {
+          const productsRes = await axios.get(
+            `${backendUrl}/public/artisans/${artisan.artisanId}/products`
+          );
+          return { ...artisan, products: productsRes.data };
+        } catch (error) {
+          console.error(`Error fetching products for ${artisan.artisanId}:`, error);
+          return null; // Filter out later
+        }
+      },[refreshTrigger]);
 
-  const artisanBProducts = [
-    {
-      id: 4,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/3af4fc347bb8e7d0bafcc9c2f73c93108b8d33e6?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade",
-      title: "Golden Earrings",
-      price: "₹1500",
-    },
-    {
-      id: 5,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/c7d308ef00daeadfac1d1504148acb4c9527335a?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade",
-      title: "Golden Necklace",
-      price: "₹1800",
-    },
-    {
-      id: 6,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/6a49c3fe49cd483ac197b3432affb4471fbd71a9?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade",
-      title: "Golden Bangles",
-      price: "₹1400",
-    },
-  ];
-
-  const artisanCProducts = [
-    {
-      id: 7,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/3af4fc347bb8e7d0bafcc9c2f73c93108b8d33e6?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade",
-      title: "Mixed Metal Anklet",
-      price: "₹900",
-    },
-    {
-      id: 8,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/c7d308ef00daeadfac1d1504148acb4c9527335a?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade",
-      title: "Beaded Necklace",
-      price: "₹1100",
-    },
-    {
-      id: 9,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/6a49c3fe49cd483ac197b3432affb4471fbd71a9?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade",
-      title: "Handmade Bracelet",
-      price: "₹1000",
-    },
-  ];
-
-  const artisansInfo = [
-    {
-      id: "artisanA",
-      name: "Artisan A",
-      role: "Silver Ornaments Specialist",
-      products: artisanAProducts,
-      color: "indigo",
-      bgColor: "bg-indigo-50",
-      borderColor: "border-indigo-200",
-      hoverBorderColor: "hover:border-indigo-400",
-      textColor: "text-indigo-800",
-    },
-    {
-      id: "artisanB",
-      name: "Artisan B",
-      role: "Gold Ornaments Specialist",
-      products: artisanBProducts,
-      color: "amber",
-      bgColor: "bg-amber-50",
-      borderColor: "border-amber-200",
-      hoverBorderColor: "hover:border-amber-400",
-      textColor: "text-amber-800",
-    },
-    {
-      id: "artisanC",
-      name: "Artisan C",
-      role: "Handmade & Mixed Metals",
-      products: artisanCProducts,
-      color: "rose",
-      bgColor: "bg-rose-50",
-      borderColor: "border-rose-200",
-      hoverBorderColor: "hover:border-rose-400",
-      textColor: "text-rose-800",
-    },
-  ];
-
-  const handleArtisanHover = (artisanId) => {
-    setActiveArtisan(artisanId);
+      const artisansWithProducts = (await Promise.all(artisanPromises))
+        .filter(artisan => artisan !== null && artisan.products.length === 3);
+      
+      setArtisans(artisansWithProducts);
+    } catch (error) {
+      console.error('Fetch error:', error);
+    } finally {
+      setLoading(false);
+    }
   };
+  fetchData();
+}, []);
 
-  const renderArtisanSection = (artisan) => (
-    <section
-      key={artisan.id}
-      className={`max-w-7xl mx-auto px-4 sm:px-6 mb-16 pb-8 rounded-2xl ${
-        activeArtisan === artisan.id ? artisan.bgColor : "bg-white"
-      } transition-colors duration-300`}
-      onMouseEnter={() => handleArtisanHover(artisan.id)}
-      onMouseLeave={() => setActiveArtisan(null)}
-    >
-      <div className="flex flex-col sm:flex-row flex-wrap items-center gap-4 sm:gap-6 my-8 pt-8">
-        <div
-          className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden 
-          border-2 ${artisan.borderColor} ${artisan.hoverBorderColor} shadow-sm
-          transition-all duration-300 transform 
-          ${activeArtisan === artisan.id ? "scale-110" : ""}
-        `}
-        >
-          <img
-            src="https://cdn.builder.io/api/v1/image/assets/TEMP/34fbe49fedb3f3ad1ef298c86acfa3a9e3af21ba?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade"
-            alt={artisan.name}
-            className="object-cover w-full h-full"
-          />
-        </div>
-        <div className="text-center sm:text-left">
-          <h2
-            className={`text-2xl sm:text-3xl font-bold ${artisan.textColor} transition-colors duration-300`}
-          >
-            {artisan.name}
-          </h2>
-          <p className="text-gray-600 mt-1 font-medium">{artisan.role}</p>
-          <div
-            className={`h-1 w-0 mt-2 ${`bg-${artisan.color}-500`} rounded transition-all duration-500 
-            ${activeArtisan === artisan.id ? "w-16 sm:w-24" : ""}`}
-          ></div>
-        </div>
-        <div className="ml-auto hidden sm:block">
-          <button
-            className={`px-4 py-2 rounded-md font-medium text-sm border 
-              transition-all duration-300
-              ${`border-${artisan.color}-500 text-${artisan.color}-600 hover:bg-${artisan.color}-500 hover:text-white`}`}
-          >
-            View All Products
-          </button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-        {artisan.products.map((product) => (
-          <ProductCard
-            key={product.id}
-            image={product.image}
-            title={product.title}
-            price={product.price}
-          />
-        ))}
-      </div>
-
-      <div className="mt-8 text-center sm:hidden">
-        <button
-          className={`px-4 py-2 rounded-md font-medium text-sm border w-full
-            transition-all duration-300
-            ${`border-${artisan.color}-500 text-${artisan.color}-600 hover:bg-${artisan.color}-500 hover:text-white`}`}
-        >
-          View All Products
-        </button>
-      </div>
-    </section>
-  );
+  if (loading) return <div className="text-center p-8">Loading...</div>;
 
   return (
-    <main className="bg-gray-50 py-8 sm:py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-8">
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 text-center">
-          Our Artisan Collections
-        </h1>
-        <p className="text-gray-600 text-center mt-2 max-w-2xl mx-auto">
-          Discover unique handcrafted pieces from our master artisans, each with
-          their own specialty and style.
-        </p>
-      </div>
-
-      <div className="space-y-6 sm:space-y-12">
-        {artisansInfo.map(renderArtisanSection)}
-      </div>
-    </main>
+    <div className="space-y-12">
+      {artisans.map(artisan => (
+        <ArtisanSection
+          key={artisan.artisanId}
+          artisan={artisan}
+          index={artisan.index}
+        />
+      ))}
+      
+      {!loading && artisans.length === 0 && (
+        <div className="text-center py-12">
+          <h3 className="text-xl text-gray-600">
+            No artisans have listed their products yet
+          </h3>
+        </div>
+      )}
+    </div>
   );
 }
 
 
 function ProductsPage() {
   const [filterOpen, setFilterOpen] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   return (
     <AnimatedPage>
@@ -610,49 +494,57 @@ function ProductsPage() {
               Discover our curated collection of quality items
             </p>
 
-            {/* Mobile Filter Toggle */}
-            <button
-              onClick={() => setFilterOpen(!filterOpen)}
-              className="mt-4 md:hidden flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-500"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 mr-1"
-                viewBox="0 0 20 20"
-                fill="currentColor"
+            <div className="flex items-center">
+              {/* Mobile Filter Toggle */}
+              <button
+                onClick={() => setFilterOpen(!filterOpen)}
+                className="mt-4 md:hidden flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-500"
               >
-                <path
-                  fillRule="evenodd"
-                  d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              {filterOpen ? "Hide Filters" : "Show Filters"}
-            </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 mr-1"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                {filterOpen ? "Hide Filters" : "Show Filters"}
+              </button>
+
+              {/* Refresh Button */}
+              <button 
+                onClick={() => setRefreshTrigger(prev => prev + 1)}
+                className="ml-4 bg-indigo-100 text-indigo-600 px-3 py-1 rounded-lg mt-4"
+              >
+                Refresh Listings
+              </button>
+            </div>
           </div>
 
           {/* Products Layout */}
           <div className="flex flex-col md:flex-row gap-8">
-            {/* Sidebar - Mobile (Conditional Rendering) */}
-            <div
-              className={`${
-                filterOpen ? "block" : "hidden"
-              } md:hidden w-full bg-white p-4 rounded-lg shadow-sm mb-4`}
-            >
+            {/* Sidebar - Mobile */}
+            <div className={`${filterOpen ? "block" : "hidden"} md:hidden w-full bg-white p-4 rounded-lg shadow-sm mb-4`}>
               <Sidebar />
             </div>
 
             {/* Sidebar - Desktop */}
             <div className="hidden md:block w-full md:w-1/4 lg:w-1/5 flex-shrink-0">
-              <div className="sticky top-8 bg-white p-6 rounded-lg shadow-sm">
-                <Sidebar />
+              <div className="sticky top-8">
+                <div className="bg-white p-6 rounded-lg shadow-sm">
+                  <Sidebar />
+                </div>
               </div>
             </div>
 
             {/* Product Grid */}
             <div className="w-full md:w-3/4 lg:w-4/5">
               <div className="bg-white rounded-lg shadow-sm p-6">
-                <ProductGrid />
+                <ProductGrid refreshTrigger={refreshTrigger} />
               </div>
             </div>
           </div>
