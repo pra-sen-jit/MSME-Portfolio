@@ -1,6 +1,7 @@
 // /backend/lib/db.js
 import mysql from "mysql2/promise";
 import dotenv from "dotenv";
+
 dotenv.config();
 
 let connection;
@@ -37,6 +38,8 @@ export const connectToDatabase = async () => {
           artisanId VARCHAR(50) UNIQUE,
           PhoneNumber VARCHAR(20) NOT NULL UNIQUE,
           password VARCHAR(255) NOT NULL,
+          specialization VARCHAR(255) DEFAULT NULL,
+          profileImage VARCHAR(2083) DEFAULT NULL,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `);

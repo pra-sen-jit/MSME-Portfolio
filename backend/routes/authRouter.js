@@ -1,3 +1,4 @@
+//backend/routes/authRouter.js
 import express from "express";
 import { connectToDatabase } from "../lib/db.js";
 import bcrypt from "bcrypt";
@@ -5,6 +6,7 @@ import jwt from "jsonwebtoken";
 
 const router = express.Router();
 
+// Signup Route
 router.post("/signup", async (req, res) => {
   const {
     firstName,
@@ -15,113 +17,128 @@ router.post("/signup", async (req, res) => {
     confirmPassword,
   } = req.body;
   if (password !== confirmPassword) {
-    return res.status(400).json({ message: "Passwords do not match" });
+    return res
+      .status(400)
+      .json({ message: "Oops! The passwords don't match." });
   }
   try {
     const db = await connectToDatabase();
-    //check if Artisan (using artisanId) already exsisits
-    const [rows] = await db.query(
+    const [existing] = await db.query(
       "SELECT * FROM users WHERE artisanId = ? OR PhoneNumber = ?",
       [artisanId, PhoneNumber]
     );
-    if (rows.length > 0) {
-      return res.status(409).json({ message: "User already exists" });
+    if (existing.length) {
+      return res
+        .status(409)
+        .json({ message: "Artisan already has an account." });
     }
-
-    // Combine firstName and lastName to create username
     const username = `${firstName} ${lastName}`;
-    const hashPassword = await bcrypt.hash(password, 10);
-    // Insert the new user
-    const [insertResult] = await db.query(
+    const hashed = await bcrypt.hash(password, 10);
+    const [result] = await db.query(
       "INSERT INTO users (username, artisanId, PhoneNumber, password) VALUES (?, ?, ?, ?)",
-      [username, artisanId, PhoneNumber, hashPassword]
+      [username, artisanId, PhoneNumber, hashed]
     );
-    // insertResult.insertId is the newly created user's primary key
-
-    // Now fetch that newly inserted row to get the actual 'id'
-    const [newUserRows] = await db.query("SELECT * FROM users WHERE id = ?", [
-      insertResult.insertId,
+    const [[newUser]] = await db.query("SELECT * FROM users WHERE id = ?", [
+      result.insertId,
     ]);
-    const newUser = newUserRows[0];
-
-    // sign a token with the new user’s ID
-    const token = jwt.sign({ id: newUser.id }, process.env.JWT_KEY, {
-      expiresIn: "3h",
-    });
-
-    // Return everything you want (including artisanId from DB)
+    // Sign both id and artisanId into the token:
+    const token = jwt.sign(
+      { id: newUser.id, artisanId: newUser.artisanId },
+      process.env.JWT_KEY,
+      { expiresIn: "3h" }
+    );
     return res.status(201).json({
-      message: "User created successfully",
-      token: token,
+      message: "Welcome aboard!",
+      token,
       username: newUser.username,
       artisanId: newUser.artisanId,
     });
   } catch (err) {
-    return res.status(500).json({ message: err.message });
+    return res.status(500).json({ message: `Error: ${err.message}` });
   }
 });
 
+// Login Route
 router.post("/login", async (req, res) => {
   const { PhoneNumber, password } = req.body;
   try {
     const db = await connectToDatabase();
-    const [rows] = await db.query("SELECT * FROM users WHERE PhoneNumber = ?", [
-      PhoneNumber,
-    ]);
-    if (rows.length === 0) {
-      return res.status(404).json({ message: "user not existed" });
+    const [users] = await db.query(
+      "SELECT * FROM users WHERE PhoneNumber = ?",
+      [PhoneNumber]
+    );
+    if (!users.length) {
+      return res
+        .status(404)
+        .json({ message: "No account with that phone number." });
     }
-    const isMatch = await bcrypt.compare(password, rows[0].password);
-    if (!isMatch) {
-      return res.status(401).json({ message: "wrong password" });
+    const user = users[0];
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) {
+      return res.status(401).json({ message: "Incorrect password." });
     }
-    const token = jwt.sign({ id: rows[0].id }, process.env.JWT_KEY, {
-      expiresIn: "3h",
-    });
-
-    // Return both the token and the username for frontend use
+    // Sign both id and artisanId here too:
+    const token = jwt.sign(
+      { id: user.id, artisanId: user.artisanId },
+      process.env.JWT_KEY,
+      { expiresIn: "3h" }
+    );
     return res.status(200).json({
-      token: token,
-      username: rows[0].username,
-      artisanId: rows[0].artisanId,
+      message: "Login successful!",
+      token,
+      username: user.username,
+      artisanId: user.artisanId,
     });
   } catch (err) {
-    return res.status(500).json(err.message);
+    return res.status(500).json({ message: `Server error: ${err.message}` });
   }
 });
 
-// Middleware to verify token (for protected routes)
-const verifyToken = async (req, res, next) => {
+// Middleware for token verification (sets both userId & artisanId)
+export const verifyToken = (req, res, next) => {
+  const authHeader = req.headers["authorization"];
+  if (!authHeader)
+    return res.status(403).json({ message: "No token provided." });
+  const token = authHeader.split(" ")[1];
   try {
-    const authHeader = req.headers["authorization"];
-    if (!authHeader) {
-      return res.status(403).json({ message: "No Token Provided" });
-    }
-    const token = authHeader.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_KEY);
     req.userId = decoded.id;
+    req.artisanId = decoded.artisanId; // now we have artisanId
     next();
-  } catch (err) {
-    return res.status(500).json({ message: "Server error" });
+  } catch {
+    return res.status(401).json({ message: "Invalid or expired token." });
   }
 };
 
+// Keep only the PUT route for safe updates
+// In authRouter.js
+router.put("/profile", verifyToken, async (req, res) => {
+  try {
+    const db = await connectToDatabase();
+    await db.query(
+      "UPDATE users SET username = ?, specialization = ?, PhoneNumber = ? WHERE artisanId = ?",
+      [
+        req.body.username,
+        req.body.specialization,
+        req.body.PhoneNumber,
+        req.artisanId,
+      ]
+    );
+    res.status(200).json({
+      message: "Profile updated successfully",
+      updatedFields: {
+        username: req.body.username,
+        specialization: req.body.specialization,
+        contact: req.body.contact,
+      },
+    });
+  } catch (error) {
+    console.error("Profile update error:", error);
+    res.status(500).json({
+      message: "Database update failed",
+      error: error.message,
+    });
+  }
+});
+
 export default router;
-export { verifyToken };
-
-// // Middleware to verify token (for protected routes)
-// const verifyToken = async (req, res, next) => {
-//     try {
-//         const token = req.headers['authorization'].split(' ')[1];
-//         if(!token) {
-//             return res.status(403).json({message: "No Token Provided"})
-//         }
-//         const decoded = jwt.verify(token, process.env.JWT_KEY)
-//         req.userId = decoded.id;
-//         next()
-//     }  catch(err) {
-//         return res.status(500).json({message: "server error"})
-//     }
-// }
-
-// export default router;

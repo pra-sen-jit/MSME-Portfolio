@@ -3,8 +3,10 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import authRouter from "./routes/authRouter.js";
+import productRouter from "./routes/productRouter.js";
 import path from "path";
 import { fileURLToPath } from "url";
+import publicRouter from "./routes/publicRouter.js";
 
 dotenv.config();
 const app = express();
@@ -18,7 +20,8 @@ const __dirname = path.dirname(__filename);
 app.use(
   cors({
     origin: "*",
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
@@ -29,10 +32,13 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
 app.use("/auth", authRouter);
+app.use("/products", productRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello! Server is running!");
 });
+// Add before app.listen
+app.use("/public", publicRouter);
 
 // Start the server
 app.listen(port, () => {
