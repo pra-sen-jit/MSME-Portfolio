@@ -10,24 +10,53 @@ function ArtisanDatabase() {
   const artisans = Array.from({ length: 50 }, (_, i) => ({
     id: i + 1,
     name: `Artisan ${String.fromCharCode(65 + (i % 26))}${i > 25 ? Math.floor(i / 26) : ''}`,
-    specialization: ['Ornaments', 'Idolmaker', 'Metalworking', 'Utensils', 'Premium Products', 'Idol Making'][i % 6],
-    contact: i % 2 === 0 ? `user${i}@example.com +1 ${Math.floor(100 + Math.random() * 900)}-${Math.floor(100 + Math.random() * 900)}-${Math.floor(1000 + Math.random() * 9000)}` : `+1 ${Math.floor(100 + Math.random() * 900)}-${Math.floor(100 + Math.random() * 900)}-${Math.floor(1000 + Math.random() * 9000)}`
+    specialization: ['Ornaments', 'Idol Maker', 'Metalworking', 'Utensils', 'Premium Products'][i % 5],
+    contact: i % 2 === 0
+      ? `user${i}@example.com +1 ${Math.floor(100 + Math.random() * 900)}-${Math.floor(100 + Math.random() * 900)}-${Math.floor(1000 + Math.random() * 9000)}`
+      : `+1 ${Math.floor(100 + Math.random() * 900)}-${Math.floor(100 + Math.random() * 900)}-${Math.floor(1000 + Math.random() * 9000)}`
   }));
 
-  const specializations = ['All Specializations', 'Ornaments', 'Idolmaker', 'Metalworking', 'Utensils', 'Premium Products', 'Idol Making'];
+  const specializations = ['All Specializations', 'Ornaments', 'Idol Maker', 'Metalworking', 'Utensils', 'Premium Products'];
 
   const filteredArtisans = artisans.filter(artisan => {
-    const matchesSearch = artisan.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         artisan.specialization.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         artisan.contact.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesSpecialization = specializationFilter === 'All Specializations' || 
-                                artisan.specialization === specializationFilter;
-    
+    const matchesSearch = artisan.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      artisan.specialization.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      artisan.contact.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesSpecialization = specializationFilter === 'All Specializations' ||
+      artisan.specialization === specializationFilter;
+
     return matchesSearch && matchesSpecialization;
   });
 
-  // Get current artisans
+  // CSV Export Function
+  const exportToExcel = () => {
+    if (filteredArtisans.length === 0) {
+      alert("No artisans to export");
+      return;
+    }
+
+    const dataToExport = filteredArtisans.map(artisan => ({ ...artisan }));
+
+    const headers = Object.keys(dataToExport[0]).join(",");
+    const rows = dataToExport.map(row =>
+      Object.values(row).join(",")
+    );
+    const csvContent = [headers, ...rows].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute(
+      "download",
+      `artisans_${new Date().toISOString().split("T")[0]}.csv`
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Pagination
   const indexOfLastArtisan = currentPage * artisansPerPage;
   const indexOfFirstArtisan = indexOfLastArtisan - artisansPerPage;
   const currentArtisans = filteredArtisans.slice(indexOfFirstArtisan, indexOfLastArtisan);
@@ -37,16 +66,15 @@ function ArtisanDatabase() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h2 className="text-2xl font-semibold text-gray-800">Artisans Database</h2>
           <div className="mt-4 flex space-x-4">
-            <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
-              Export
-            </button>
-            <button className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
-              Add Artisan
+            <button
+              onClick={exportToExcel}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+            >
+              Export to CSV
             </button>
           </div>
         </div>
@@ -61,7 +89,7 @@ function ArtisanDatabase() {
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
-                setCurrentPage(1); // Reset to first page when searching
+                setCurrentPage(1);
               }}
             />
             <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
@@ -75,7 +103,7 @@ function ArtisanDatabase() {
             value={specializationFilter}
             onChange={(e) => {
               setSpecializationFilter(e.target.value);
-              setCurrentPage(1); // Reset to first page when filtering
+              setCurrentPage(1);
             }}
           >
             {specializations.map((spec) => (
@@ -84,16 +112,16 @@ function ArtisanDatabase() {
           </select>
         </div>
 
-        {/* Artisans Table */}
+        {/* Table */}
         <div className="bg-white shadow overflow-hidden rounded-lg mb-4">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Specialization</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact Details</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Specialization</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact Details</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -177,5 +205,3 @@ function ArtisanDatabase() {
     </div>
   );
 }
-
-export default ArtisanDatabase;
