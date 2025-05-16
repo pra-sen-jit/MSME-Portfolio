@@ -3,7 +3,6 @@ import React from "react";
 import AboutSection from "./AboutSection";
 import ProductsSection from "./ProductsSection";
 import CustomerFeedback from "./CustomerFeedback";
-import ContactSection from "./ContactSection";
 import TeamSection from "./TeamSection";
 import AnimatedPage from "./AnimatedPage";
 import { Link } from "react-router-dom";
@@ -88,13 +87,25 @@ function LandingPage() {
           <CustomerFeedback />
         </section>
 
-        {/* Contact Section */}
-        <section className="py-20 px-6 bg-gray-50 md:px-16">
-          <ContactSection
-            contactForm={contactForm}
-            handleContactFormChange={handleContactFormChange}
-            handleContactSubmit={handleContactSubmit}
-          />
+        {/* Map Section */}
+        <section className="py-20 px-6 bg-gradient-to-r from-indigo-100 via-purple-200 to-pink-100 md:px-16 flex justify-center items-center">
+          {/* <iframe
+            src="https://www.google.com/maps/d/u/0/edit?mid=1zDuyMkaVI85LaIlCXMyK5d48VWh0rxg&usp=sharing"
+            width="100%"
+            height="100%"
+            style={{ border: 0 }}
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          ></iframe> */}
+          <iframe
+            src="https://www.google.com/maps/d/u/0/embed?mid=1zDuyMkaVI85LaIlCXMyK5d48VWh0rxg&ehbc=2E312F"
+            width="640"
+            height="480"
+            style={{ border: 0 }}
+            allowFullScreen
+            loading="lazy"
+          ></iframe>
         </section>
 
         {/* Team Section */}
