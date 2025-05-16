@@ -1,10 +1,12 @@
 import { useState } from "react";
 import Swal from "sweetalert2";
 import { FaSpinner } from "react-icons/fa";
+import AnimatedPage from "../AnimatedPage";
 
 function ContactUs() {
   const [isContactSubmitting, setIsContactSubmitting] = useState(false);
   const [isFeedbackSubmitting, setIsFeedbackSubmitting] = useState(false);
+  const [feedbackRefresh, setFeedbackRefresh] = useState(false);
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const feedbackUrl = `${backendUrl}/api/feedback`;
 
@@ -82,14 +84,22 @@ function ContactUs() {
         }),
       });
 
-      if (!response.ok) throw new Error("Submission failed");
+      if (response.ok) {
+        Swal.fire({
+          title: "Thank You!",
+          text: "Feedback submitted successfully!",
+          icon: "success",
+        });
+        event.target.reset();
+        setFeedbackRefresh((prev) => !prev); // Trigger refresh
+      }
 
-      Swal.fire({
-        title: "Thank You!",
-        text: "Feedback submitted successfully!",
-        icon: "success",
-      });
-      event.target.reset();
+      // Swal.fire({
+      //   title: "Thank You!",
+      //   text: "Feedback submitted successfully!",
+      //   icon: "success",
+      // });
+      // event.target.reset();
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -102,125 +112,127 @@ function ContactUs() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-2xl mx-auto space-y-12">
-        {/* Contact Section */}
-        <section className="bg-white rounded-2xl shadow-lg p-8">
-          <div className="mb-8 text-center">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              Contact Us
-            </h2>
-            <p className="text-gray-600">We'd love to hear from you!</p>
-          </div>
-          <form onSubmit={handleContactSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <AnimatedPage>
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-2xl mx-auto space-y-12">
+          {/* Contact Section */}
+          <section className="bg-white rounded-2xl shadow-lg p-8">
+            <div className="mb-8 text-center">
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                Contact Us
+              </h2>
+              <p className="text-gray-600">We'd love to hear from you!</p>
+            </div>
+            <form onSubmit={handleContactSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    placeholder="John Doe"
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="john@example.com"
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Message
+                </label>
+                <textarea
+                  name="message"
+                  placeholder="Your message..."
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent h-40"
+                ></textarea>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isContactSubmitting}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {isContactSubmitting ? (
+                  <>
+                    <FaSpinner className="animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  "Send Message"
+                )}
+              </button>
+            </form>
+          </section>
+
+          {/* Feedback Section */}
+          <section className="bg-purple-50 rounded-2xl shadow-lg p-8">
+            <div className="mb-8 text-center">
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                Share Your Feedback
+              </h2>
+              <p className="text-gray-600">We value your opinions</p>
+            </div>
+            <form onSubmit={handleFeedbackSubmit} className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Name
                 </label>
                 <input
                   type="text"
-                  name="name"
-                  placeholder="John Doe"
+                  name="feedbackName"
+                  placeholder="Your name"
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
+                  Feedback
                 </label>
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="john@example.com"
+                <textarea
+                  name="feedbackMessage"
+                  placeholder="Your feedback..."
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent h-32"
+                ></textarea>
               </div>
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Message
-              </label>
-              <textarea
-                name="message"
-                placeholder="Your message..."
-                required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent h-40"
-              ></textarea>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isContactSubmitting}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-            >
-              {isContactSubmitting ? (
-                <>
-                  <FaSpinner className="animate-spin" />
-                  Sending...
-                </>
-              ) : (
-                "Send Message"
-              )}
-            </button>
-          </form>
-        </section>
-
-        {/* Feedback Section */}
-        <section className="bg-purple-50 rounded-2xl shadow-lg p-8">
-          <div className="mb-8 text-center">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              Share Your Feedback
-            </h2>
-            <p className="text-gray-600">We value your opinions</p>
-          </div>
-          <form onSubmit={handleFeedbackSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Name
-              </label>
-              <input
-                type="text"
-                name="feedbackName"
-                placeholder="Your name"
-                required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Feedback
-              </label>
-              <textarea
-                name="feedbackMessage"
-                placeholder="Your feedback..."
-                required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent h-32"
-              ></textarea>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isFeedbackSubmitting}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-            >
-              {isFeedbackSubmitting ? (
-                <>
-                  <FaSpinner className="animate-spin" />
-                  Submitting...
-                </>
-              ) : (
-                "Submit Feedback"
-              )}
-            </button>
-          </form>
-        </section>
+              <button
+                type="submit"
+                disabled={isFeedbackSubmitting}
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {isFeedbackSubmitting ? (
+                  <>
+                    <FaSpinner className="animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  "Submit Feedback"
+                )}
+              </button>
+            </form>
+          </section>
+        </div>
       </div>
-    </div>
+    </AnimatedPage>
   );
 }
 
