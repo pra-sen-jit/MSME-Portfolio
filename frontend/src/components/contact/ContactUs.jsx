@@ -5,6 +5,8 @@ import { FaSpinner } from "react-icons/fa";
 function ContactUs() {
   const [isContactSubmitting, setIsContactSubmitting] = useState(false);
   const [isFeedbackSubmitting, setIsFeedbackSubmitting] = useState(false);
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const feedbackUrl = `${backendUrl}/api/feedback`;
 
   const handleContactSubmit = async (event) => {
     event.preventDefault();
@@ -67,29 +69,20 @@ function ContactUs() {
     event.preventDefault();
     setIsFeedbackSubmitting(true);
 
-    const formData = new FormData(event.target);
-    const name = formData.get("feedbackName")?.trim();
-    const message = formData.get("feedbackMessage")?.trim();
-
-    if (!name || !message) {
-      Swal.fire({
-        icon: "warning",
-        title: "Validation Error",
-        text: "Please fill out both fields",
-      });
-      return;
-    }
-
-    // TODO: Add your feedback submission logic here
-    // This could be similar to the contact form submission
-    // but pointing to your Node.js backend API
-
     try {
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const formData = new FormData(event.target);
+      const response = await fetch(feedbackUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.get("feedbackName"),
+          message: formData.get("feedbackMessage"),
+        }),
+      });
 
-      // TODO: Replace with actual API call
-      // await fetch('/api/feedback', { method: 'POST', body: ... });
+      if (!response.ok) throw new Error("Submission failed");
 
       Swal.fire({
         title: "Thank You!",

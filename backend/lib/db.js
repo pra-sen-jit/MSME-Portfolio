@@ -67,6 +67,15 @@ export const connectToDatabase = async () => {
           FOREIGN KEY (artisanId) REFERENCES users(artisanId)
         )
       `);
+      // Create feedback table if not exists
+      await connection.query(`
+        CREATE TABLE IF NOT EXISTS feedback (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          name VARCHAR(255) NOT NULL,
+          message TEXT NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
     }
     return connection;
   } catch (err) {

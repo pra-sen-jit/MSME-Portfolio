@@ -1,65 +1,58 @@
-import React from "react";
+import { useState, useEffect } from "react";
+import { FaSpinner } from "react-icons/fa";
 import FeedbackCard from "./FeedbackCard";
 
 function CustomerFeedback() {
-  const feedbacks = [
-    {
-      id: 1,
-      avatar:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/f9993ad42e8d6eeed9d29505d0d776d273f3c850?placeholderIfAbsent=true",
-      name: "a",
-      time: "2 weeks ago",
-      feedback: "They have a wide variety of products.",
-    },
-    {
-      id: 2,
-      avatar:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/a23c8aaaffba9c7923aabbf68e832aaa3241d1c3?placeholderIfAbsent=true",
-      name: "b",
-      time: "2 weeks ago",
-      feedback: "I am very much satisfied with their product quality.",
-    },
-    {
-      id: 3,
-      avatar:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/2e539f14eceb7d6042e611d0f0fd3dabf23bf779?placeholderIfAbsent=true",
-      name: "c",
-      time: "3 weeks ago",
-      feedback:
-        "All the products are in affordable price range. Great experience.",
-    },
-    {
-      id: 4,
-      avatar:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/a23c8aaaffba9c7923aabbf68e832aaa3241d1c3?placeholderIfAbsent=true",
-      name: "d",
-      time: "1 week ago",
-      feedback: "One of the best silver products I purchased in recent days.",
-    },
-  ];
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFeedbacks = async () => {
+      try {
+        const response = await fetch("/api/feedback");
+        if (!response.ok) throw new Error("Failed to fetch");
+        const data = await response.json();
+        setFeedbacks(data);
+      } catch (error) {
+        console.error("Error fetching feedbacks:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchFeedbacks();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="text-center py-12">
+        <FaSpinner className="animate-spin inline-block text-2xl" />
+      </div>
+    );
+  }
 
   return (
-    <section
-      className="flex flex-col items-center w-full px-8 py-16 bg-white max-md:px-5 max-md:py-12"
-      aria-labelledby="feedback-heading"
-    >
-      <h2
-        id="feedback-heading"
-        className="text-4xl font-bold text-black mb-12 text-center"
-      >
+    <section className="py-20 px-6 md:px-16 overflow-hidden">
+      <h2 className="text-4xl font-bold text-center mb-12">
         Customer Feedback
       </h2>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 w-full max-w-7xl">
-        {feedbacks.map((feedback) => (
-          <FeedbackCard
-            key={feedback.id}
-            avatar={feedback.avatar}
-            name={feedback.name}
-            time={feedback.time}
-            feedback={feedback.feedback}
-          />
-        ))}
+      <div className="relative h-96 overflow-hidden">
+        <div className="animate-marquee absolute top-0 left-0 flex w-full space-x-8">
+          {[...feedbacks, ...feedbacks].map(
+            (
+              feedback,
+              idx // Double for seamless loop
+            ) => (
+              <div key={`${feedback.id}-${idx}`} className="flex-shrink-0 w-80">
+                <FeedbackCard
+                  name={feedback.name}
+                  time={new Date(feedback.created_at).toLocaleDateString()}
+                  feedback={feedback.message}
+                />
+              </div>
+            )
+          )}
+        </div>
       </div>
     </section>
   );
