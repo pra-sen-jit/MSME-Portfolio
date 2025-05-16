@@ -1,8 +1,8 @@
 import React from "react";
 import Swal from "sweetalert2";
 
-function App() {
-  const onSubmit = async (event) => {
+function ContactUs() {
+  const handleContactSubmit = async (event) => {
     event.preventDefault();
 
     const formData = new FormData(event.target);
@@ -56,50 +56,139 @@ function App() {
     }
   };
 
+  const handleFeedbackSubmit = async (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(event.target);
+    const name = formData.get("feedbackName")?.trim();
+    const message = formData.get("feedbackMessage")?.trim();
+
+    if (!name || !message) {
+      Swal.fire({
+        icon: "warning",
+        title: "Validation Error",
+        text: "Please fill out both fields",
+      });
+      return;
+    }
+
+    // TODO: Add your feedback submission logic here
+    // This could be similar to the contact form submission
+    // but pointing to your Node.js backend API
+
+    Swal.fire({
+      title: "Thank You!",
+      text: "Feedback submitted successfully!",
+      icon: "success",
+    });
+    event.target.reset();
+  };
+
   return (
-    <div className="max-w-md mx-auto mt-10 mb-10 p-4 border rounded shadow">
-      <form onSubmit={onSubmit} className="space-y-4">
-        <div>
-          <label className="block mb-1 font-medium">Name</label>
-          <input
-            type="text"
-            name="name"
-            placeholder="Enter your name"
-            required
-            className="w-full px-3 py-2 border rounded"
-          />
-        </div>
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-2xl mx-auto space-y-12">
+        {/* Contact Section */}
+        <section className="bg-white rounded-2xl shadow-lg p-8">
+          <div className="mb-8 text-center">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              Contact Us
+            </h2>
+            <p className="text-gray-600">We'd love to hear from you!</p>
+          </div>
+          <form onSubmit={handleContactSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="John Doe"
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="john@example.com"
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
 
-        <div>
-          <label className="block mb-1 font-medium">Email</label>
-          <input
-            type="email"
-            name="email"
-            placeholder="Enter your email"
-            required
-            className="w-full px-3 py-2 border rounded"
-          />
-        </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Message
+              </label>
+              <textarea
+                name="message"
+                placeholder="Your message..."
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent h-40"
+              ></textarea>
+            </div>
 
-        <div>
-          <label className="block mb-1 font-medium">Message</label>
-          <textarea
-            name="message"
-            placeholder="Enter your message"
-            required
-            className="w-full px-3 py-2 border rounded h-32"
-          ></textarea>
-        </div>
+            <button
+              type="submit"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200"
+            >
+              Send Message
+            </button>
+          </form>
+        </section>
 
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
-        >
-          Submit Form
-        </button>
-      </form>
+        {/* Feedback Section */}
+        <section className="bg-purple-50 rounded-2xl shadow-lg p-8">
+          <div className="mb-8 text-center">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              Share Your Feedback
+            </h2>
+            <p className="text-gray-600">We value your opinions</p>
+          </div>
+          <form onSubmit={handleFeedbackSubmit} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Name
+              </label>
+              <input
+                type="text"
+                name="feedbackName"
+                placeholder="Your name"
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Feedback
+              </label>
+              <textarea
+                name="feedbackMessage"
+                placeholder="Your feedback..."
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent h-32"
+              ></textarea>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200"
+            >
+              Submit Feedback
+            </button>
+          </form>
+        </section>
+      </div>
     </div>
   );
 }
 
-export default App;
+export default ContactUs;
