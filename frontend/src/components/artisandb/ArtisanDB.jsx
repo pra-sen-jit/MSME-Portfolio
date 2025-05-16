@@ -281,3 +281,5 @@ function ArtisanDatabase() {
     </div>
   );
 }
+
+export default ArtisanDatabase;
