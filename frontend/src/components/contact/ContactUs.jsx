@@ -1,9 +1,14 @@
-import React from "react";
+import { useState } from "react";
 import Swal from "sweetalert2";
+import { FaSpinner } from "react-icons/fa";
 
 function ContactUs() {
+  const [isContactSubmitting, setIsContactSubmitting] = useState(false);
+  const [isFeedbackSubmitting, setIsFeedbackSubmitting] = useState(false);
+
   const handleContactSubmit = async (event) => {
     event.preventDefault();
+    setIsContactSubmitting(true);
 
     const formData = new FormData(event.target);
 
@@ -53,11 +58,14 @@ function ContactUs() {
         title: "Oops...",
         text: "Something went wrong. Please try again.",
       });
+    } finally {
+      setIsContactSubmitting(false);
     }
   };
 
   const handleFeedbackSubmit = async (event) => {
     event.preventDefault();
+    setIsFeedbackSubmitting(true);
 
     const formData = new FormData(event.target);
     const name = formData.get("feedbackName")?.trim();
@@ -76,12 +84,28 @@ function ContactUs() {
     // This could be similar to the contact form submission
     // but pointing to your Node.js backend API
 
-    Swal.fire({
-      title: "Thank You!",
-      text: "Feedback submitted successfully!",
-      icon: "success",
-    });
-    event.target.reset();
+    try {
+      // Simulate API call delay
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // TODO: Replace with actual API call
+      // await fetch('/api/feedback', { method: 'POST', body: ... });
+
+      Swal.fire({
+        title: "Thank You!",
+        text: "Feedback submitted successfully!",
+        icon: "success",
+      });
+      event.target.reset();
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Submission Failed",
+        text: "Failed to submit feedback. Please try again.",
+      });
+    } finally {
+      setIsFeedbackSubmitting(false);
+    }
   };
 
   return (
@@ -137,9 +161,17 @@ function ContactUs() {
 
             <button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200"
+              disabled={isContactSubmitting}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              Send Message
+              {isContactSubmitting ? (
+                <>
+                  <FaSpinner className="animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                "Send Message"
+              )}
             </button>
           </form>
         </section>
@@ -180,9 +212,17 @@ function ContactUs() {
 
             <button
               type="submit"
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200"
+              disabled={isFeedbackSubmitting}
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              Submit Feedback
+              {isFeedbackSubmitting ? (
+                <>
+                  <FaSpinner className="animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                "Submit Feedback"
+              )}
             </button>
           </form>
         </section>
