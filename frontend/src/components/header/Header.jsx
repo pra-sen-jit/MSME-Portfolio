@@ -11,7 +11,7 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Update username from localStorage on location change (or you can use a global auth context)
+    // Update username from localStorage on location change
     const storedUsername = localStorage.getItem("username");
     setUsername(storedUsername || "");
   }, [location]);
@@ -39,16 +39,15 @@ const Navbar = () => {
     { label: "ARTISAN", path: "/artisandb" },
     { label: "CONTACT US", path: "/contact" },
   ];
-  //Logout function : clear localStorage and navigate to login page
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("username");
-    setUsername(""); // Use state setter; do not reassign directl
+    setUsername("");
     setDropdownOpen(false);
     navigate("/");
   };
-
-  // Toggle dropdown menu
+  
   const toggleDropdown = () => setDropdownOpen((prev) => !prev);
 
   return (
@@ -59,31 +58,13 @@ const Navbar = () => {
           showHeader ? "translate-y-0" : "-translate-y-full"
         }`}
       >
-        {/* Search */}
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          <div className="relative group flex-1 md:flex-none">
-            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <svg
-                className="w-5 h-5 text-gray-400 group-hover:text-gray-700 transition-colors duration-200"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                ></path>
-              </svg>
-            </div>
-            <input
-              type="text"
-              placeholder="What are you looking for?"
-              className="pl-10 pr-4 py-2 w-full md:w-60 lg:w-72 text-sm bg-gray-50 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-gray-700 focus:border-gray-700 transition-all duration-200"
-            />
-          </div>
+        {/* Logo Image - Replaced search bar */}
+        <div className="flex items-center">
+          <img 
+            src="https://cdn.builder.io/api/v1/image/assets/TEMP/c9d83d3761fb075f8f82ce5308d9f341c9724160?placeholderIfAbsent=true" 
+            alt="Magrahat Logo"
+            className="h-10 w-auto" 
+          />
         </div>
 
         {/* Title */}
@@ -153,38 +134,6 @@ const Navbar = () => {
               </svg>
             </Link>
           )}
-          {/** Conditionally render username or login icon */}
-          {/* {username ? (
-            <Link
-              to="/artisan"
-              aria-label="User account"
-              className="relative group text-gray-700 font-semibold"
-            >
-              {username}
-            </Link>
-          ) : (
-            <Link
-              to="/login"
-              aria-label="User account"
-              className="relative group"
-            >
-              <div className="absolute inset-0 bg-gray-800 rounded-full scale-0 group-hover:scale-100 transition-transform duration-300 opacity-20"></div>
-              <svg
-                className="w-6 h-6 md:w-7 md:h-7 text-gray-700 group-hover:text-black transition-colors duration-200"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                ></path>
-              </svg>
-            </Link>
-          )} */}
 
           {/* Shopping Cart Icon */}
           <button aria-label="Shopping cart" className="relative group">
@@ -212,7 +161,7 @@ const Navbar = () => {
 
       {/* Navigation Menu - Desktop */}
       <nav
-        className={` bg-gradient-to-r from-black via-gray-900 to-black text-white shadow-lg transition-transform duration-500 ease-in-out ${
+        className={`bg-gradient-to-r from-black via-gray-900 to-black text-white shadow-lg transition-transform duration-500 ease-in-out ${
           showHeader ? "" : "transform -translate-y-full"
         }`}
       >
