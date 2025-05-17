@@ -20,7 +20,7 @@ const __dirname = path.dirname(__filename);
 //Middleware
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin:"*" ,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
