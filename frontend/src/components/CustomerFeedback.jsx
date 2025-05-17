@@ -26,15 +26,13 @@ function CustomerFeedback() {
 
   useEffect(() => {
     fetchFeedbacks();
-
-    // Refresh every 30 seconds to get new feedbacks
     const interval = setInterval(fetchFeedbacks, 30000);
     return () => clearInterval(interval);
   }, []);
 
   if (isLoading) {
     return (
-      <div className="text-center py-12">
+      <div className="text-center py-4">
         <FaSpinner className="animate-spin inline-block text-2xl text-blue-600" />
       </div>
     );
@@ -42,7 +40,7 @@ function CustomerFeedback() {
 
   if (error) {
     return (
-      <div className="text-center py-12 text-red-600">
+      <div className="text-center py-4 text-red-600">
         Error loading feedbacks: {error}
       </div>
     );
@@ -50,20 +48,18 @@ function CustomerFeedback() {
 
   if (feedbacks.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-600">
+      <div className="text-center py-4 text-gray-600">
         No feedbacks available yet. Be the first to share your thoughts!
       </div>
     );
   }
 
   return (
-    <section className="py-10 px-4 md:px-8 overflow-hidden bg-gray-50">
-      <h2 className="text-4xl font-bold text-center mb-12">
-        Customer Feedback
-      </h2>
+    <section className="py-6 px-4 md:px-8 bg-gray-50">
+      <h2 className="text-3xl font-bold text-center mb-6">Customer Feedback</h2>
 
-      <div className="relative h-96 overflow-hidden">
-        <div className="animate-marquee absolute top-0 left-0 flex w-full space-x-8">
+      <div className="overflow-hidden">
+        <div className="flex space-x-6 animate-marquee">
           {[...feedbacks, ...feedbacks].map((feedback, idx) => (
             <div
               key={`${feedback.id}-${idx}`}
@@ -71,14 +67,11 @@ function CustomerFeedback() {
             >
               <FeedbackCard
                 name={feedback.name}
-                time={new Date(feedback.created_at).toLocaleDateString(
-                  "en-US",
-                  {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  }
-                )}
+                time={new Date(feedback.created_at).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })}
                 feedback={feedback.message}
               />
             </div>
