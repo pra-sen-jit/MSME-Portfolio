@@ -31,7 +31,6 @@ function ProductsSection() {
       title: "Silver Bracelet",
       artisan: "Mention Artisan name",
     },
-    // Duplicate items to create seamless loop
     {
       id: 5,
       image:
@@ -82,7 +81,7 @@ function ProductsSection() {
       if (!isPaused) {
         setScrollPosition((prev) => {
           const newPosition = prev + (scrollSpeed * delta) / 16;
-          
+
           // Reset position when scrolled all items
           if (newPosition >= slider.scrollWidth / 2) {
             return 0;
@@ -103,12 +102,12 @@ function ProductsSection() {
 
   return (
     <section
-      className="flex flex-col items-center justify-center w-full px-8 py-16 bg-white max-md:px-4 max-md:py-10 overflow-hidden"
+      className="flex flex-col items-center justify-center w-full px-6 py-6 bg-white overflow-hidden"
       aria-labelledby="products-heading"
     >
       <h2
         id="products-heading"
-        className="text-4xl font-bold text-center text-black mb-14 max-md:text-3xl"
+        className="text-4xl font-bold text-center text-black mb-10 max-md:text-3xl"
       >
         Featured Products
       </h2>
@@ -123,7 +122,7 @@ function ProductsSection() {
           className="flex gap-10 w-max"
           style={{
             transform: `translateX(-${scrollPosition}px)`,
-            transition: isPaused ? 'transform 0.3s ease' : 'none',
+            transition: isPaused ? "transform 0.3s ease" : "none",
           }}
         >
           {products.map((product) => (

@@ -10,8 +10,8 @@ function ProductCard({ image, title, artisan }) {
           className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
         />
       </div>
-      <div className="flex flex-col items-center p-6 text-center">
-        <h3 className="text-2xl font-semibold text-black mb-2">{title}</h3>
+      <div className="flex flex-col items-center p-4 text-center">
+        <h3 className="text-xl font-semibold text-black mb-1">{title}</h3>
         <p className="text-gray-600 text-sm">{artisan}</p>
       </div>
     </div>
