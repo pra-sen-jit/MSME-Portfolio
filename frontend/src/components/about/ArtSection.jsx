@@ -3,7 +3,7 @@ import React from "react";
 function ArtSection() {
   return (
     <section
-      className="bg-gradient-to-tr from-gray-50 via-gray-100 to-blue-50 py-12 sm:py-16 md:py-20 lg:py-24 px-4 sm:px-6 lg:px-8"
+      className="bg-gradient-to-tr from-gray-50 via-gray-100 to-blue-50 py-8 sm:py-16 md:py-20 lg:py-24 px-4 sm:px-6 lg:px-8"
       aria-labelledby="art-heading"
     >
       <div className="max-w-7xl mx-auto">

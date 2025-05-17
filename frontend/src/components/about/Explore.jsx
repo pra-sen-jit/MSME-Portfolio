@@ -19,12 +19,12 @@ function Explore() {
         </section>
 
         {/* Main Content Sections */}
-        <main className="flex flex-col gap-24 py-20 px-6 md:px-12 lg:px-20 bg-white max-w-7xl mx-auto">
+        <main className="flex flex-col gap-8 py-6 px-6 md:px-12 lg:px-20 bg-white max-w-7xl mx-auto">
           <section className="max-w-6xl mx-auto w-full">
             <HistorySection />
           </section>
 
-          <section className="max-w-6xl mx-auto w-full">
+          <section className="max-w-6xl w-full">
             <ArtSection />
           </section>
 

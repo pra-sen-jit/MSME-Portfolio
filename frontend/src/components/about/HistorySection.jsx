@@ -3,16 +3,17 @@ import React from "react";
 function HistorySection() {
   return (
     <section
-      className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16"
+      className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-16"
       aria-labelledby="history-heading"
     >
       <div className="max-w-5xl mx-auto">
         <h2
-          id="history-heading"
-          className="text-2xl sm:text-3xl font-bold text-black mb-8"
-        >
-          History & Heritage
-        </h2>
+            id="art-heading"
+            className="text-3xl sm:text-3xl font-bold text-center text-gray-900 relative"
+          >
+            History & Heritage
+            <span className="absolute -bottom-2 sm:-bottom-3 left-1/2 transform -translate-x-1/2 w-16 sm:w-20 md:w-24 h-1 bg-blue-600 rounded-full"></span>
+          </h2>
 
         <div className="flex flex-col md:flex-row gap-8 md:gap-10 items-center">
           <div className="w-full md:w-3/5">
