@@ -21,7 +21,7 @@ function Footer() {
           <ul className="space-y-3 text-neutral-400">
             <li>
               <a
-                href="#about"
+                href="about"
                 className="hover:text-white transition-colors duration-200"
               >
                 About
@@ -29,7 +29,7 @@ function Footer() {
             </li>
             <li>
               <a
-                href="#products"
+                href="product"
                 className="hover:text-white transition-colors duration-200"
               >
                 Products
@@ -37,10 +37,18 @@ function Footer() {
             </li>
             <li>
               <a
-                href="#artisans"
+                href="artisandb"
                 className="hover:text-white transition-colors duration-200"
               >
                 Artisans
+              </a>
+            </li>
+            <li>
+              <a
+                href="contact"
+                className="hover:text-white transition-colors duration-200"
+              >
+                Contact Us
               </a>
             </li>
           </ul>
