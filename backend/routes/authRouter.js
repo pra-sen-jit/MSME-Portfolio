@@ -94,20 +94,24 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// Middleware for token verification (sets both userId & artisanId)
+// Ensure verifyToken middleware properly handles JWT errors
 export const verifyToken = (req, res, next) => {
-  const authHeader = req.headers["authorization"];
-  if (!authHeader)
-    return res.status(403).json({ message: "No token provided." });
+  const authHeader = req.headers['authorization'];
+  if (!authHeader) return res.status(403).json({ message: "No token provided." });
+  
   const token = authHeader.split(" ")[1];
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_KEY);
+  jwt.verify(token, process.env.JWT_KEY, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ 
+        message: err.name === 'TokenExpiredError' 
+          ? "Token expired" 
+          : "Invalid token"
+      });
+    }
     req.userId = decoded.id;
-    req.artisanId = decoded.artisanId; // now we have artisanId
+    req.artisanId = decoded.artisanId;
     next();
-  } catch {
-    return res.status(401).json({ message: "Invalid or expired token." });
-  }
+  });
 };
 
 // Keep only the PUT route for safe updates

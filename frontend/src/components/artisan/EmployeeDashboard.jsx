@@ -548,9 +548,36 @@ export default function EmployeeDashboard() {
   const [drafts, setDrafts] = useState([{ id: 'initial-draft' }]); // Default draft
   // const [showEmptySlot, setShowEmptySlot] = useState(false);
 
+  // In EmployeeDashboard.jsx - Add this useEffect
+  useEffect(() => {
+  // Token validation on initial load
+  const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = '/login';
+      return;
+    }
+
+  try {
+    const decoded = JSON.parse(atob(token.split('.')[1]));
+    const expirationTime = decoded.exp * 1000;
+    if (Date.now() > expirationTime) {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+  } catch (error) {
+    localStorage.removeItem('token');
+    window.location.href = '/login';
+  }
+
+  fetchProducts();
+}, []); // Empty dependency array to run only once on mount
   const fetchProducts = async () => {
     try {
       const token = localStorage.getItem('token');
+      if (!token) {
+      window.location.href = '/login';
+      return;
+    }
       const decoded = JSON.parse(atob(token.split('.')[1]));
       const res = await axios.get(`${productUrl}/${decoded.artisanId}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -559,7 +586,14 @@ export default function EmployeeDashboard() {
       setDrafts(prev => res.data.length === 0 ? [{ id: 'initial-draft' }] : []);
     } catch (error) {
       console.error('Fetch error:', error);
-      alert('Failed to load products');
+     // Handle network errors and all 4xx/5xx statuses
+    if (error.response?.status === 401 || error.message === "Network Error") {
+      localStorage.removeItem('token');
+      alert('Session expired or invalid. Please log in again.');
+      window.location.href = '/login';
+    } else {
+      alert(`Failed to load products: ${error.response?.data?.message || error.message}`);
+    }
     }
   };
   useEffect(() => {

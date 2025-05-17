@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 // import Sidebar from "./Sidebar";
@@ -380,20 +381,20 @@ function ProductCard({ product, color }) {
         />
         
         {/* Hover Overlay */}
-        <div 
-          className="absolute inset-0 bg-black/10 flex items-center justify-center transition-opacity duration-300"
-          style={{ opacity: isHovered ? 1 : 0 }}
-        >
-          <button
-            className="px-4 py-2 bg-white rounded-md shadow-md flex items-center gap-2"
-            style={{ color }}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"/>
-            </svg>
-            Add to Cart
-          </button>
-        </div>
+        <div className="absolute inset-0 bg-black/10 flex items-center justify-center transition-opacity duration-300"
+  style={{ opacity: isHovered ? 1 : 0 }}>
+  <Link 
+    to="/ViewDetails" // Update this path according to your routing
+    className="px-4 py-2 bg-white rounded-md shadow-md flex items-center gap-2"
+    style={{ color }}
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+      <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+      <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
+    </svg>
+    View Details
+  </Link>
+</div>
       </div>
 
       {/* Product Details */}
@@ -402,17 +403,19 @@ function ProductCard({ product, color }) {
         <p className="text-gray-600 text-sm line-clamp-3 mb-4">{product.productDescription}</p>
         
         <div className="flex justify-between items-center">
-          <span 
-            className="text-xl font-bold"
-            style={{ color }}
-          >
+          <span className="text-xl font-bold" style={{ color }}>
             ₹{Number(product.productPrice).toLocaleString('en-IN')}
           </span>
-          {product.listed_at && (
-            <span className="text-xs text-gray-500">
-              Listed: {new Date(product.listed_at).toLocaleDateString()}
-            </span>
-          )}
+          <div className="flex flex-col items-end gap-2">
+            <button className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1 rounded-md text-sm font-medium hover:from-blue-600 hover:to-blue-700 transition-colors">
+              Add to Cart
+            </button>
+            {product.listed_at && (
+              <span className="text-xs text-gray-500">
+                Listed: {new Date(product.listed_at).toLocaleDateString()}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -516,12 +519,12 @@ function ProductsPage() {
               </button>
 
               {/* Refresh Button */}
-              <button 
+              {/* <button 
                 onClick={() => setRefreshTrigger(prev => prev + 1)}
                 className="ml-4 bg-indigo-100 text-indigo-600 px-3 py-1 rounded-lg mt-4"
               >
                 Refresh Listings
-              </button>
+              </button> */}
             </div>
           </div>
 
