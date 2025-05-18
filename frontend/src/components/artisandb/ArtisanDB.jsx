@@ -1,38 +1,17 @@
-import { useState } from "react";
-import AnimatedPage from "../AnimatedPage";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function ArtisanDatabase() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [specializationFilter, setSpecializationFilter] = useState(
-    "All Specializations"
-  );
+  const [specializationFilter, setSpecializationFilter] = useState("All Specializations");
   const [currentPage, setCurrentPage] = useState(1);
+  const [artisans, setArtisans] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const artisansPerPage = 10;
-
-  // Sample artisan data (expanded to 50 items for pagination demo)
-  const artisans = Array.from({ length: 50 }, (_, i) => ({
-    id: i + 1,
-    name: `Artisan ${String.fromCharCode(65 + (i % 26))}${
-      i > 25 ? Math.floor(i / 26) : ""
-    }`,
-    specialization: [
-      "Ornaments",
-      "Idol Maker",
-      "Metalworking",
-      "Utensils",
-      "Premium Products",
-    ][i % 5],
-    contact:
-      i % 2 === 0
-        ? `user${i}@example.com +1 ${Math.floor(
-            100 + Math.random() * 900
-          )}-${Math.floor(100 + Math.random() * 900)}-${Math.floor(
-            1000 + Math.random() * 9000
-          )}`
-        : `+1 ${Math.floor(100 + Math.random() * 900)}-${Math.floor(
-            100 + Math.random() * 900
-          )}-${Math.floor(1000 + Math.random() * 9000)}`,
-  }));
+  const navigate = useNavigate();
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   const specializations = [
     "All Specializations",
@@ -43,15 +22,50 @@ function ArtisanDatabase() {
     "Premium Products",
   ];
 
+  useEffect(() => {
+    const fetchArtisans = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          navigate("/login");
+          return;
+        }
+
+        const response = await axios.get(`${backendUrl}/api/users/artisans`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (response.data.success) {
+          setArtisans(response.data.data);
+        } else {
+          setError("Failed to fetch artisans");
+        }
+      } catch (err) {
+        console.error("Error fetching artisans:", err);
+        setError(err.response?.data?.message || "Failed to fetch artisans");
+        if (err.response?.status === 401) {
+          navigate("/login");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchArtisans();
+  }, [backendUrl, navigate]);
+
   const filteredArtisans = artisans.filter((artisan) => {
     const matchesSearch =
       artisan.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      artisan.specialization.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      artisan.contact.toLowerCase().includes(searchTerm.toLowerCase());
+      (artisan.specialization && artisan.specialization.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      artisan.contact.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      artisan.artisanId.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesSpecialization =
       specializationFilter === "All Specializations" ||
-      artisan.specialization === specializationFilter;
+      (artisan.specialization && artisan.specialization === specializationFilter);
 
     return matchesSearch && matchesSpecialization;
   });
@@ -63,7 +77,13 @@ function ArtisanDatabase() {
       return;
     }
 
-    const dataToExport = filteredArtisans.map((artisan) => ({ ...artisan }));
+    const dataToExport = filteredArtisans.map((artisan) => ({
+      ID: artisan.id,
+      Name: artisan.name,
+      ArtisanID: artisan.artisanId,
+      Specialization: artisan.specialization,
+      Contact: artisan.contact
+    }));
 
     const headers = Object.keys(dataToExport[0]).join(",");
     const rows = dataToExport.map((row) => Object.values(row).join(","));
@@ -92,125 +112,137 @@ function ArtisanDatabase() {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  return (
-    <AnimatedPage>
-      <div className="min-h-screen bg-gray-50">
-        <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-800">
-              Artisans Database
-            </h2>
-            <div className="mt-4 flex space-x-4">
-              <button
-                onClick={exportToExcel}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-              >
-                Export to CSV
-              </button>
-            </div>
-          </div>
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-xl font-semibold">Loading artisans...</div>
+      </div>
+    );
+  }
 
-          {/* Search and Filter */}
-          <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="relative flex-1">
-              <input
-                type="text"
-                placeholder="Search artisans..."
-                className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setCurrentPage(1);
-                }}
-              />
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg
-                  className="h-5 w-5 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </div>
-            </div>
-            <select
-              className="px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-              value={specializationFilter}
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-xl font-semibold text-red-600">{error}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mb-8">
+          <h2 className="text-2xl font-semibold text-gray-800">
+            Artisans Database
+          </h2>
+          <div className="mt-4 flex space-x-4">
+            <button
+              onClick={exportToExcel}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+              disabled={filteredArtisans.length === 0}
+            >
+              Export to CSV
+            </button>
+          </div>
+        </div>
+
+        {/* Search and Filter */}
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="relative flex-1">
+            <input
+              type="text"
+              placeholder="Search by name, specialization, contact or artisan ID..."
+              className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              value={searchTerm}
               onChange={(e) => {
-                setSpecializationFilter(e.target.value);
+                setSearchTerm(e.target.value);
                 setCurrentPage(1);
               }}
-            >
-              {specializations.map((spec) => (
-                <option key={spec} value={spec}>
-                  {spec}
-                </option>
-              ))}
-            </select>
+            />
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <svg
+                className="h-5 w-5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
           </div>
+          <select
+            className="px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+            value={specializationFilter}
+            onChange={(e) => {
+              setSpecializationFilter(e.target.value);
+              setCurrentPage(1);
+            }}
+          >
+            {specializations.map((spec) => (
+              <option key={spec} value={spec}>
+                {spec}
+              </option>
+            ))}
+          </select>
+        </div>
 
-          {/* Table */}
-          <div className="bg-white shadow overflow-hidden rounded-lg mb-4">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Specialization
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Contact Details
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {currentArtisans.length > 0 ? (
-                    currentArtisans.map((artisan) => (
-                      <tr key={artisan.id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {artisan.name}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {artisan.specialization}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {artisan.contact}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          <button className="text-green-600 hover:text-green-900 mr-3">
-                            ☑
-                          </button>
-                          <button className="text-red-600 hover:text-red-900">
-                            ☐
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan="4"
-                        className="px-6 py-4 text-center text-sm text-gray-500"
-                      >
-                        No artisans found matching your criteria
+        {/* Table */}
+        <div className="bg-white shadow overflow-hidden rounded-lg mb-4">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Artisan ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Specialization
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Contact Details
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {currentArtisans.length > 0 ? (
+                  currentArtisans.map((artisan) => (
+                    <tr key={artisan.id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {artisan.name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {artisan.artisanId}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {artisan.specialization || "Not specified"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {artisan.contact}
                       </td>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan="4"
+                      className="px-6 py-4 text-center text-sm text-gray-500"
+                    >
+                      No artisans found matching your criteria
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          {filteredArtisans.length > 0 && (
             <div className="px-6 py-3 bg-gray-50 flex items-center justify-between">
               <div className="text-sm text-gray-500">
                 Showing {indexOfFirstArtisan + 1} to{" "}
@@ -278,10 +310,10 @@ function ArtisanDatabase() {
                 </button>
               </div>
             </div>
-          </div>
-        </main>
-      </div>
-    </AnimatedPage>
+          )}
+        </div>
+      </main>
+    </div>
   );
 }
 
