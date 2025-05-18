@@ -50,7 +50,7 @@ app.use("/api/public/products", individualProductRouter);
 app.use("/api/feedback", feedbackRouter);
 app.use("/public", publicRouter);
 app.use("/api/featured", featuredProductsRouter);
-app.use("/api/users", verifyToken, userRouter);
+app.use("/api/users", userRouter); // Made public by removing verifyToken
 
 // Health check endpoint
 app.get("/health", (req, res) => {
@@ -104,7 +104,7 @@ app.get("/", (req, res) => {
           <div class="routes">
             <h2>Available Routes:</h2>
             <div class="route">
-              <strong>GET /api/users/artisans</strong> - Get all artisans data
+              <strong>GET /api/users/artisans</strong> - Get all artisans data (public)
             </div>
             <div class="route">
               <strong>POST /auth/login</strong> - User login
@@ -144,7 +144,7 @@ app.use((req, res) => {
 });
 
 // Start the server
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });

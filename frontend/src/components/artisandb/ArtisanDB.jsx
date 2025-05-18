@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 
 function ArtisanDatabase() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -10,7 +9,6 @@ function ArtisanDatabase() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const artisansPerPage = 10;
-  const navigate = useNavigate();
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   const specializations = [
@@ -25,18 +23,8 @@ function ArtisanDatabase() {
   useEffect(() => {
     const fetchArtisans = async () => {
       try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          navigate("/login");
-          return;
-        }
-
-        const response = await axios.get(`${backendUrl}/api/users/artisans`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
+        const response = await axios.get(`${backendUrl}/api/users/artisans`);
+        
         if (response.data.success) {
           setArtisans(response.data.data);
         } else {
@@ -45,16 +33,13 @@ function ArtisanDatabase() {
       } catch (err) {
         console.error("Error fetching artisans:", err);
         setError(err.response?.data?.message || "Failed to fetch artisans");
-        if (err.response?.status === 401) {
-          navigate("/login");
-        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchArtisans();
-  }, [backendUrl, navigate]);
+  }, [backendUrl]);
 
   const filteredArtisans = artisans.filter((artisan) => {
     const matchesSearch =
@@ -70,7 +55,6 @@ function ArtisanDatabase() {
     return matchesSearch && matchesSpecialization;
   });
 
-  // CSV Export Function
   const exportToExcel = () => {
     if (filteredArtisans.length === 0) {
       alert("No artisans to export");
@@ -101,7 +85,6 @@ function ArtisanDatabase() {
     document.body.removeChild(link);
   };
 
-  // Pagination
   const indexOfLastArtisan = currentPage * artisansPerPage;
   const indexOfFirstArtisan = indexOfLastArtisan - artisansPerPage;
   const currentArtisans = filteredArtisans.slice(
@@ -146,7 +129,6 @@ function ArtisanDatabase() {
           </div>
         </div>
 
-        {/* Search and Filter */}
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="relative flex-1">
             <input
@@ -191,7 +173,6 @@ function ArtisanDatabase() {
           </select>
         </div>
 
-        {/* Table */}
         <div className="bg-white shadow overflow-hidden rounded-lg mb-4">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
