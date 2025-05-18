@@ -14,21 +14,86 @@ export default function SignUpPage() {
     agreeToTerms: false,
   });
   const [error, setError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const navigate = useNavigate();
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const signupurl = `${backendUrl}/auth/signup`;
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+    
+    if (name === "PhoneNumber") {
+      // Only allow numbers and limit to 10 digits
+      const numericValue = value.replace(/\D/g, '').slice(0, 10);
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: numericValue,
+      }));
+      
+      // Clear phone error when user is typing
+      if (phoneError) setPhoneError("");
+    } else {
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: type === "checkbox" ? checked : value,
+      }));
+    }
+
+    // Validate password as user types
+    if (name === "password") {
+      validatePassword(value);
+    }
+  };
+
+  const validatePhoneNumber = () => {
+    if (formData.PhoneNumber.length !== 10) {
+      setPhoneError("Phone number must be exactly 10 digits");
+      return false;
+    }
+    return true;
+  };
+
+  const validatePassword = (password) => {
+    const errors = [];
+    
+    if (password.length < 6) {
+      errors.push("Password must be at least 6 characters");
+    }
+    if (!/[A-Z]/.test(password)) {
+      errors.push("Password must contain at least one uppercase letter");
+    }
+    if (!/[a-z]/.test(password)) {
+      errors.push("Password must contain at least one lowercase letter");
+    }
+    if (!/\d/.test(password)) {
+      errors.push("Password must contain at least one digit");
+    }
+
+    setPasswordError(errors.join(". "));
+    return errors.length === 0;
+  };
+
+  const validateForm = () => {
+    const isPhoneValid = validatePhoneNumber();
+    const isPasswordValid = validatePassword(formData.password);
+    
+    // Also check if passwords match
+    if (formData.password !== formData.confirmPassword) {
+      setPasswordError(prev => prev ? `${prev}. Passwords do not match` : "Passwords do not match");
+      return false;
+    }
+
+    return isPhoneValid && isPasswordValid;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    
+    // Validate form before submission
+    if (!validateForm()) return;
+    
     try {
       const response = await axios.post(signupurl, formData);
       if (response.status === 201) {
@@ -98,18 +163,20 @@ export default function SignUpPage() {
 
           <div className="mb-4">
             <label htmlFor="PhoneNumber" className="block text-gray-700 mb-2">
-              PhoneNumber
+              Phone Number
             </label>
             <input
               id="PhoneNumber"
               name="PhoneNumber"
-              type="text"
+              type="tel"
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter your phone number"
+              placeholder="Enter 10-digit phone number"
               value={formData.PhoneNumber}
               onChange={handleChange}
+              onBlur={validatePhoneNumber}
               required
             />
+            {phoneError && <p className="mt-1 text-sm text-red-600">{phoneError}</p>}
           </div>
 
           <div className="mb-4">
@@ -142,6 +209,28 @@ export default function SignUpPage() {
               onChange={handleChange}
               required
             />
+            {passwordError && (
+              <p className="mt-1 text-sm text-red-600">
+                {passwordError}
+              </p>
+            )}
+            <div className="mt-1 text-xs text-gray-500">
+              Password must contain:
+              <ul className="list-disc pl-5">
+                <li className={formData.password.length >= 6 ? "text-green-500" : ""}>
+                  At least 6 characters
+                </li>
+                <li className={/[A-Z]/.test(formData.password) ? "text-green-500" : ""}>
+                  At least one uppercase letter
+                </li>
+                <li className={/[a-z]/.test(formData.password) ? "text-green-500" : ""}>
+                  At least one lowercase letter
+                </li>
+                <li className={/\d/.test(formData.password) ? "text-green-500" : ""}>
+                  At least one digit
+                </li>
+              </ul>
+            </div>
           </div>
 
           <div className="mb-6">
