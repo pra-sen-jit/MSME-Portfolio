@@ -29,16 +29,28 @@ router.get("/featured-products", async (req, res) => {
       LIMIT 5
     `);
     
+    // If no products found, return empty array
+    if (!products || products.length === 0) {
+      return res.json({
+        success: true,
+        products: [],
+        message: "No featured products available at the moment"
+      });
+    }
+    
     // Format the response
     const formattedProducts = products.map(product => ({
       ...product,
       // Use the first available image
       mainImage: product.image1 || product.image2 || product.image3 || 
-                product.image4 || product.image5 || '/default-product-image.jpg'
+                product.image4 || product.image5 || '/default-product-image.jpg',
+      // Ensure artisanName has a fallback
+      artisanName: product.artisanName || 'Unknown Artisan'
     }));
 
     // If we have less than 4 products, duplicate some to make the slider work
-    if (formattedProducts.length < 4) {
+    // Only do this if we have at least 1 product
+    if (formattedProducts.length > 0 && formattedProducts.length < 4) {
       const needed = 4 - formattedProducts.length;
       for (let i = 0; i < needed; i++) {
         formattedProducts.push(formattedProducts[i % formattedProducts.length]);

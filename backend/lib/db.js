@@ -105,6 +105,37 @@ async function createTables() {
       is_read BOOLEAN DEFAULT FALSE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
   `);
+
+  // Add default data if tables are empty
+  await addDefaultData();
+}
+
+async function addDefaultData() {
+  // Check if users table is empty
+  const [users] = await connection.query('SELECT COUNT(*) as count FROM users');
+  if (users[0].count === 0) {
+    // Add a default admin user
+    await connection.query(`
+      INSERT INTO users (username, artisanId, PhoneNumber, password, listed)
+      VALUES ('Admin', 'ADMIN001', '1234567890', '$2b$10$defaultpasswordhash', TRUE)
+    `);
+    
+    console.log('Default admin user created');
+  }
+
+  // Check if products table is empty
+  const [products] = await connection.query('SELECT COUNT(*) as count FROM products');
+  if (products[0].count === 0) {
+    // Add some default products
+    await connection.query(`
+      INSERT INTO products (artisanId, productName, productPrice, productDescription, is_listed)
+      VALUES 
+        ('ADMIN001', 'Sample Product 1', 19.99, 'This is a sample product description', TRUE),
+        ('ADMIN001', 'Sample Product 2', 29.99, 'Another sample product description', TRUE)
+    `);
+    
+    console.log('Default products created');
+  }
 }
 
 // Handle connection errors
