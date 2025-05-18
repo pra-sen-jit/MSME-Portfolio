@@ -8,26 +8,63 @@ router.get("/featured-products", async (req, res) => {
   try {
     const db = await connectToDatabase();
     
-    // Get 5 random listed products with artisan info
-    const [products] = await db.query(`
-      SELECT 
-        p.id,
-        p.productName,
-        p.productPrice,
-        p.image1,
-        p.image2,
-        p.image3,
-        p.image4,
-        p.image5,
-        p.productDescription,
-        u.username as artisanName,
-        u.artisanId
+    // First, count how many non-dummy products exist
+    const [countResult] = await db.query(`
+      SELECT COUNT(*) as count 
       FROM products p
       JOIN users u ON p.artisanId = u.artisanId
-      WHERE p.is_listed = TRUE
-      ORDER BY RAND()
-      LIMIT 5
+      WHERE p.is_listed = TRUE AND u.artisanId != 'ADMIN001'
     `);
+    
+    const nonDummyCount = countResult[0].count;
+    const minRealProductsRequired = 3;
+    const sliderItemsNeeded = 5;
+    
+    let products = [];
+    
+    if (nonDummyCount >= minRealProductsRequired) {
+      // Get only non-dummy products if we have enough
+      [products] = await db.query(`
+        SELECT 
+          p.id,
+          p.productName,
+          p.productPrice,
+          p.image1,
+          p.image2,
+          p.image3,
+          p.image4,
+          p.image5,
+          p.productDescription,
+          u.username as artisanName,
+          u.artisanId
+        FROM products p
+        JOIN users u ON p.artisanId = u.artisanId
+        WHERE p.is_listed = TRUE AND u.artisanId != 'ADMIN001'
+        ORDER BY RAND()
+        LIMIT ?
+      `, [sliderItemsNeeded]);
+    } else {
+      // Get all available products including dummy ones
+      [products] = await db.query(`
+        SELECT 
+          p.id,
+          p.productName,
+          p.productPrice,
+          p.image1,
+          p.image2,
+          p.image3,
+          p.image4,
+          p.image5,
+          p.productDescription,
+          u.username as artisanName,
+          u.artisanId
+        FROM products p
+        JOIN users u ON p.artisanId = u.artisanId
+        WHERE p.is_listed = TRUE
+        ORDER BY RAND()
+        LIMIT ?
+      `, [sliderItemsNeeded]);
+    }
     
     // If no products found, return empty array
     if (!products || products.length === 0) {
@@ -48,18 +85,23 @@ router.get("/featured-products", async (req, res) => {
       artisanName: product.artisanName || 'Unknown Artisan'
     }));
 
-    // If we have less than 4 products, duplicate some to make the slider work
-    // Only do this if we have at least 1 product
-    if (formattedProducts.length > 0 && formattedProducts.length < 4) {
-      const needed = 4 - formattedProducts.length;
+    // If we don't have enough products for the slider, duplicate some
+    if (formattedProducts.length < sliderItemsNeeded) {
+      const needed = sliderItemsNeeded - formattedProducts.length;
       for (let i = 0; i < needed; i++) {
-        formattedProducts.push(formattedProducts[i % formattedProducts.length]);
+        // Cycle through available products when duplicating
+        const productToDuplicate = formattedProducts[i % formattedProducts.length];
+        formattedProducts.push({
+          ...productToDuplicate,
+          // Mark as duplicate to help frontend if needed
+          isDuplicate: true
+        });
       }
     }
     
     res.json({
       success: true,
-      products: formattedProducts
+      products: formattedProducts.slice(0, sliderItemsNeeded) // Ensure exactly 5 items
     });
   } catch (error) {
     console.error("Error fetching featured products:", error);
