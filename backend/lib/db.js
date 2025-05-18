@@ -48,12 +48,11 @@ export const connectToDatabase = async () => {
 };
 
 async function createTables() {
-  // Updated users table with firstName/lastName
+  // Updated users table with username
   await connection.query(`
     CREATE TABLE IF NOT EXISTS users (
       id INT AUTO_INCREMENT PRIMARY KEY,
-      firstName VARCHAR(255) NOT NULL,
-      lastName VARCHAR(255) NOT NULL,
+      username VARCHAR(255) NOT NULL,
       artisanId VARCHAR(50) UNIQUE,
       PhoneNumber VARCHAR(20) NOT NULL UNIQUE,
       password VARCHAR(255) NOT NULL,
@@ -119,8 +118,8 @@ async function addDefaultData() {
   const [users] = await connection.query('SELECT COUNT(*) as count FROM users');
   if (users[0].count === 0) {
     await connection.query(`
-      INSERT INTO users (firstName, lastName, artisanId, PhoneNumber, password, listed)
-      VALUES ('Admin', 'User', 'ADMIN001', '1234567890', '$2b$10$defaultpasswordhash', TRUE)
+      INSERT INTO users (username, artisanId, PhoneNumber, password, listed)
+      VALUES ('Adminuser','ADMIN001', '1234567890', '$2b$10$defaultpasswordhash', TRUE)
     `);
     console.log('Default admin user created');
   }
