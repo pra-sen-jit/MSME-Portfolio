@@ -1,37 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function ArtisanDatabase() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [specializationFilter, setSpecializationFilter] = useState(
-    "All Specializations"
-  );
+  const [specializationFilter, setSpecializationFilter] = useState("All Specializations");
   const [currentPage, setCurrentPage] = useState(1);
+  const [artisans, setArtisans] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const artisansPerPage = 10;
-
-  // Sample artisan data (expanded to 50 items for pagination demo)
-  const artisans = Array.from({ length: 50 }, (_, i) => ({
-    id: i + 1,
-    name: `Artisan ${String.fromCharCode(65 + (i % 26))}${
-      i > 25 ? Math.floor(i / 26) : ""
-    }`,
-    specialization: [
-      "Ornaments",
-      "Idol Maker",
-      "Metalworking",
-      "Utensils",
-      "Premium Products",
-    ][i % 5],
-    contact:
-      i % 2 === 0
-        ? `user${i}@example.com +1 ${Math.floor(
-            100 + Math.random() * 900
-          )}-${Math.floor(100 + Math.random() * 900)}-${Math.floor(
-            1000 + Math.random() * 9000
-          )}`
-        : `+1 ${Math.floor(100 + Math.random() * 900)}-${Math.floor(
-            100 + Math.random() * 900
-          )}-${Math.floor(1000 + Math.random() * 9000)}`,
-  }));
+  const navigate = useNavigate();
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   const specializations = [
     "All Specializations",
@@ -42,15 +22,50 @@ function ArtisanDatabase() {
     "Premium Products",
   ];
 
+  useEffect(() => {
+    const fetchArtisans = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          navigate("/login");
+          return;
+        }
+
+        const response = await axios.get(`${backendUrl}/api/users/artisans`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (response.data.success) {
+          setArtisans(response.data.data);
+        } else {
+          setError("Failed to fetch artisans");
+        }
+      } catch (err) {
+        console.error("Error fetching artisans:", err);
+        setError(err.response?.data?.message || "Failed to fetch artisans");
+        if (err.response?.status === 401) {
+          navigate("/login");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchArtisans();
+  }, [backendUrl, navigate]);
+
   const filteredArtisans = artisans.filter((artisan) => {
     const matchesSearch =
       artisan.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      artisan.specialization.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      artisan.contact.toLowerCase().includes(searchTerm.toLowerCase());
+      (artisan.specialization && artisan.specialization.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      artisan.contact.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      artisan.artisanId.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesSpecialization =
       specializationFilter === "All Specializations" ||
-      artisan.specialization === specializationFilter;
+      (artisan.specialization && artisan.specialization === specializationFilter);
 
     return matchesSearch && matchesSpecialization;
   });
@@ -62,7 +77,13 @@ function ArtisanDatabase() {
       return;
     }
 
-    const dataToExport = filteredArtisans.map((artisan) => ({ ...artisan }));
+    const dataToExport = filteredArtisans.map((artisan) => ({
+      ID: artisan.id,
+      Name: artisan.name,
+      ArtisanID: artisan.artisanId,
+      Specialization: artisan.specialization,
+      Contact: artisan.contact
+    }));
 
     const headers = Object.keys(dataToExport[0]).join(",");
     const rows = dataToExport.map((row) => Object.values(row).join(","));
@@ -91,6 +112,22 @@ function ArtisanDatabase() {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-xl font-semibold">Loading artisans...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-xl font-semibold text-red-600">{error}</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
@@ -102,6 +139,7 @@ function ArtisanDatabase() {
             <button
               onClick={exportToExcel}
               className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+              disabled={filteredArtisans.length === 0}
             >
               Export to CSV
             </button>
@@ -113,7 +151,7 @@ function ArtisanDatabase() {
           <div className="relative flex-1">
             <input
               type="text"
-              placeholder="Search artisans..."
+              placeholder="Search by name, specialization, contact or artisan ID..."
               className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               value={searchTerm}
               onChange={(e) => {
@@ -163,13 +201,13 @@ function ArtisanDatabase() {
                     Name
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Artisan ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Specialization
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Contact Details
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
                   </th>
                 </tr>
               </thead>
@@ -181,18 +219,13 @@ function ArtisanDatabase() {
                         {artisan.name}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {artisan.specialization}
+                        {artisan.artisanId}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {artisan.specialization || "Not specified"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {artisan.contact}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <button className="text-green-600 hover:text-green-900 mr-3">
-                          ☑
-                        </button>
-                        <button className="text-red-600 hover:text-red-900">
-                          ☐
-                        </button>
                       </td>
                     </tr>
                   ))
@@ -209,73 +242,75 @@ function ArtisanDatabase() {
               </tbody>
             </table>
           </div>
-          <div className="px-6 py-3 bg-gray-50 flex items-center justify-between">
-            <div className="text-sm text-gray-500">
-              Showing {indexOfFirstArtisan + 1} to{" "}
-              {Math.min(indexOfLastArtisan, filteredArtisans.length)} of{" "}
-              {filteredArtisans.length} artisans
-            </div>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => paginate(currentPage - 1)}
-                disabled={currentPage === 1}
-                className={`px-3 py-1 rounded-md ${
-                  currentPage === 1
-                    ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                    : "bg-blue-600 text-white hover:bg-blue-700"
-                }`}
-              >
-                Previous
-              </button>
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                let pageNum;
-                if (totalPages <= 5) {
-                  pageNum = i + 1;
-                } else if (currentPage <= 3) {
-                  pageNum = i + 1;
-                } else if (currentPage >= totalPages - 2) {
-                  pageNum = totalPages - 4 + i;
-                } else {
-                  pageNum = currentPage - 2 + i;
-                }
-                return (
-                  <button
-                    key={pageNum}
-                    onClick={() => paginate(pageNum)}
-                    className={`px-3 py-1 rounded-md ${
-                      currentPage === pageNum
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                );
-              })}
-              {totalPages > 5 && currentPage < totalPages - 2 && (
-                <span className="px-2 py-1">...</span>
-              )}
-              {totalPages > 5 && currentPage < totalPages - 2 && (
+          {filteredArtisans.length > 0 && (
+            <div className="px-6 py-3 bg-gray-50 flex items-center justify-between">
+              <div className="text-sm text-gray-500">
+                Showing {indexOfFirstArtisan + 1} to{" "}
+                {Math.min(indexOfLastArtisan, filteredArtisans.length)} of{" "}
+                {filteredArtisans.length} artisans
+              </div>
+              <div className="flex space-x-2">
                 <button
-                  onClick={() => paginate(totalPages)}
-                  className="px-3 py-1 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                  onClick={() => paginate(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className={`px-3 py-1 rounded-md ${
+                    currentPage === 1
+                      ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                      : "bg-blue-600 text-white hover:bg-blue-700"
+                  }`}
                 >
-                  {totalPages}
+                  Previous
                 </button>
-              )}
-              <button
-                onClick={() => paginate(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className={`px-3 py-1 rounded-md ${
-                  currentPage === totalPages
-                    ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                    : "bg-blue-600 text-white hover:bg-blue-700"
-                }`}
-              >
-                Next
-              </button>
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => paginate(pageNum)}
+                      className={`px-3 py-1 rounded-md ${
+                        currentPage === pageNum
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+                {totalPages > 5 && currentPage < totalPages - 2 && (
+                  <span className="px-2 py-1">...</span>
+                )}
+                {totalPages > 5 && currentPage < totalPages - 2 && (
+                  <button
+                    onClick={() => paginate(totalPages)}
+                    className="px-3 py-1 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                  >
+                    {totalPages}
+                  </button>
+                )}
+                <button
+                  onClick={() => paginate(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className={`px-3 py-1 rounded-md ${
+                    currentPage === totalPages
+                      ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                      : "bg-blue-600 text-white hover:bg-blue-700"
+                  }`}
+                >
+                  Next
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </main>
     </div>

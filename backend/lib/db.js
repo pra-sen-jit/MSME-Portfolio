@@ -48,11 +48,12 @@ export const connectToDatabase = async () => {
 };
 
 async function createTables() {
-  // Users table
+  // Updated users table with firstName/lastName
   await connection.query(`
     CREATE TABLE IF NOT EXISTS users (
       id INT AUTO_INCREMENT PRIMARY KEY,
-      username VARCHAR(255) NOT NULL,
+      firstName VARCHAR(255) NOT NULL,
+      lastName VARCHAR(255) NOT NULL,
       artisanId VARCHAR(50) UNIQUE,
       PhoneNumber VARCHAR(20) NOT NULL UNIQUE,
       password VARCHAR(255) NOT NULL,
@@ -66,7 +67,7 @@ async function createTables() {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
   `);
 
-  // Products table
+  // Products table (unchanged)
   await connection.query(`
     CREATE TABLE IF NOT EXISTS products (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -94,7 +95,7 @@ async function createTables() {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
   `);
 
-  // Feedback table
+  // Feedback table (unchanged)
   await connection.query(`
     CREATE TABLE IF NOT EXISTS feedback (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -111,29 +112,25 @@ async function createTables() {
 }
 
 async function addDefaultData() {
-  // Check if users table is empty
+  // Updated admin user with firstName/lastName
   const [users] = await connection.query('SELECT COUNT(*) as count FROM users');
   if (users[0].count === 0) {
-    // Add a default admin user
     await connection.query(`
-      INSERT INTO users (username, artisanId, PhoneNumber, password, listed)
-      VALUES ('Admin', 'ADMIN001', '1234567890', '$2b$10$defaultpasswordhash', TRUE)
+      INSERT INTO users (firstName, lastName, artisanId, PhoneNumber, password, listed)
+      VALUES ('Admin', 'User', 'ADMIN001', '1234567890', '$2b$10$defaultpasswordhash', TRUE)
     `);
-    
     console.log('Default admin user created');
   }
 
-  // Check if products table is empty
+  // Products (unchanged)
   const [products] = await connection.query('SELECT COUNT(*) as count FROM products');
   if (products[0].count === 0) {
-    // Add some default products
     await connection.query(`
       INSERT INTO products (artisanId, productName, productPrice, productDescription, is_listed)
       VALUES 
         ('ADMIN001', 'Sample Product 1', 19.99, 'This is a sample product description', TRUE),
         ('ADMIN001', 'Sample Product 2', 29.99, 'Another sample product description', TRUE)
     `);
-    
     console.log('Default products created');
   }
 }
