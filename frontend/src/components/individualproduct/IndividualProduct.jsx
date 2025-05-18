@@ -59,6 +59,14 @@ function ProductDetails({ product }) {
   const [selectedImage, setSelectedImage] = useState(0);
   const images = product.images.filter((img) => img);
 
+  const specifications = {
+    material: product.material || "Sterling Silver",
+    weight: product.weight || "2.5g",
+    certification: product.certification || "Hallmarked",
+    finish: product.finish || "Polished",
+    closureType: product.closureType || "Lobster Clasp",
+  };
+
   return (
     <section className="lg:grid lg:grid-cols-2 lg:gap-16">
       <div className="flex flex-col gap-6">
@@ -101,26 +109,14 @@ function ProductDetails({ product }) {
             Product Specifications
           </h2>
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="rounded-lg bg-gray-50 p-4 shadow-sm">
-              <dt className="text-sm font-medium text-gray-500">Material</dt>
-              <dd className="mt-1 text-gray-900">{product.material}</dd>
-            </div>
-            <div className="rounded-lg bg-gray-50 p-4 shadow-sm">
-              <dt className="text-sm font-medium text-gray-500">
-                Certification
-              </dt>
-              <dd className="mt-1 text-gray-900">{product.certification}</dd>
-            </div>
-            <div className="rounded-lg bg-gray-50 p-4 shadow-sm">
-              <dt className="text-sm font-medium text-gray-500">Finish</dt>
-              <dd className="mt-1 text-gray-900">{product.finish}</dd>
-            </div>
-            <div className="rounded-lg bg-gray-50 p-4 shadow-sm">
-              <dt className="text-sm font-medium text-gray-500">
-                Closure Type
-              </dt>
-              <dd className="mt-1 text-gray-900">{product.closureType}</dd>
-            </div>
+            {Object.entries(specifications).map(([key, value]) => (
+              <div key={key} className="rounded-lg bg-gray-50 p-4 shadow-sm">
+                <dt className="text-sm font-medium text-gray-500">
+                  {key.charAt(0).toUpperCase() + key.slice(1)}
+                </dt>
+                <dd className="mt-1 text-gray-900">{value}</dd>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -136,7 +132,9 @@ function ArtisanInfo({ artisanId }) {
   useEffect(() => {
     const fetchArtisan = async () => {
       try {
-        const response = await axios.get(`${backendUrl}/artisans/${artisanId}`);
+        const response = await axios.get(
+          `${backendUrl}/public/artisans/${artisanId}`
+        );
         setArtisan(response.data);
       } catch (error) {
         console.error("Error fetching artisan:", error);
