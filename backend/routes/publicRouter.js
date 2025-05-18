@@ -22,17 +22,18 @@ router.get('/artisans', async (req, res) => {
   }
 });
 
-// Get products for specific artisan
+// Add proper artisan products route
 router.get('/artisans/:artisanId/products', async (req, res) => {
   try {
     const db = await connectToDatabase();
-    const [products] = await db.query(`
-      SELECT * FROM products 
-      WHERE artisanId = ? 
-      AND is_listed = true
-    `, [req.params.artisanId]);
+    const [products] = await db.query(
+      `SELECT * FROM products 
+       WHERE artisanId = ? AND is_listed = true`,
+      [req.params.artisanId]
+    );
     
-    if (products.length !== 3) {
+    // Validate 3 products (if required)
+    if (products.length < 3) {
       return res.status(404).json({ message: "Artisan not properly listed" });
     }
     
@@ -41,5 +42,6 @@ router.get('/artisans/:artisanId/products', async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
 
 export default router;

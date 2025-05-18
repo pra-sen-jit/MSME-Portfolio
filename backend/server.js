@@ -1,4 +1,3 @@
-// /backend/server.js
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -9,6 +8,7 @@ import { fileURLToPath } from "url";
 import publicRouter from "./routes/publicRouter.js";
 import feedbackRouter from "./routes/feedbackRouter.js";
 import { verifyToken } from "./routes/authRouter.js";
+import featuredProductsRouter from "./routes/featuredProductsRouter.js"; // Add this import
 
 dotenv.config();
 const app = express();
@@ -37,12 +37,12 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/auth", authRouter);
 app.use("/products",verifyToken, productRouter);
 app.use("/api/feedback", feedbackRouter);
+app.use("/public", publicRouter); // Keep this existing route
+app.use("/api/featured", featuredProductsRouter); // Add this new route
 
 app.get("/", (req, res) => {
   res.send("Hello! Server is running!");
 });
-// Add before app.listen
-app.use("/public", publicRouter);
 
 // Start the server
 app.listen(port, () => {

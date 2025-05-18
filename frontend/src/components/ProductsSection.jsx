@@ -1,79 +1,49 @@
 import React, { useState, useEffect, useRef } from "react";
 import ProductCard from "./ProductCard";
+import axios from "axios";
+import { Link } from "react-router-dom";
+
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
 function ProductsSection() {
-  const products = [
-    {
-      id: 1,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/f130a4a975bede490244df79d209a58ded7a1c95?placeholderIfAbsent=true",
-      title: "Silver Earrings",
-      artisan: "Mention Artisan name",
-    },
-    {
-      id: 2,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/7254d8a17f555b0617febac724b6101528ba7dc8?placeholderIfAbsent=true",
-      title: "Silver Necklace",
-      artisan: "Mention Artisan name",
-    },
-    {
-      id: 3,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/3227f2a1432ceb9bc223338c13d224b68f4f236d?placeholderIfAbsent=true",
-      title: "Silver Idol",
-      artisan: "Mention Artisan name",
-    },
-    {
-      id: 4,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/f130a4a975bede490244df79d209a58ded7a1c95?placeholderIfAbsent=true",
-      title: "Silver Bracelet",
-      artisan: "Mention Artisan name",
-    },
-    {
-      id: 5,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/f130a4a975bede490244df79d209a58ded7a1c95?placeholderIfAbsent=true",
-      title: "Silver Earrings",
-      artisan: "Mention Artisan name",
-    },
-    {
-      id: 6,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/7254d8a17f555b0617febac724b6101528ba7dc8?placeholderIfAbsent=true",
-      title: "Silver Necklace",
-      artisan: "Mention Artisan name",
-    },
-    {
-      id: 7,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/3227f2a1432ceb9bc223338c13d224b68f4f236d?placeholderIfAbsent=true",
-      title: "Silver Idol",
-      artisan: "Mention Artisan name",
-    },
-    {
-      id: 8,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/f130a4a975bede490244df79d209a58ded7a1c95?placeholderIfAbsent=true",
-      title: "Silver Bracelet",
-      artisan: "Mention Artisan name",
-    },
-  ];
-
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [isPaused, setIsPaused] = useState(false);
   const sliderRef = useRef(null);
+  const containerRef = useRef(null);
   const [scrollPosition, setScrollPosition] = useState(0);
-  const scrollSpeed = 1; // Adjust speed as needed
+  const scrollSpeed = 0.5; // Reduced speed for smoother animation
 
   useEffect(() => {
-    const slider = sliderRef.current;
-    if (!slider) return;
+    const fetchFeaturedProducts = async () => {
+      try {
+        const response = await axios.get(`${backendUrl}/api/featured/featured-products`);
+        if (response.data.success) {
+          // Duplicate the products to create a seamless loop
+          setFeaturedProducts([...response.data.products, ...response.data.products]);
+        } else {
+          throw new Error(response.data.message || "Failed to fetch featured products");
+        }
+      } catch (err) {
+        console.error("Error fetching featured products:", err);
+        setError(err.message);
+        setFeaturedProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchFeaturedProducts();
+  }, []);
+
+  useEffect(() => {
+    if (!sliderRef.current || featuredProducts.length === 0) return;
 
     let animationFrameId;
-    let lastTimestamp = 0;
+    let lastTimestamp = performance.now();
 
-    const scroll = (timestamp) => {
+    const animate = (timestamp) => {
       if (!lastTimestamp) lastTimestamp = timestamp;
       const delta = timestamp - lastTimestamp;
       lastTimestamp = timestamp;
@@ -81,24 +51,28 @@ function ProductsSection() {
       if (!isPaused) {
         setScrollPosition((prev) => {
           const newPosition = prev + (scrollSpeed * delta) / 16;
-
-          // Reset position when scrolled all items
-          if (newPosition >= slider.scrollWidth / 2) {
+          const sliderWidth = sliderRef.current.scrollWidth / 2; // Since we duplicated the products
+          
+          // Reset position before reaching the end to avoid jump
+          if (newPosition >= sliderWidth) {
             return 0;
           }
           return newPosition;
         });
       }
 
-      animationFrameId = requestAnimationFrame(scroll);
+      animationFrameId = requestAnimationFrame(animate);
     };
 
-    animationFrameId = requestAnimationFrame(scroll);
+    animationFrameId = requestAnimationFrame(animate);
 
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
-  }, [isPaused]);
+  }, [isPaused, featuredProducts]);
+
+  // Render loading, error, or empty states...
+  // (Keep your existing loading/error/empty state rendering code here)
 
   return (
     <section
@@ -116,26 +90,36 @@ function ProductsSection() {
         className="relative w-full overflow-x-hidden"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
+        ref={containerRef}
       >
         <div
           ref={sliderRef}
           className="flex gap-10 w-max"
           style={{
             transform: `translateX(-${scrollPosition}px)`,
-            transition: isPaused ? "transform 0.3s ease" : "none",
+            transition: isPaused ? "transform 0.5s ease" : "none",
           }}
         >
-          {products.map((product) => (
-            <div key={product.id} className="w-[300px] flex-shrink-0">
+          {featuredProducts.map((product, index) => (
+            <div key={`${product.id}-${index}`} className="w-[300px] flex-shrink-0">
               <ProductCard
-                image={product.image}
-                title={product.title}
-                artisan={product.artisan}
+                id={product.id}
+                image={`${backendUrl}${product.mainImage}`}
+                title={product.productName}
+                artisan={product.artisanName}
+                price={product.productPrice}
               />
             </div>
           ))}
         </div>
       </div>
+
+      <Link 
+        to="/products" 
+        className="mt-8 px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+      >
+        View All Products
+      </Link>
     </section>
   );
 }
