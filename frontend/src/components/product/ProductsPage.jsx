@@ -1,12 +1,11 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Link } from 'react-router-dom';
-import axios from 'axios';
+import { Link } from "react-router-dom";
+import axios from "axios";
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 // import Sidebar from "./Sidebar";
 // import ProductGrid from "./ProductGrid";
 import AnimatedPage from "../AnimatedPage";
-
 
 function Sidebar() {
   const [priceRange, setPriceRange] = useState(2500);
@@ -308,31 +307,26 @@ function ArtisanSection({ artisan, index }) {
   const color = `hsl(${index * 60}, 70%, 30%)`;
 
   return (
-    <section 
+    <section
       className="bg-white p-6 rounded-xl shadow-sm mb-8 transition-all duration-300 hover:shadow-md"
       style={{ borderLeft: `4px solid ${color}` }}
     >
       {/* Artisan Header */}
       <div className="flex items-center gap-4 mb-6">
-        <div 
+        <div
           className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center border-2"
           style={{ borderColor: color }}
         >
-          <span 
-            className="text-xl font-bold"
-            style={{ color }}
-          >
+          <span className="text-xl font-bold" style={{ color }}>
             {initial}
           </span>
         </div>
-        
+
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">
-            {username}
-          </h2>
+          <h2 className="text-2xl font-bold text-gray-800">{username}</h2>
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <span>Listed Products:</span>
-            <span 
+            <span
               className="px-2 py-1 rounded-full"
               style={{ backgroundColor: `${color}20`, color }}
             >
@@ -344,9 +338,9 @@ function ArtisanSection({ artisan, index }) {
 
       {/* Products Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {products.map(product => (
-          <ProductCard 
-            key={product?.id || Math.random()} 
+        {products.map((product) => (
+          <ProductCard
+            key={product?.id || Math.random()}
             product={product}
             color={color}
           />
@@ -361,13 +355,13 @@ function ProductCard({ product, color }) {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <div 
+    <div
       className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 relative"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{
-        transform: isHovered ? 'translateY(-4px)' : 'none',
-        borderTop: `3px solid ${color}`
+        transform: isHovered ? "translateY(-4px)" : "none",
+        borderTop: `3px solid ${color}`,
       }}
     >
       {/* Product Image */}
@@ -376,35 +370,50 @@ function ProductCard({ product, color }) {
           src={`${backendUrl}${product.image1}`}
           alt={product.productName}
           className={`w-full h-full object-cover transition-transform duration-300 ${
-            isHovered ? 'scale-105' : 'scale-100'
+            isHovered ? "scale-105" : "scale-100"
           }`}
         />
-        
+
         {/* Hover Overlay */}
-        <div className="absolute inset-0 bg-black/10 flex items-center justify-center transition-opacity duration-300"
-  style={{ opacity: isHovered ? 1 : 0 }}>
-  <Link 
-    to="/ViewDetails" // Update this path according to your routing
-    className="px-4 py-2 bg-white rounded-md shadow-md flex items-center gap-2"
-    style={{ color }}
-  >
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-      <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-      <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
-    </svg>
-    View Details
-  </Link>
-</div>
+        <div
+          className="absolute inset-0 bg-black/10 flex items-center justify-center transition-opacity duration-300"
+          style={{ opacity: isHovered ? 1 : 0 }}
+        >
+          <Link
+            to={`/products/${product.id}`}
+            className="px-4 py-2 bg-white rounded-md shadow-md flex items-center gap-2"
+            style={{ color }}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+              <path
+                fillRule="evenodd"
+                d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                clipRule="evenodd"
+              />
+            </svg>
+            View Details
+          </Link>
+        </div>
       </div>
 
       {/* Product Details */}
       <div className="p-4">
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">{product.productName}</h3>
-        <p className="text-gray-600 text-sm line-clamp-3 mb-4">{product.productDescription}</p>
-        
+        <h3 className="text-lg font-semibold text-gray-800 mb-2">
+          {product.productName}
+        </h3>
+        <p className="text-gray-600 text-sm line-clamp-3 mb-4">
+          {product.productDescription}
+        </p>
+
         <div className="flex justify-between items-center">
           <span className="text-xl font-bold" style={{ color }}>
-            ₹{Number(product.productPrice).toLocaleString('en-IN')}
+            ₹{Number(product.productPrice).toLocaleString("en-IN")}
           </span>
           <div className="flex flex-col items-end gap-2">
             <button className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1 rounded-md text-sm font-medium hover:from-blue-600 hover:to-blue-700 transition-colors">
@@ -429,46 +438,55 @@ function ProductGrid() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
-  const fetchData = async () => {
-    try {
-      const artisansRes = await axios.get(`${backendUrl}/public/artisans`);
-      const artisanPromises = artisansRes.data.map(async (artisan) => {
-        try {
-          const productsRes = await axios.get(
-            `${backendUrl}/public/artisans/${artisan.artisanId}/products`
-          );
-          return { ...artisan, products: productsRes.data };
-        } catch (error) {
-          console.error(`Error fetching products for ${artisan.artisanId}:`, error);
-          return null; // Filter out later
-        }
-      },[refreshTrigger]);
+    const fetchData = async () => {
+      try {
+        const artisansRes = await axios.get(`${backendUrl}/public/artisans`);
+        const artisanPromises = artisansRes.data.map(
+          async (artisan) => {
+            try {
+              const productsRes = await axios.get(
+                `${backendUrl}/public/artisans/${artisan.artisanId}/products`
+              );
+              return { ...artisan, products: productsRes.data };
+            } catch (error) {
+              console.error(
+                `Error fetching products for ${artisan.artisanId}:`,
+                error
+              );
+              return null; // Filter out later
+            }
+          },
+          [refreshTrigger]
+        );
 
-      const artisansWithProducts = (await Promise.all(artisanPromises))
-        .filter(artisan => artisan !== null && artisan.products.length === 3);
-      
-      setArtisans(artisansWithProducts);
-    } catch (error) {
-      console.error('Fetch error:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-  fetchData();
-}, []);
+        const artisansWithProducts = (
+          await Promise.all(artisanPromises)
+        ).filter(
+          (artisan) => artisan !== null && artisan.products.length === 3
+        );
+
+        setArtisans(artisansWithProducts);
+      } catch (error) {
+        console.error("Fetch error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   if (loading) return <div className="text-center p-8">Loading...</div>;
 
   return (
     <div className="space-y-12">
-      {artisans.map(artisan => (
+      {artisans.map((artisan) => (
         <ArtisanSection
           key={artisan.artisanId}
           artisan={artisan}
           index={artisan.index}
         />
       ))}
-      
+
       {!loading && artisans.length === 0 && (
         <div className="text-center py-12">
           <h3 className="text-xl text-gray-600">
@@ -479,7 +497,6 @@ function ProductGrid() {
     </div>
   );
 }
-
 
 function ProductsPage() {
   const [filterOpen, setFilterOpen] = useState(false);
@@ -531,7 +548,11 @@ function ProductsPage() {
           {/* Products Layout */}
           <div className="flex flex-col md:flex-row gap-8">
             {/* Sidebar - Mobile */}
-            <div className={`${filterOpen ? "block" : "hidden"} md:hidden w-full bg-white p-4 rounded-lg shadow-sm mb-4`}>
+            <div
+              className={`${
+                filterOpen ? "block" : "hidden"
+              } md:hidden w-full bg-white p-4 rounded-lg shadow-sm mb-4`}
+            >
               <Sidebar />
             </div>
 

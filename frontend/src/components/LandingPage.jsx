@@ -1,5 +1,4 @@
 "use client";
-import React from "react";
 import AboutSection from "./AboutSection";
 import ProductsSection from "./ProductsSection";
 import CustomerFeedback from "./CustomerFeedback";

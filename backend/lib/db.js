@@ -1,7 +1,7 @@
 import mysql from "mysql2/promise";
 import dotenv from "dotenv";
-import path from 'path';
-import { fileURLToPath } from 'url';
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -33,16 +33,16 @@ export const connectToDatabase = async () => {
         user: process.env.DB_USER,
         password: process.env.DB_PASSWORD,
         database: process.env.DB_NAME,
-        charset: 'utf8mb4'
+        charset: "utf8mb4",
       });
 
       // Create tables
       await createTables();
-      console.log('Database initialized successfully');
+      console.log("Database initialized successfully");
     }
     return connection;
   } catch (err) {
-    console.error('Database connection error:', err);
+    console.error("Database connection error:", err);
     throw err;
   }
 };
@@ -77,6 +77,9 @@ async function createTables() {
       height VARCHAR(50),
       width VARCHAR(50),
       weight VARCHAR(50),
+      certification VARCHAR(255) DEFAULT NULL,
+      finish VARCHAR(255) DEFAULT NULL,
+      closureType VARCHAR(255) DEFAULT NULL,
       image1 VARCHAR(255),
       image2 VARCHAR(255),
       image3 VARCHAR(255),
@@ -112,19 +115,21 @@ async function createTables() {
 
 async function addDefaultData() {
   // Check if users table is empty
-  const [users] = await connection.query('SELECT COUNT(*) as count FROM users');
+  const [users] = await connection.query("SELECT COUNT(*) as count FROM users");
   if (users[0].count === 0) {
     // Add a default admin user
     await connection.query(`
       INSERT INTO users (username, artisanId, PhoneNumber, password, listed)
       VALUES ('Admin', 'ADMIN001', '1234567890', '$2b$10$defaultpasswordhash', TRUE)
     `);
-    
-    console.log('Default admin user created');
+
+    console.log("Default admin user created");
   }
 
   // Check if products table is empty
-  const [products] = await connection.query('SELECT COUNT(*) as count FROM products');
+  const [products] = await connection.query(
+    "SELECT COUNT(*) as count FROM products"
+  );
   if (products[0].count === 0) {
     // Add some default products
     await connection.query(`
@@ -133,17 +138,17 @@ async function addDefaultData() {
         ('ADMIN001', 'Sample Product 1', 19.99, 'This is a sample product description', TRUE),
         ('ADMIN001', 'Sample Product 2', 29.99, 'Another sample product description', TRUE)
     `);
-    
-    console.log('Default products created');
+
+    console.log("Default products created");
   }
 }
 
 // Handle connection errors
-process.on('unhandledRejection', (err) => {
-  if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-    console.error('Database connection was closed. Reconnecting...');
+process.on("unhandledRejection", (err) => {
+  if (err.code === "PROTOCOL_CONNECTION_LOST") {
+    console.error("Database connection was closed. Reconnecting...");
     connection = null;
   } else {
-    console.error('Unhandled database error:', err);
+    console.error("Unhandled database error:", err);
   }
 });

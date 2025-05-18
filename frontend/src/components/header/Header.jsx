@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const Navbar = () => {
@@ -47,7 +47,7 @@ const Navbar = () => {
     setDropdownOpen(false);
     navigate("/");
   };
-  
+
   const toggleDropdown = () => setDropdownOpen((prev) => !prev);
 
   return (
@@ -60,11 +60,13 @@ const Navbar = () => {
       >
         {/* Logo Image - Replaced search bar */}
         <div className="flex items-center">
-          <img 
-            src="https://cdn.builder.io/api/v1/image/assets/TEMP/c9d83d3761fb075f8f82ce5308d9f341c9724160?placeholderIfAbsent=true" 
-            alt="Magrahat Logo"
-            className="h-10 w-auto" 
-          />
+          <Link to="/">
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets/TEMP/c9d83d3761fb075f8f82ce5308d9f341c9724160?placeholderIfAbsent=true"
+              alt="Magrahat Logo"
+              className="h-10 w-auto"
+            />
+          </Link>
         </div>
 
         {/* Title */}

@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import authRouter from "./routes/authRouter.js";
 import productRouter from "./routes/productRouter.js";
+import individualProductRouter from "./routes/individualProductRouter.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import publicRouter from "./routes/publicRouter.js";
@@ -20,7 +21,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Initialize database connection
-connectToDatabase().catch(err => {
+connectToDatabase().catch((err) => {
   console.error("Failed to initialize database:", err);
   process.exit(1);
 });
@@ -43,6 +44,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // Routes
 app.use("/auth", authRouter);
 app.use("/products", verifyToken, productRouter);
+app.use("/api/public/products", individualProductRouter);
 app.use("/api/feedback", feedbackRouter);
 app.use("/public", publicRouter);
 app.use("/api/featured", featuredProductsRouter);
@@ -54,9 +56,9 @@ app.get("/", (req, res) => {
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ 
+  res.status(500).json({
     success: false,
-    message: "Something went wrong!" 
+    message: "Something went wrong!",
   });
 });
 
