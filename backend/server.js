@@ -8,7 +8,8 @@ import { fileURLToPath } from "url";
 import publicRouter from "./routes/publicRouter.js";
 import feedbackRouter from "./routes/feedbackRouter.js";
 import { verifyToken } from "./routes/authRouter.js";
-import featuredProductsRouter from "./routes/featuredProductsRouter.js"; // Add this import
+import featuredProductsRouter from "./routes/featuredProductsRouter.js";
+import { connectToDatabase } from "./lib/db.js";
 
 dotenv.config();
 const app = express();
@@ -18,7 +19,13 @@ const port = process.env.PORT || 3000;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-//Middleware
+// Initialize database connection
+connectToDatabase().catch(err => {
+  console.error("Failed to initialize database:", err);
+  process.exit(1);
+});
+
+// Middleware
 app.use(
   cors({
     origin: "*",
@@ -35,13 +42,22 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
 app.use("/auth", authRouter);
-app.use("/products",verifyToken, productRouter);
+app.use("/products", verifyToken, productRouter);
 app.use("/api/feedback", feedbackRouter);
-app.use("/public", publicRouter); // Keep this existing route
-app.use("/api/featured", featuredProductsRouter); // Add this new route
+app.use("/public", publicRouter);
+app.use("/api/featured", featuredProductsRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello! Server is running!");
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ 
+    success: false,
+    message: "Something went wrong!" 
+  });
 });
 
 // Start the server
