@@ -1,11 +1,10 @@
 import express from "express";
-import { verifyToken } from "./authRouter.js";
 import { connectToDatabase } from "../lib/db.js";
 
 const router = express.Router();
 
-// Get all artisans (users with artisanId)
-router.get("/artisans", verifyToken, async (req, res) => {
+// Get all artisans (public route)
+router.get("/artisans", async (req, res) => {
   try {
     const connection = await connectToDatabase();
     const [users] = await connection.query(
