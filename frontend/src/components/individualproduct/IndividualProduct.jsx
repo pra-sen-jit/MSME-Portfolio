@@ -1,38 +1,72 @@
 "use client";
-import * as React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
+import axios from "axios";
+
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
 function IndividualProduct() {
+  const { productId } = useParams();
+  const [product, setProduct] = useState(null);
+  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [productRes, relatedRes] = await Promise.all([
+          axios.get(`${backendUrl}/api/public/products/${productId}`),
+          axios.get(`${backendUrl}/api/public/products/${productId}/related`),
+        ]);
+
+        setProduct(productRes.data);
+        setRelatedProducts(relatedRes.data);
+      } catch (err) {
+        setError(err.response?.data?.message || "Failed to fetch product");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [productId]);
+
+  if (loading) return <div className="text-center py-20">Loading...</div>;
+  if (error)
+    return (
+      <div className="text-center py-20">
+        <h2 className="text-red-500 text-xl mb-4">Error: {error}</h2>
+        <Link to="/products" className="text-indigo-600 hover:text-indigo-800">
+          ← Back to Products
+        </Link>
+      </div>
+    );
+  if (!product)
+    return <div className="text-center py-20">Product not found</div>;
+
   return (
     <div className="min-h-screen bg-gray-50">
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-        <ProductDetails />
-        <RelatedProducts />
+        <ProductDetails product={product} />
+        <RelatedProducts products={relatedProducts} />
       </main>
     </div>
   );
 }
 
-function ProductDetails() {
+function ProductDetails({ product }) {
   const [selectedImage, setSelectedImage] = useState(0);
-  const [isWishlisted, setIsWishlisted] = useState(false);
-
-  const images = [
-    "https://cdn.builder.io/api/v1/image/assets/TEMP/0a7b2bae1adcbfd602cc9713770045531d377541?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade",
-    "https://cdn.builder.io/api/v1/image/assets/TEMP/50da161a0f4c7e123a4ae19642dd2dd3e92ed6e7?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade",
-    "https://cdn.builder.io/api/v1/image/assets/TEMP/50da161a0f4c7e123a4ae19642dd2dd3e92ed6e7?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade",
-    "https://cdn.builder.io/api/v1/image/assets/TEMP/50da161a0f4c7e123a4ae19642dd2dd3e92ed6e7?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade",
-  ];
+  const images = product.images.filter((img) => img);
 
   return (
     <section className="lg:grid lg:grid-cols-2 lg:gap-16">
-      {/* Product Gallery */}
       <div className="flex flex-col gap-6">
         <div className="aspect-square overflow-hidden rounded-2xl bg-white shadow-lg">
           <img
             src={images[selectedImage]}
-            alt={`Product view ${selectedImage + 1}`}
-            className="h-full w-full object-cover transition-opacity duration-300"
+            className="h-full w-full object-cover"
+            alt="Main product view"
           />
         </div>
         <div className="grid grid-cols-4 gap-4">
@@ -40,10 +74,8 @@ function ProductDetails() {
             <button
               key={index}
               onClick={() => setSelectedImage(index)}
-              className={`aspect-square overflow-hidden rounded-xl transition-all duration-300 ${
-                selectedImage === index
-                  ? "ring-2 ring-emerald-500"
-                  : "hover:ring-1 ring-gray-200"
+              className={`aspect-square overflow-hidden rounded-xl transition-all ${
+                selectedImage === index ? "ring-2 ring-emerald-500" : ""
               }`}
             >
               <img
@@ -56,168 +88,135 @@ function ProductDetails() {
         </div>
       </div>
 
-      {/* Product Info */}
       <div className="mt-8 lg:mt-0">
-        <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">
-          Handcrafted Silver Earrings
+        <h1 className="text-3xl font-bold text-gray-900">
+          {product.productName}
         </h1>
-        <div className="mt-4 flex items-center gap-2">
-          <p className="text-3xl font-semibold text-emerald-600">₹1500</p>
-          <span className="text-sm text-gray-500 line-through">₹1999</span>
-          <span className="ml-2 rounded-full bg-emerald-100 px-2 py-1 text-sm font-medium text-emerald-800">
-            25% off
-          </span>
+        <p className="text-3xl font-semibold text-emerald-600 mt-4">
+          ₹{product.productPrice}
+        </p>
+
+        <div className="mt-8 border-t border-gray-200 pt-8">
+          <h2 className="text-xl font-semibold text-gray-900">
+            Product Specifications
+          </h2>
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="rounded-lg bg-gray-50 p-4 shadow-sm">
+              <dt className="text-sm font-medium text-gray-500">Material</dt>
+              <dd className="mt-1 text-gray-900">{product.material}</dd>
+            </div>
+            <div className="rounded-lg bg-gray-50 p-4 shadow-sm">
+              <dt className="text-sm font-medium text-gray-500">
+                Certification
+              </dt>
+              <dd className="mt-1 text-gray-900">{product.certification}</dd>
+            </div>
+            <div className="rounded-lg bg-gray-50 p-4 shadow-sm">
+              <dt className="text-sm font-medium text-gray-500">Finish</dt>
+              <dd className="mt-1 text-gray-900">{product.finish}</dd>
+            </div>
+            <div className="rounded-lg bg-gray-50 p-4 shadow-sm">
+              <dt className="text-sm font-medium text-gray-500">
+                Closure Type
+              </dt>
+              <dd className="mt-1 text-gray-900">{product.closureType}</dd>
+            </div>
+          </div>
         </div>
 
-        <button
-          onClick={() => setIsWishlisted(!isWishlisted)}
-          className={`mt-6 flex w-full items-center justify-center gap-2 rounded-lg px-6 py-3 font-medium transition-colors sm:w-auto ${
-            isWishlisted
-              ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-          }`}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className={`h-5 w-5 ${isWishlisted ? "fill-current" : ""}`}
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-            />
-          </svg>
-          {isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
-        </button>
-
-        <ProductSpecifications />
-        <ArtisanInfo />
+        <ArtisanInfo artisanId={product.artisanId} />
       </div>
     </section>
   );
 }
 
-function ProductSpecifications() {
-  const specs = [
-    { label: "Material", value: "925 Sterling Silver" },
-    { label: "Weight", value: "2.5g per piece" },
-    { label: "Dimensions", value: "5cm x 12cm" },
-    { label: "Certification", value: "Hallmarked" },
-    { label: "Finish", value: "Polished" },
-    { label: "Closure Type", value: "Leverback" },
-  ];
+function ArtisanInfo({ artisanId }) {
+  const [artisan, setArtisan] = useState(null);
 
-  return (
-    <div className="mt-8 border-t border-gray-200 pt-8">
-      <h2 className="text-xl font-semibold text-gray-900">
-        Product Specifications
-      </h2>
-      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {specs.map((spec, index) => (
-          <div key={index} className="rounded-lg bg-gray-50 p-4 shadow-sm">
-            <dt className="text-sm font-medium text-gray-500">{spec.label}</dt>
-            <dd className="mt-1 text-gray-900">{spec.value}</dd>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+  useEffect(() => {
+    const fetchArtisan = async () => {
+      try {
+        const response = await axios.get(`${backendUrl}/artisans/${artisanId}`);
+        setArtisan(response.data);
+      } catch (error) {
+        console.error("Error fetching artisan:", error);
+      }
+    };
 
-function ArtisanInfo() {
+    artisanId && fetchArtisan();
+  }, [artisanId]);
+
+  if (!artisan) return null;
+
   return (
     <div className="mt-8 border-t border-gray-200 pt-8">
       <h2 className="text-xl font-semibold text-gray-900">About the Artisan</h2>
       <div className="mt-6 flex items-start gap-4">
-        <img
-          src="https://cdn.builder.io/api/v1/image/assets/TEMP/9ae8d3cc3c7afe91e8e172be20b9270c8809fef1?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade"
-          alt="Artisan A"
-          className="h-16 w-16 rounded-full object-cover"
-        />
-        <div className="flex-1">
-          <h3 className="text-lg font-medium text-gray-900">Artisan Aravind</h3>
-          <p className="text-sm font-medium text-gray-500">
-            Master Silversmith | 15+ Years Experience
-          </p>
-          <p className="mt-2 text-gray-600">
-            Carrying forward a 200-year-old tradition of Magrahat filigree work.
-            Each piece is handcrafted using ancient techniques passed down
-            through generations, combining intricate silver wirework with
-            contemporary designs.
-          </p>
-          <button className="mt-4 flex items-center gap-2 text-emerald-600 hover:text-emerald-700">
-            <span>Contact Artisan</span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M17 8l4 4m0 0l-4 4m4-4H3"
-              />
-            </svg>
-          </button>
+        <div className="h-16 w-16 rounded-full bg-gray-200 overflow-hidden">
+          {artisan.profileImageUrl ? (
+            <img
+              src={artisan.profileImageUrl}
+              alt={artisan.username}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <span className="text-2xl text-gray-600 flex items-center justify-center h-full">
+              {artisan.username?.[0]?.toUpperCase()}
+            </span>
+          )}
+        </div>
+        <div>
+          <h3 className="text-lg font-medium text-gray-900">
+            {artisan.username}
+          </h3>
+          <p className="text-sm text-gray-500 mt-2">{artisan.specialization}</p>
+          <p className="text-gray-600 mt-2">Contact: {artisan.PhoneNumber}</p>
         </div>
       </div>
     </div>
   );
 }
 
-function RelatedProducts() {
-  const products = [
-    {
-      name: "Vintage Hoop Earrings",
-      price: "₹1400",
-      image: "https://dummyimage.com/300x300/e5e7eb/64748b&text=Product+1",
-    },
-    {
-      name: "Silver Moon Drops",
-      price: "₹1200",
-      image: "https://dummyimage.com/300x300/e5e7eb/64748b&text=Product+2",
-    },
-    {
-      name: "Filigree Studs",
-      price: "₹1600",
-      image: "https://dummyimage.com/300x300/e5e7eb/64748b&text=Product+3",
-    },
-    {
-      name: "Geometric Designs",
-      price: "₹1500",
-      image: "https://dummyimage.com/300x300/e5e7eb/64748b&text=Product+4",
-    },
-  ];
+function RelatedProducts({ products }) {
+  const [visibleCount, setVisibleCount] = useState(4);
 
   return (
     <section className="mt-16">
-      <h2 className="text-2xl font-bold text-gray-900">Related Products</h2>
-      <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {products.map((product, index) => (
-          <div
-            key={index}
-            className="group relative overflow-hidden rounded-xl bg-white shadow-sm transition-all hover:shadow-md"
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="text-2xl font-bold text-gray-900">Related Products</h2>
+        {products.length > 4 && (
+          <button
+            className="text-emerald-600 hover:text-emerald-700 font-medium"
+            onClick={() => setVisibleCount((prev) => prev + 4)}
+          >
+            View More →
+          </button>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {products.slice(0, visibleCount).map((product) => (
+          <Link
+            key={product.id}
+            to={`/products/${product.id}`}
+            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
           >
             <div className="aspect-square overflow-hidden">
               <img
-                src={product.image}
-                alt={product.name}
-                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                src={product.imageUrl}
+                alt={product.productName}
+                className="h-full w-full object-cover"
               />
             </div>
             <div className="p-4">
-              <h3 className="font-medium text-gray-900">{product.name}</h3>
+              <h3 className="font-medium text-gray-900 truncate">
+                {product.productName}
+              </h3>
               <p className="mt-2 text-lg font-semibold text-emerald-600">
-                {product.price}
+                ₹{product.productPrice}
               </p>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </section>
