@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
+import AnimatedPage from "../AnimatedPage";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -35,23 +36,34 @@ function IndividualProduct() {
   if (loading) return <div className="text-center py-20">Loading...</div>;
   if (error)
     return (
-      <div className="text-center py-20">
-        <h2 className="text-red-500 text-xl mb-4">Error: {error}</h2>
-        <Link to="/products" className="text-indigo-600 hover:text-indigo-800">
-          ← Back to Products
-        </Link>
-      </div>
+      <AnimatedPage>
+        <div className="text-center py-20">
+          <h2 className="text-red-500 text-xl mb-4">Error: {error}</h2>
+          <Link
+            to="/products"
+            className="text-indigo-600 hover:text-indigo-800"
+          >
+            ← Back to Products
+          </Link>
+        </div>
+      </AnimatedPage>
     );
   if (!product)
-    return <div className="text-center py-20">Product not found</div>;
+    return (
+      <AnimatedPage>
+        <div className="text-center py-20">Product not found</div>
+      </AnimatedPage>
+    );
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-        <ProductDetails product={product} />
-        <RelatedProducts products={relatedProducts} />
-      </main>
-    </div>
+    <AnimatedPage>
+      <div className="min-h-screen bg-gray-50">
+        <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+          <ProductDetails product={product} />
+          <RelatedProducts products={relatedProducts} />
+        </main>
+      </div>
+    </AnimatedPage>
   );
 }
 
@@ -119,6 +131,16 @@ function ProductDetails({ product }) {
             ))}
           </div>
         </div>
+
+        {/* Product Description */}
+        {product.productDescription && (
+          <div className="mt-8 border-t border-gray-200 pt-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Description
+            </h2>
+            <p className="text-gray-600">{product.productDescription}</p>
+          </div>
+        )}
 
         <ArtisanInfo artisanId={product.artisanId} />
       </div>
