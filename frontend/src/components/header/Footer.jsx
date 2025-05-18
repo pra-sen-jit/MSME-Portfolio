@@ -113,9 +113,70 @@ function Footer() {
       </div>
 
       {/* Footer Bottom */}
-      <div className="mt-16 border-t border-neutral-700 pt-6 text-center text-neutral-500 text-sm">
-        © 2025 Magrahat Silver Filigree. All rights reserved.
-      </div>
+      {/* Footer Bottom */}
+<div className="mt-16 border-t border-neutral-700 pt-6 text-center text-neutral-400 text-sm">
+  <h4 className="font-semibold text-white mb-2">Developer Team</h4>
+  <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-2 mb-2">
+    <a
+      href="https://www.linkedin.com/in/subhobrata-maity-260b16259/"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="hover:text-white"
+    >
+      Subhobrata Maity
+    </a>
+    <span className="text-neutral-500">•</span>
+    <a
+      href="https://www.linkedin.com/in/gaurav-majumder-2484a1356/"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="hover:text-white"
+    >
+      Gourav Majumder
+    </a>
+    <span className="text-neutral-500">•</span>
+    <a
+      href="https://www.linkedin.com/in/prem-ghosh-181414255"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="hover:text-white"
+    >
+      Prem Ghosh
+    </a>
+    <span className="text-neutral-500">•</span>
+    <a
+      // href="https://www.linkedin.com/in/subhrajit-ghosh"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="hover:text-white"
+    >
+      Subhrajit Ghosh
+    </a>
+    <span className="text-neutral-500">•</span>
+    <a
+      href="https://www.linkedin.com/in/prasenjit-datta/"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="hover:text-white"
+    >
+      Prasenjit Datta
+    </a>
+    <span className="text-neutral-500">•</span>
+    <a
+      href="https://www.linkedin.com/in/debangshu-roy-5531b8272/"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="hover:text-white"
+    >
+      Debangshu Roy
+    </a>
+  </div>
+  <p className="text-neutral-500 mt-2">
+    © 2025 Money Records. All Rights Reserved.
+  </p>
+</div>
+
+
     </footer>
   );
 }
