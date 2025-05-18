@@ -25,7 +25,11 @@ const router = createBrowserRouter([
       { index: true, element: <LandingPage /> },
       { path: "about", element: <Explore /> },
       { path: "product", element: <ProductsPage /> },
-      { path: "ViewDetails", element: <IndividualProduct /> },
+      {
+        path: "/products/:productId",
+        element: <IndividualProduct />,
+        // loader: ({ params }) => fetchProductData(params.productId),
+      },
       {
         path: "artisan",
         element: (
