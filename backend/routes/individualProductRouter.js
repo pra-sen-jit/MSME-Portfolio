@@ -10,7 +10,12 @@ router.get("/:productId", async (req, res) => {
     const [products] = await db.query(
       `
       SELECT 
-        p.*, 
+        p.*,
+        CONCAT('${process.env.BACKEND_URL}/uploads/', p.image1) as image1,
+        CONCAT('${process.env.BACKEND_URL}/uploads/', p.image2) as image2,
+        CONCAT('${process.env.BACKEND_URL}/uploads/', p.image3) as image3,
+        CONCAT('${process.env.BACKEND_URL}/uploads/', p.image4) as image4,
+        CONCAT('${process.env.BACKEND_URL}/uploads/', p.image5) as image5,
         u.username,
         u.specialization,
         u.PhoneNumber,

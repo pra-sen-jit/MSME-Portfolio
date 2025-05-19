@@ -367,7 +367,7 @@ function ProductCard({ product, color }) {
       {/* Product Image */}
       <div className="relative h-64 overflow-hidden">
         <img
-          src={`${backendUrl}${product.image1}`}
+          src={`${backendUrl}/uploads/${product.image1}`}
           alt={product.productName}
           className={`w-full h-full object-cover transition-transform duration-300 ${
             isHovered ? "scale-105" : "scale-100"
