@@ -103,55 +103,39 @@ function ProductForm({ productNumber, product, onDelete, maxProducts, isNewSlot,
     )
   });
 
-// useEffect(() => {
-//     if (product?.id && !isDraft) {
-//       // Load existing product data
-//     } else {
-//       // Reset for new draft or empty slot
-//       setFormData({
-//         productName: '',
-//         productPrice: '',
-//         specs: { material: '', height: '', width: '', weight: '' },
-//         description: '',
-//         mainImage: null,
-//         extraImages: [null, null, null, null]
-//       });
-//     }
-//   }, [product, isDraft]);
-useEffect(() => {
-  if (product?.id) {
-    setFormData({
-        productName: product.productName,
-        productPrice: product.productPrice,
-        specs: {
-          material: product.material,
-          height: product.height,
-          width: product.width,
-          weight: product.weight,
-        },
-        description: product.productDescription,
-        mainImage: product.image1 ? { 
-          preview: `${backendUrl}${product.image1.startsWith('/') ? product.image1 : '/' + product.image1}`
-        } : null,
-        extraImages: [2, 3, 4, 5].map(i => 
-          product[`image${i}`] ? { 
-            preview: `${backendUrl}${product[`image${i}`].startsWith('/') ? '' : '/'}${product[`image${i}`]}`
-          } : null
-        )
+  useEffect(() => {
+    if (product?.id) {
+      setFormData({
+          productName: product.productName,
+          productPrice: product.productPrice,
+          specs: {
+            material: product.material,
+            height: product.height,
+            width: product.width,
+            weight: product.weight,
+          },
+          description: product.productDescription,
+          mainImage: product.image1 ? { 
+            preview: `${backendUrl}${product.image1.startsWith('/') ? product.image1 : '/' + product.image1}`
+          } : null,
+          extraImages: [2, 3, 4, 5].map(i => 
+            product[`image${i}`] ? { 
+              preview: `${backendUrl}${product[`image${i}`].startsWith('/') ? '' : '/'}${product[`image${i}`]}`
+            } : null
+          )
+        });
+    } else {
+      setFormData({
+        productName: '',
+        productPrice: '',
+        specs: { material: '', height: '', width: '', weight: '' },
+        description: '',
+        mainImage: null,
+        extraImages: [null, null, null, null]
       });
-    // Load existing product data
-  } else {
-    // Reset for new slot
-    setFormData({
-      productName: '',
-      productPrice: '',
-      specs: { material: '', height: '', width: '', weight: '' },
-      description: '',
-      mainImage: null,
-      extraImages: [null, null, null, null]
-    });
-  }
-}, [product, isNewSlot]); // Change isDraft to isNewSlot
+    }
+  }, [product, isNewSlot]);
+
   const handleSpecChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -181,77 +165,77 @@ useEffect(() => {
   };
 
   const handleSave = async () => {
-  try {
-    const token = localStorage.getItem('token');
-    const formPayload = new FormData();
-    const isUpdate = !!product?.id && !isNaN(product.id);
+    try {
+      const token = localStorage.getItem('token');
+      const formPayload = new FormData();
+      const isUpdate = !!product?.id && !isNaN(product.id);
 
-    // For updates, use PUT and correct endpoint
-    const method = isUpdate ? 'put' : 'post';
-    const url = isUpdate ? `${productUrl}/${product.id}` : productUrl;
+      const method = isUpdate ? 'put' : 'post';
+      const url = isUpdate ? `${productUrl}/${product.id}` : productUrl;
 
-    // Common fields
-    formPayload.append('productName', formData.productName);
-    formPayload.append('productPrice', formData.productPrice);
-    formPayload.append('material', formData.specs.material);
-    formPayload.append('height', formData.specs.height);
-    formPayload.append('width', formData.specs.width);
-    formPayload.append('weight', formData.specs.weight);
-    formPayload.append('productDescription', formData.description);
+      formPayload.append('productName', formData.productName);
+      formPayload.append('productPrice', formData.productPrice);
+      formPayload.append('material', formData.specs.material);
+      formPayload.append('height', formData.specs.height);
+      formPayload.append('width', formData.specs.width);
+      formPayload.append('weight', formData.specs.weight);
+      formPayload.append('productDescription', formData.description);
 
-    // Handle main image (send file or existing path)
-    if (formData.mainImage?.file) {
-      formPayload.append('image1', formData.mainImage.file);
-    } else if (product?.image1) {
-      formPayload.append('image1', product.image1.split('/uploads/')[1]); // Extract filename
+      if (formData.mainImage?.file) {
+        formPayload.append('image1', formData.mainImage.file);
+      } else if (product?.image1) {
+        formPayload.append('image1', product.image1.split('/uploads/')[1]);
+      }
+      if (isUpdate && !isNaN(product.id)) {
+        formPayload.append('id', product.id);
+      }
+
+      formData.extraImages.forEach((img, index) => {
+        const fieldName = `image${index + 2}`;
+        if (img?.file) {
+          formPayload.append(fieldName, img.file);
+        } else if (product?.[fieldName]) {
+          formPayload.append(fieldName, product[fieldName].split('/uploads/')[1]);
+        }
+      });
+
+      const response = await axios[method](url, formPayload, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      setIsEditing(false);
+      if (typeof fetchProducts === 'function') {
+        fetchProducts();
+      }
+      alert(response.data.message || `Product ${isUpdate ? 'updated' : 'saved'} successfully!`);
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.error || 
+                          error.message;
+      alert(`Save failed: ${errorMessage}`);
     }
-    if (isUpdate && !isNaN(product.id)) {
-  formPayload.append('id', product.id); // Only append ID for valid updates
-}
-
-    // Handle extra images
-    formData.extraImages.forEach((img, index) => {
-      const fieldName = `image${index + 2}`;
-      if (img?.file) {
-        formPayload.append(fieldName, img.file);
-      } else if (product?.[fieldName]) {
-        formPayload.append(fieldName, product[fieldName].split('/uploads/')[1]);
-      }
-    });
-
-    const response = await axios[method](url, formPayload, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-        Authorization: `Bearer ${token}`
-      }
-    });
-
-    setIsEditing(false);
-    fetchProducts(); // Refresh list after save
-    alert(`Product ${isUpdate ? 'updated' : 'saved'} successfully!`);
-  } catch (error) {
-    alert(error.response?.data?.message || 'Operation failed');
-  }
-};
+  };
 
   const handleDelete = async () => {
-  const confirmMsg = isNewSlot ? 'Discard this draft?' : 'Delete this product permanently?';
-  if (window.confirm(confirmMsg)) {
-    try {
-      if (!isNewSlot) {
-        const token = localStorage.getItem('token');
-        await axios.delete(`${productUrl}/${product.id}`, {
-          headers: { Authorization: `Bearer ${token}` } // Add this
-        });
+    const confirmMsg = isNewSlot ? 'Discard this draft?' : 'Delete this product permanently?';
+    if (window.confirm(confirmMsg)) {
+      try {
+        if (!isNewSlot) {
+          const token = localStorage.getItem('token');
+          await axios.delete(`${productUrl}/${product.id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+        }
+        onDelete(isNewSlot ? product.id : String(product.id));
+      } catch (error) {
+        alert(`Delete failed: ${error.response?.data?.message || error.message}`);
       }
-      onDelete(isNewSlot ? product.id : String(product.id));
-    } catch (error) {
-      alert(`Delete failed: ${error.response?.data?.message || error.message}`);
     }
-  }
-};
+  };
 
-  //const isNewSlot = !product?.id;
   const saveDisabled = isNewSlot && maxProducts >= 3;
 
   return (
@@ -382,62 +366,76 @@ function EmployeeTable() {
     specialization: "Silver Ornaments Expert", // Default value
     contact: "",
     artisanId: "",
-    isEditing: false
+    isEditing: false,
   });
   const handleEditToggle = () => {
-    setProfile(prev => ({...prev, isEditing: !prev.isEditing}));
+    setProfile((prev) => ({ ...prev, isEditing: !prev.isEditing }));
   };
 
-   const handleSaveProfile = async () => {
+  const handleSaveProfile = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.put(`${backendUrl}/auth/profile`, {
-        username: profile.name,
-        specialization: profile.specialization,
-        contact: profile.contact
-      }, {
-        headers: {Authorization: `Bearer ${token}`}
+      if (profile.contact.length !== 10) {
+        alert("Contact number must be 10 digits");
+        return;
+      }
+
+      const token = localStorage.getItem("token");
+      const response = await axios.put(
+        `${backendUrl}/auth/profile`,
+        {
+          specialization: profile.specialization?.trim() || null,
+          contact: profile.contact,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setProfile({
+        ...response.data.profile,
+        isEditing: false,
+        specialization: response.data.profile.specialization || "Not Specified",
       });
 
-      // Update local storage with new values
-      localStorage.setItem('username', profile.name);
-      localStorage.setItem('phoneNumber', profile.contact);
-      
-      setProfile(prev => ({
-        ...prev,
-        isEditing: false,
-        name: profile.name,
-        specialization: profile.specialization,
-        contact: profile.contact
-      }));
-      
-      alert('Profile updated successfully!');
+      alert("Profile updated successfully!");
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.error || 
-                          error.message;
-      alert(`Error updating profile: ${errorMessage}`);
+      const errorMessage = error.response?.data?.message;
+      if (errorMessage?.includes("already exists")) {
+        alert(
+          "This contact number is already registered. Please use a different number."
+        );
+      } else {
+        alert(errorMessage || "Failed to update profile");
+      }
     }
   };
 
-   useEffect(() => {
-    const token = localStorage.getItem('token');
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(`${backendUrl}/auth/profile`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        setProfile({
+          ...response.data.profile,
+          isEditing: false,
+        });
+
+        // Update local storage
+        localStorage.setItem("username", response.data.profile.name);
+        localStorage.setItem("phoneNumber", response.data.profile.contact);
+      } catch (error) {
+        console.error("Profile fetch error:", error);
+      }
+    };
+
+    const token = localStorage.getItem("token");
     if (token) {
       try {
-        const decoded = JSON.parse(atob(token.split('.')[1]));
-        setProfile({
-          name: decoded.username || localStorage.getItem('username') || "Artisan",
-          specialization: decoded.specialization || "Silver Ornaments Expert",
-          contact: decoded.PhoneNumber || localStorage.getItem('phoneNumber') || "",
-          artisanId: decoded.artisanId || ""
-        });
+        const decoded = JSON.parse(atob(token.split(".")[1]));
+        fetchProfile();
       } catch (error) {
-        console.error('Token decode error:', error);
-        setProfile(prev => ({
-          ...prev,
-          name: localStorage.getItem('username') || "Artisan",
-          contact: localStorage.getItem('phoneNumber') || ""
-        }));
+        console.error("Token decode error:", error);
       }
     }
   }, []);
@@ -458,13 +456,13 @@ function EmployeeTable() {
       <div className="grid grid-cols-12 gap-2 py-3 px-4 md:px-6 text-sm">
         <div className="col-span-3 flex items-center gap-3">
           <div className="w-8 h-8 bg-zinc-300 rounded-full flex items-center justify-center">
-            {profile.name?.[0]?.toUpperCase() || 'A'}
+            {profile.name?.[0]?.toUpperCase() || "A"}
           </div>
           {profile.isEditing ? (
             <input
               value={profile.name}
-              onChange={(e) => setProfile(p => ({...p, name: e.target.value}))}
-              className="border rounded px-2 py-1 w-32"
+              disabled // Disable name editing
+              className="border rounded px-2 py-1 w-32 bg-gray-100"
             />
           ) : (
             <div className="font-normal text-neutral-800">
@@ -476,12 +474,18 @@ function EmployeeTable() {
         <div className="col-span-4 flex items-center font-normal text-neutral-600">
           {profile.isEditing ? (
             <input
-              value={profile.specialization}
-              onChange={(e) => setProfile(p => ({...p, specialization: e.target.value}))}
+              value={profile.specialization || ""}
+              onChange={(e) =>
+                setProfile((p) => ({
+                  ...p,
+                  specialization: e.target.value || null,
+                }))
+              }
               className="border rounded px-2 py-1 w-full"
+              placeholder="Enter specialization"
             />
           ) : (
-            profile.specialization
+            profile.specialization || "Not Specified"
           )}
         </div>
 
@@ -501,11 +505,18 @@ function EmployeeTable() {
           {profile.isEditing ? (
             <input
               value={profile.contact}
-              onChange={(e) => setProfile(p => ({...p, contact: e.target.value}))}
+              maxLength={10}
+              onChange={(e) => {
+                const val = e.target.value.replace(/\D/g, ""); // Only numbers
+                setProfile((p) => ({ ...p, contact: val.slice(0, 10) }));
+              }}
               className="border rounded px-2 py-1 w-full"
+              placeholder="10-digit contact number"
             />
           ) : (
-            <span className="text-neutral-600">{profile.contact}</span>
+            <span className="text-neutral-600">
+              {profile.contact || "No contact provided"}
+            </span>
           )}
         </div>
 
@@ -542,42 +553,39 @@ function EmployeeTable() {
   );
 }
 
-// In EmployeeDashboard component
 export default function EmployeeDashboard() {
   const [products, setProducts] = useState([]);
-  const [drafts, setDrafts] = useState([{ id: 'initial-draft' }]); // Default draft
-  // const [showEmptySlot, setShowEmptySlot] = useState(false);
+  const [drafts, setDrafts] = useState([{ id: 'initial-draft' }]);
 
-  // In EmployeeDashboard.jsx - Add this useEffect
   useEffect(() => {
-  // Token validation on initial load
-  const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token');
     if (!token) {
       window.location.href = '/login';
       return;
     }
 
-  try {
-    const decoded = JSON.parse(atob(token.split('.')[1]));
-    const expirationTime = decoded.exp * 1000;
-    if (Date.now() > expirationTime) {
+    try {
+      const decoded = JSON.parse(atob(token.split('.')[1]));
+      const expirationTime = decoded.exp * 1000;
+      if (Date.now() > expirationTime) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
+    } catch (error) {
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
-  } catch (error) {
-    localStorage.removeItem('token');
-    window.location.href = '/login';
-  }
 
-  fetchProducts();
-}, []); // Empty dependency array to run only once on mount
+    fetchProducts();
+  }, []);
+
   const fetchProducts = async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-      window.location.href = '/login';
-      return;
-    }
+        window.location.href = '/login';
+        return;
+      }
       const decoded = JSON.parse(atob(token.split('.')[1]));
       const res = await axios.get(`${productUrl}/${decoded.artisanId}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -586,65 +594,48 @@ export default function EmployeeDashboard() {
       setDrafts(prev => res.data.length === 0 ? [{ id: 'initial-draft' }] : []);
     } catch (error) {
       console.error('Fetch error:', error);
-     // Handle network errors and all 4xx/5xx statuses
-    if (error.response?.status === 401 || error.message === "Network Error") {
-      localStorage.removeItem('token');
-      alert('Session expired or invalid. Please log in again.');
-      window.location.href = '/login';
-    } else {
-      alert(`Failed to load products: ${error.response?.data?.message || error.message}`);
-    }
+      if (error.response?.status === 401 || error.message === "Network Error") {
+        localStorage.removeItem('token');
+        alert('Session expired or invalid. Please log in again.');
+        window.location.href = '/login';
+      } else {
+        alert(`Failed to load products: ${error.response?.data?.message || error.message}`);
+      }
     }
   };
-  useEffect(() => {
-  const loadData = async () => {
-    await fetchProducts();
-    // Only show drafts if there are no products
-    setDrafts(prev => products.length === 0 ? [] : prev);
-  };
-  loadData();
-}, [products.length]);// Add dependency
 
-// Update handleAddSlot
-const handleAddSlot = () => {
-  if (products.length + drafts.length < 3) {
-    setDrafts(prev => [...prev, {}]);
-    // Force immediate UI update
-    setProducts(p => [...p]);
-  }
-};
+  const handleAddSlot = () => {
+    if (products.length + drafts.length < 3) {
+      setDrafts(prev => [...prev, { id: `draft-${Date.now()}` }]);
+    }
+  };
 
   const handleDelete = (deletedId) => {
-  // Convert to string for consistent type handling
-  const idString = String(deletedId);
-  
-  if (idString.startsWith('draft-')) {
-    setDrafts(prev => prev.filter(d => d.id !== idString));
-  } else {
-    // Optimistically remove from UI
-    setProducts(prev => prev.filter(p => String(p.id) !== idString));
-  }
-  // Then sync with backend
-  fetchProducts();
-};
-
+    const idString = String(deletedId);
+    
+    if (idString.startsWith('draft-')) {
+      setDrafts(prev => prev.filter(d => d.id !== idString));
+    } else {
+      setProducts(prev => prev.filter(p => String(p.id) !== idString));
+    }
+    fetchProducts();
+  };
 
   const handleListAll = async () => {
-  try {
-    const token = localStorage.getItem('token');
-    const response = await axios.post(
-      `${backendUrl}/products/list-products`,
-      {},
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        `${backendUrl}/products/list-products`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    alert(response.data.message);
-    // Refresh products to show listed status
-    fetchProducts();
-  } catch (error) {
-    alert(error.response?.data?.message || 'Listing failed. Please try again.');
-  }
-};
+      alert(response.data.message);
+      fetchProducts();
+    } catch (error) {
+      alert(error.response?.data?.message || 'Listing failed. Please try again.');
+    }
+  };
 
   return (
     <AnimatedPage>
@@ -685,7 +676,6 @@ const handleAddSlot = () => {
               )}
             </div>
 
-            {/* Product Forms Container */}
             <div className="space-y-8">
               {products.map((product, index) => (
                 <ProductForm
@@ -693,6 +683,7 @@ const handleAddSlot = () => {
                   productNumber={index + 1}
                   product={product}
                   onDelete={() => handleDelete(product.id)}
+                  fetchProducts={fetchProducts}
                 />
               ))}
               
@@ -703,9 +694,9 @@ const handleAddSlot = () => {
                   product={{ ...draft, id: draft.id }}
                   onDelete={handleDelete}
                   isNewSlot={true}
-                  fetchProducts={fetchProducts} // Pass down
+                  fetchProducts={fetchProducts}
                 />
-            ))}
+              ))}
             </div>
           </div>
         </main>

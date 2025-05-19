@@ -21,8 +21,18 @@ function IndividualProduct() {
           axios.get(`${backendUrl}/api/public/products/${productId}/related`),
         ]);
 
-        setProduct(productRes.data);
-        setRelatedProducts(relatedRes.data);
+        setProduct({
+          ...productRes.data,
+          images: productRes.data.images || ['/placeholder-product.jpg']
+        });
+
+        setRelatedProducts(
+          relatedRes.data.map(p => ({
+            ...p,
+            images: p.images || ['/placeholder-product.jpg'],
+            primaryImage: p.primaryImage || '/placeholder-product.jpg'
+          }))
+        );
       } catch (err) {
         setError(err.response?.data?.message || "Failed to fetch product");
       } finally {
@@ -34,26 +44,8 @@ function IndividualProduct() {
   }, [productId]);
 
   if (loading) return <div className="text-center py-20">Loading...</div>;
-  if (error)
-    return (
-      <AnimatedPage>
-        <div className="text-center py-20">
-          <h2 className="text-red-500 text-xl mb-4">Error: {error}</h2>
-          <Link
-            to="/products"
-            className="text-indigo-600 hover:text-indigo-800"
-          >
-            ← Back to Products
-          </Link>
-        </div>
-      </AnimatedPage>
-    );
-  if (!product)
-    return (
-      <AnimatedPage>
-        <div className="text-center py-20">Product not found</div>
-      </AnimatedPage>
-    );
+  if (error) return <ErrorPage error={error} />;
+  if (!product) return <NotFoundPage />;
 
   return (
     <AnimatedPage>
@@ -67,30 +59,57 @@ function IndividualProduct() {
   );
 }
 
+// Helper components
+function ErrorPage({ error }) {
+  return (
+    <AnimatedPage>
+      <div className="text-center py-20">
+        <h2 className="text-red-500 text-xl mb-4">Error: {error}</h2>
+        <Link to="/products" className="text-indigo-600 hover:text-indigo-800">
+          ← Back to Products
+        </Link>
+      </div>
+    </AnimatedPage>
+  );
+}
+
+function NotFoundPage() {
+  return (
+    <AnimatedPage>
+      <div className="text-center py-20">
+        <h2 className="text-xl mb-4">Product not found</h2>
+        <Link to="/products" className="text-indigo-600 hover:text-indigo-800">
+          ← Back to Products
+        </Link>
+      </div>
+    </AnimatedPage>
+  );
+}
+
 function ProductDetails({ product }) {
   const [selectedImage, setSelectedImage] = useState(0);
-  const images = product.images.filter((img) => img);
 
   const specifications = {
-    material: product.material || "Sterling Silver",
-    weight: product.weight || "2.5g",
-    certification: product.certification || "Hallmarked",
-    finish: product.finish || "Polished",
-    closureType: product.closureType || "Lobster Clasp",
+    material: product.material || "Not specified",
+    weight: product.weight || "Not specified",
+    certification: product.certification || "Not specified",
+    finish: product.finish || "Not specified",
+    closureType: product.closureType || "Not specified",
   };
 
   return (
     <section className="lg:grid lg:grid-cols-2 lg:gap-16">
+      {/* Product Images Section */}
       <div className="flex flex-col gap-6">
         <div className="aspect-square overflow-hidden rounded-2xl bg-white shadow-lg">
-          <img
-            src={images[selectedImage]}
-            className="h-full w-full object-cover"
+          <ImageWithFallback 
+            src={product.images[selectedImage]} 
             alt="Main product view"
+            className="h-full w-full object-cover"
           />
         </div>
         <div className="grid grid-cols-4 gap-4">
-          {images.map((img, index) => (
+          {product.images.map((img, index) => (
             <button
               key={index}
               onClick={() => setSelectedImage(index)}
@@ -98,7 +117,7 @@ function ProductDetails({ product }) {
                 selectedImage === index ? "ring-2 ring-emerald-500" : ""
               }`}
             >
-              <img
+              <ImageWithFallback 
                 src={img}
                 alt={`Thumbnail ${index + 1}`}
                 className="h-full w-full object-cover"
@@ -108,87 +127,58 @@ function ProductDetails({ product }) {
         </div>
       </div>
 
+      {/* Product Info Section */}
       <div className="mt-8 lg:mt-0">
-        <h1 className="text-3xl font-bold text-gray-900">
-          {product.productName}
-        </h1>
+        <h1 className="text-3xl font-bold text-gray-900">{product.productName}</h1>
         <p className="text-3xl font-semibold text-emerald-600 mt-4">
           ₹{product.productPrice}
         </p>
 
         <div className="mt-8 border-t border-gray-200 pt-8">
-          <h2 className="text-xl font-semibold text-gray-900">
-            Product Specifications
-          </h2>
+          <h2 className="text-xl font-semibold text-gray-900">Product Specifications</h2>
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {Object.entries(specifications).map(([key, value]) => (
-              <div key={key} className="rounded-lg bg-gray-50 p-4 shadow-sm">
-                <dt className="text-sm font-medium text-gray-500">
-                  {key.charAt(0).toUpperCase() + key.slice(1)}
-                </dt>
-                <dd className="mt-1 text-gray-900">{value}</dd>
-              </div>
+              <SpecItem key={key} name={key} value={value} />
             ))}
           </div>
         </div>
 
-        {/* Product Description */}
         {product.productDescription && (
           <div className="mt-8 border-t border-gray-200 pt-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              Description
-            </h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Description</h2>
             <p className="text-gray-600">{product.productDescription}</p>
           </div>
         )}
 
-        <ArtisanInfo artisanId={product.artisanId} />
+        <ArtisanInfo artisan={product} />
       </div>
     </section>
   );
 }
 
-function ArtisanInfo({ artisanId }) {
-  const [artisan, setArtisan] = useState(null);
-
-  useEffect(() => {
-    const fetchArtisan = async () => {
-      try {
-        const response = await axios.get(
-          `${backendUrl}/public/artisans/${artisanId}`
-        );
-        setArtisan(response.data);
-      } catch (error) {
-        console.error("Error fetching artisan:", error);
-      }
-    };
-
-    artisanId && fetchArtisan();
-  }, [artisanId]);
-
-  if (!artisan) return null;
-
+function ArtisanInfo({ artisan }) {
   return (
     <div className="mt-8 border-t border-gray-200 pt-8">
       <h2 className="text-xl font-semibold text-gray-900">About the Artisan</h2>
       <div className="mt-6 flex items-start gap-4">
         <div className="h-16 w-16 rounded-full bg-gray-200 overflow-hidden">
           {artisan.profileImageUrl ? (
-            <img
+            <ImageWithFallback
               src={artisan.profileImageUrl}
               alt={artisan.username}
               className="h-full w-full object-cover"
+              fallback={<span className="text-2xl text-gray-600 flex items-center justify-center h-full">
+                {artisan.username?.[0]?.toUpperCase() || 'A'}
+              </span>}
             />
           ) : (
             <span className="text-2xl text-gray-600 flex items-center justify-center h-full">
-              {artisan.username?.[0]?.toUpperCase()}
+              {artisan.username?.[0]?.toUpperCase() || 'A'}
             </span>
           )}
         </div>
         <div>
-          <h3 className="text-lg font-medium text-gray-900">
-            {artisan.username}
-          </h3>
+          <h3 className="text-lg font-medium text-gray-900">{artisan.username}</h3>
           <p className="text-sm text-gray-500 mt-2">{artisan.specialization}</p>
           <p className="text-gray-600 mt-2">Contact: {artisan.PhoneNumber}</p>
         </div>
@@ -207,7 +197,7 @@ function RelatedProducts({ products }) {
         {products.length > 4 && (
           <button
             className="text-emerald-600 hover:text-emerald-700 font-medium"
-            onClick={() => setVisibleCount((prev) => prev + 4)}
+            onClick={() => setVisibleCount(prev => Math.min(prev + 4, products.length))}
           >
             View More →
           </button>
@@ -215,31 +205,75 @@ function RelatedProducts({ products }) {
       </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {products.slice(0, visibleCount).map((product) => (
-          <Link
-            key={product.id}
-            to={`/products/${product.id}`}
-            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-          >
-            <div className="aspect-square overflow-hidden">
-              <img
-                src={product.imageUrl}
-                alt={product.productName}
-                className="h-full w-full object-cover"
-              />
-            </div>
-            <div className="p-4">
-              <h3 className="font-medium text-gray-900 truncate">
-                {product.productName}
-              </h3>
-              <p className="mt-2 text-lg font-semibold text-emerald-600">
-                ₹{product.productPrice}
-              </p>
-            </div>
-          </Link>
+        {products.slice(0, visibleCount).map(product => (
+          <RelatedProductCard key={product.id} product={product} />
         ))}
       </div>
     </section>
+  );
+}
+
+function RelatedProductCard({ product }) {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  return (
+    <Link
+      to={`/products/${product.id}`}
+      className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow group"
+      onMouseEnter={() => {
+        if (product.images.length > 1) {
+          setCurrentImageIndex(1);
+        }
+      }}
+      onMouseLeave={() => setCurrentImageIndex(0)}
+    >
+      <div className="aspect-square overflow-hidden relative">
+        <ImageWithFallback
+          src={product.images[currentImageIndex] || product.primaryImage}
+          alt={product.productName}
+          className="h-full w-full object-cover transition-opacity duration-300"
+        />
+      </div>
+      <div className="p-4">
+        <h3 className="font-medium text-gray-900 truncate">{product.productName}</h3>
+        <p className="mt-2 text-lg font-semibold text-emerald-600">
+          ₹{product.productPrice}
+        </p>
+      </div>
+    </Link>
+  );
+}
+
+// Reusable components
+function ImageWithFallback({ src, alt, className, fallback }) {
+  const [imgSrc, setImgSrc] = useState(src);
+  const [errored, setErrored] = useState(false);
+
+  const onError = () => {
+    if (!errored) {
+      setErrored(true);
+      setImgSrc('/placeholder-product.jpg');
+    }
+  };
+
+  return (
+    <img
+      src={imgSrc}
+      alt={alt}
+      className={className}
+      onError={onError}
+    />
+  );
+}
+
+function SpecItem({ name, value }) {
+  return (
+    <div className="rounded-lg bg-gray-50 p-4 shadow-sm">
+      <dt className="text-sm font-medium text-gray-500">
+        {name.charAt(0).toUpperCase() + name.slice(1)}
+      </dt>
+      <dd className="mt-1 text-gray-900">{value}</dd>
+    </div>
   );
 }
 
