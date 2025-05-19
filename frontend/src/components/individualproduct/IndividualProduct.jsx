@@ -59,7 +59,6 @@ function IndividualProduct() {
   );
 }
 
-// Helper components
 function ErrorPage({ error }) {
   return (
     <AnimatedPage>
@@ -92,14 +91,14 @@ function ProductDetails({ product }) {
   const specifications = {
     material: product.material || "Not specified",
     weight: product.weight || "Not specified",
+    height: product.height || "Not specified",
+    width: product.width || "Not specified",
     certification: product.certification || "Not specified",
     finish: product.finish || "Not specified",
-    closureType: product.closureType || "Not specified",
   };
 
   return (
     <section className="lg:grid lg:grid-cols-2 lg:gap-16">
-      {/* Product Images Section */}
       <div className="flex flex-col gap-6">
         <div className="aspect-square overflow-hidden rounded-2xl bg-white shadow-lg">
           <ImageWithFallback 
@@ -127,7 +126,6 @@ function ProductDetails({ product }) {
         </div>
       </div>
 
-      {/* Product Info Section */}
       <div className="mt-8 lg:mt-0">
         <h1 className="text-3xl font-bold text-gray-900">{product.productName}</h1>
         <p className="text-3xl font-semibold text-emerald-600 mt-4">
@@ -244,7 +242,6 @@ function RelatedProductCard({ product }) {
   );
 }
 
-// Reusable components
 function ImageWithFallback({ src, alt, className, fallback }) {
   const [imgSrc, setImgSrc] = useState(src);
   const [errored, setErrored] = useState(false);

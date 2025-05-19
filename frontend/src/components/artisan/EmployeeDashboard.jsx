@@ -60,7 +60,7 @@ function ProductSpecifications({ productNumber, specs, onChange, disabled }) {
     <div className="w-full mb-4">
       <h3 className="text-sm font-normal text-black mb-3">Product Specifications</h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {['material', 'height', 'width', 'weight'].map((field) => (
+        {['material', 'height', 'width', 'weight','certification', 'finish'].map((field) => (
           <div key={field}>
             <label
               htmlFor={`${field}-${productNumber}`}
@@ -95,6 +95,8 @@ function ProductForm({ productNumber, product, onDelete, maxProducts, isNewSlot,
       height: product?.height || '',
       width: product?.width || '',
       weight: product?.weight || '',
+      certification: product?.certification || '',
+      finish: product?.finish || '',
     },
     description: product?.productDescription || '',
     mainImage: product?.image1 ? { preview: `${backendUrl}${product.image1}` } : null,
@@ -113,6 +115,8 @@ function ProductForm({ productNumber, product, onDelete, maxProducts, isNewSlot,
             height: product.height,
             width: product.width,
             weight: product.weight,
+            certification: product.certification || '', // Add this line
+            finish: product.finish || '' // Add this line
           },
           description: product.productDescription,
           mainImage: product.image1 ? { 
@@ -128,7 +132,7 @@ function ProductForm({ productNumber, product, onDelete, maxProducts, isNewSlot,
       setFormData({
         productName: '',
         productPrice: '',
-        specs: { material: '', height: '', width: '', weight: '' },
+        specs: { material: '', height: '', width: '', weight: '' , certification: '', finish: '' },
         description: '',
         mainImage: null,
         extraImages: [null, null, null, null]
@@ -179,6 +183,8 @@ function ProductForm({ productNumber, product, onDelete, maxProducts, isNewSlot,
       formPayload.append('height', formData.specs.height);
       formPayload.append('width', formData.specs.width);
       formPayload.append('weight', formData.specs.weight);
+      formPayload.append('certification', formData.specs.certification);
+      formPayload.append('finish', formData.specs.finish);
       formPayload.append('productDescription', formData.description);
 
       if (formData.mainImage?.file) {
