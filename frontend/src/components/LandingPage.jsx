@@ -54,7 +54,7 @@ function LandingPage() {
           </section>
 
           {/* Contact Section */}
-          <section className="px-6 md:px-10 pt-4 pb-8 bg-gray-50 md:pt-6 md:pb-10">
+          <section className="px-6 md:px-10 pt-4 pb-8 md:pt-6 md:pb-10">
             <ContactSection />
           </section>
 

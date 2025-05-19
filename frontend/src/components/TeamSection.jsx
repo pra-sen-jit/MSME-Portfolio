@@ -1,25 +1,31 @@
+import React from "react";
 import premImage from "../assets/prem.png";
-import Debu from "../assets/debangshu.png";
+import Debu from "../assets/debangshu.png";// ✅ update this path if needed
 import Prasenjit from "../assets/prasenjit.png";
 import subhrajit from "../assets/subhrajit.png";
 import gourav from "../assets/gourav.png";
 import subho from "../assets/subhobrata.png";
 
+
+
 function TeamSection() {
   const teamMembers = [
     {
       id: 1,
-      image: Debu,
+      image:
+        Debu,
       name: "Debangshu Roy",
     },
     {
       id: 2,
-      image: Prasenjit,
+      image:
+        Prasenjit,
       name: "Prasenjit Datta",
     },
     {
       id: 3,
-      image: subhrajit,
+      image:
+        subhrajit,
       name: "Subhrajit Ghosh",
     },
     {
@@ -29,12 +35,14 @@ function TeamSection() {
     },
     {
       id: 5,
-      image: gourav,
+      image:
+        gourav,
       name: "Gourav Majumder",
     },
     {
       id: 6,
-      image: subho,
+      image:
+       subho,
       name: "Subhobrata Maity",
     },
   ];
