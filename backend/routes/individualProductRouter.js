@@ -10,7 +10,12 @@ router.get("/:productId", async (req, res) => {
     const [products] = await db.query(
       `
       SELECT 
-        p.*, 
+        p.*,
+        CONCAT('${process.env.BACKEND_URL}/uploads/', p.image1) as image1,
+        CONCAT('${process.env.BACKEND_URL}/uploads/', p.image2) as image2,
+        CONCAT('${process.env.BACKEND_URL}/uploads/', p.image3) as image3,
+        CONCAT('${process.env.BACKEND_URL}/uploads/', p.image4) as image4,
+        CONCAT('${process.env.BACKEND_URL}/uploads/', p.image5) as image5,
         u.username,
         u.specialization,
         u.PhoneNumber,
@@ -54,7 +59,7 @@ router.get("/:productId/related", async (req, res) => {
         id,
         productName,
         productPrice,
-        image1 AS imageUrl
+        CONCAT('${process.env.BACKEND_URL}/uploads/', image1) AS imageUrl
       FROM products
       WHERE artisanId = (
         SELECT artisanId FROM products WHERE id = ?
@@ -62,7 +67,7 @@ router.get("/:productId/related", async (req, res) => {
       AND id != ?
       AND is_listed = TRUE
       LIMIT 4
-    `,
+      `,
       [req.params.productId, req.params.productId]
     );
 
