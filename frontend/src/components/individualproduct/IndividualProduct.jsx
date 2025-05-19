@@ -274,7 +274,4 @@ function SpecItem({ name, value }) {
   );
 }
 
-
-
-
 export default IndividualProduct;

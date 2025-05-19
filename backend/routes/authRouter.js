@@ -96,16 +96,16 @@ router.post("/login", async (req, res) => {
 
 // Ensure verifyToken middleware properly handles JWT errors
 export const verifyToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  if (!authHeader) return res.status(403).json({ message: "No token provided." });
-  
+  const authHeader = req.headers["authorization"];
+  if (!authHeader)
+    return res.status(403).json({ message: "No token provided." });
+
   const token = authHeader.split(" ")[1];
   jwt.verify(token, process.env.JWT_KEY, (err, decoded) => {
     if (err) {
-      return res.status(401).json({ 
-        message: err.name === 'TokenExpiredError' 
-          ? "Token expired" 
-          : "Invalid token"
+      return res.status(401).json({
+        message:
+          err.name === "TokenExpiredError" ? "Token expired" : "Invalid token",
       });
     }
     req.userId = decoded.id;
@@ -115,33 +115,83 @@ export const verifyToken = (req, res, next) => {
 };
 
 // Keep only the PUT route for safe updates
-// In authRouter.js
 router.put("/profile", verifyToken, async (req, res) => {
   try {
     const db = await connectToDatabase();
-    await db.query(
-      "UPDATE users SET username = ?, specialization = ?, PhoneNumber = ? WHERE artisanId = ?",
-      [
-        req.body.username,
-        req.body.specialization,
-        req.body.PhoneNumber,
-        req.artisanId,
-      ]
+    let { specialization, contact } = req.body;
+
+    // Validation
+    if (!contact || contact.length !== 10) {
+      return res.status(400).json({
+        message: "Valid 10-digit contact number required",
+      });
+    }
+
+    // Clean specialization
+    specialization = specialization?.trim() || null;
+
+    // Check if contact exists for other users
+    const [[existing]] = await db.query(
+      `SELECT id FROM users 
+       WHERE PhoneNumber = ? AND artisanId != ?`,
+      [contact, req.artisanId]
     );
-    res.status(200).json({
+
+    if (existing) {
+      return res.status(409).json({
+        message: "Contact number already registered to another artisan",
+      });
+    }
+
+    // Update database
+    await db.query(
+      `UPDATE users SET
+        specialization = ?,
+        PhoneNumber = ?
+       WHERE artisanId = ?`,
+      [specialization, contact, req.artisanId]
+    );
+
+    // Return updated profile
+    const [[updatedUser]] = await db.query(
+      `SELECT 
+        username as name,
+        COALESCE(specialization, 'Not Specified') as specialization,
+        PhoneNumber as contact
+       FROM users WHERE artisanId = ?`,
+      [req.artisanId]
+    );
+
+    res.json({
       message: "Profile updated successfully",
-      updatedFields: {
-        username: req.body.username,
-        specialization: req.body.specialization,
-        contact: req.body.contact,
-      },
+      profile: updatedUser,
     });
   } catch (error) {
     console.error("Profile update error:", error);
     res.status(500).json({
-      message: "Database update failed",
-      error: error.message,
+      message: error.message.includes("Duplicate")
+        ? "Contact number already exists"
+        : "Server error",
     });
+  }
+});
+
+router.get("/profile", verifyToken, async (req, res) => {
+  try {
+    const db = await connectToDatabase();
+    const [[user]] = await db.query(
+      "SELECT username as name, specialization, PhoneNumber as contact, artisanId " +
+        "FROM users WHERE artisanId = ?",
+      [req.artisanId]
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "Profile not found" });
+    }
+
+    res.json({ profile: user });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching profile" });
   }
 });
 

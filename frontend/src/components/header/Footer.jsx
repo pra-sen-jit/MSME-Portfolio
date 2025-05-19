@@ -172,7 +172,7 @@ function Footer() {
     </a>
   </div>
   <p className="text-neutral-500 mt-2">
-    © 2025 Money Records. All Rights Reserved.
+    © 2025 Magrahat E-catalogue. All Rights Reserved.
   </p>
 </div>
 
