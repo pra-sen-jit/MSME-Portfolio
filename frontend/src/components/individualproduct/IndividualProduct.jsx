@@ -92,9 +92,10 @@ function ProductDetails({ product }) {
   const specifications = {
     material: product.material || "Not specified",
     weight: product.weight || "Not specified",
+    height: product.height || "Not specified",
+    width: product.width || "Not specified",
     certification: product.certification || "Not specified",
     finish: product.finish || "Not specified",
-    closureType: product.closureType || "Not specified",
   };
 
   return (

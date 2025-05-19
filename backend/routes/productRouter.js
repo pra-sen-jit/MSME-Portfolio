@@ -32,7 +32,7 @@ router.post(
   async (req, res) => {
     try {
       const artisanId = req.artisanId;
-      const { productName, productPrice, material, height, width, weight, productDescription } = req.body;
+      const { productName, productPrice, material, height, width, weight, productDescription,certification, finish } = req.body;
       if (!productName) {
         return res.status(400).json({ message: "productName is required." });
       }
@@ -54,10 +54,10 @@ router.post(
       const [result] = await db.query(
         `INSERT INTO products (
            artisanId, productName, productPrice, material,
-           height, width, weight,
+           height, width, weight,certification, finish,
            image1, image2, image3, image4, image5,
            productDescription
-         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?)`,
         [
           artisanId,
           productName,
@@ -66,6 +66,8 @@ router.post(
           height || null,
           width || null,
           weight || null,
+          certification || null,  // New field
+          finish || null,         // New field
           image1,
           image2,
           image3,
@@ -107,7 +109,7 @@ router.put(
       if (!product) return res.status(404).json({ message: "Product not found" });
 
       // Process updates
-      const { productName, productPrice, material, height, width, weight, productDescription } = req.body;
+      const { productName, productPrice, material, height, width, weight, productDescription,certification, finish  } = req.body;
       
       // Handle file updates (keep existing if no new file)
       const updateData = {
@@ -118,6 +120,8 @@ router.put(
         width: width || product.width,
         weight: weight || product.weight,
         productDescription: productDescription || product.productDescription,
+         certification: certification || product.certification,
+        finish: finish || product.finish,
         image1: req.files.image1?.[0]?.filename ? `/uploads/${req.files.image1[0].filename}` : product.image1,
         image2: req.files.image2?.[0]?.filename ? `/uploads/${req.files.image2[0].filename}` : product.image2,
         image3: req.files.image3?.[0]?.filename ? `/uploads/${req.files.image3[0].filename}` : product.image3,
@@ -128,7 +132,7 @@ router.put(
       await db.query(
         `UPDATE products SET 
           productName = ?, productPrice = ?, material = ?,
-          height = ?, width = ?, weight = ?,
+          height = ?, width = ?, weight = ?, certification = ?, finish = ?,
           image1 = ?, image2 = ?, image3 = ?,
           image4 = ?, image5 = ?, productDescription = ?
          WHERE id = ?`,
@@ -139,6 +143,8 @@ router.put(
           updateData.height,
           updateData.width,
           updateData.weight,
+          updateData.certification,  // New field
+          updateData.finish,         // New field
           updateData.image1,
           updateData.image2,
           updateData.image3,
