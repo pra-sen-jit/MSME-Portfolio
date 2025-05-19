@@ -59,7 +59,7 @@ router.get("/:productId/related", async (req, res) => {
         id,
         productName,
         productPrice,
-        image1 AS imageUrl
+        CONCAT('${process.env.BACKEND_URL}/uploads/', image1) AS imageUrl
       FROM products
       WHERE artisanId = (
         SELECT artisanId FROM products WHERE id = ?
@@ -67,7 +67,7 @@ router.get("/:productId/related", async (req, res) => {
       AND id != ?
       AND is_listed = TRUE
       LIMIT 4
-    `,
+      `,
       [req.params.productId, req.params.productId]
     );
 
