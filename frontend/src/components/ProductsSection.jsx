@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import ProductCard from "./ProductCard";
 import axios from "axios";
 import { Link } from "react-router-dom";
@@ -18,12 +18,19 @@ function ProductsSection() {
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
       try {
-        const response = await axios.get(`${backendUrl}/api/featured/featured-products`);
+        const response = await axios.get(
+          `${backendUrl}/api/featured/featured-products`
+        );
         if (response.data.success) {
           // Duplicate the products to create a seamless loop
-          setFeaturedProducts([...response.data.products, ...response.data.products]);
+          setFeaturedProducts([
+            ...response.data.products,
+            ...response.data.products,
+          ]);
         } else {
-          throw new Error(response.data.message || "Failed to fetch featured products");
+          throw new Error(
+            response.data.message || "Failed to fetch featured products"
+          );
         }
       } catch (err) {
         console.error("Error fetching featured products:", err);
@@ -33,7 +40,7 @@ function ProductsSection() {
         setLoading(false);
       }
     };
-    
+
     fetchFeaturedProducts();
   }, []);
 
@@ -52,7 +59,7 @@ function ProductsSection() {
         setScrollPosition((prev) => {
           const newPosition = prev + (scrollSpeed * delta) / 16;
           const sliderWidth = sliderRef.current.scrollWidth / 2; // Since we duplicated the products
-          
+
           // Reset position before reaching the end to avoid jump
           if (newPosition >= sliderWidth) {
             return 0;
@@ -101,10 +108,13 @@ function ProductsSection() {
           }}
         >
           {featuredProducts.map((product, index) => (
-            <div key={`${product.id}-${index}`} className="w-[300px] flex-shrink-0">
+            <div
+              key={`${product.id}-${index}`}
+              className="w-[300px] flex-shrink-0"
+            >
               <ProductCard
                 id={product.id}
-                image={`${backendUrl}${product.mainImage}`}
+                image={product.mainImage}
                 title={product.productName}
                 artisan={product.artisanName}
                 price={product.productPrice}
@@ -114,8 +124,8 @@ function ProductsSection() {
         </div>
       </div>
 
-      <Link 
-        to="/product" 
+      <Link
+        to="/product"
         className="mt-8 px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
       >
         View All Products

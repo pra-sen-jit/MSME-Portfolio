@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import { useState } from "react";
 
 function Sidebar() {
   const [priceRange, setPriceRange] = useState(2500);

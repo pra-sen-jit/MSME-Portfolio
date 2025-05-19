@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router-dom";
 
 function ProductCard({ id, image, title, artisan, price }) {
@@ -19,7 +18,7 @@ function ProductCard({ id, image, title, artisan, price }) {
           <h3 className="text-xl font-semibold text-black mb-1">{title}</h3>
           <p className="text-gray-600 text-sm mb-2">By {artisan}</p>
           <p className="text-lg font-bold text-indigo-600 mt-auto">
-            ₹{price ? Number(price).toLocaleString('en-IN') : '---'}
+            ₹{price ? Number(price).toLocaleString("en-IN") : "---"}
           </p>
         </div>
       </Link>
