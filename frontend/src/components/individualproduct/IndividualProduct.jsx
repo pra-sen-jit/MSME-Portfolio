@@ -72,11 +72,13 @@ function ProductDetails({ product }) {
   const images = product.images.filter((img) => img);
 
   const specifications = {
-    material: product.material || "Sterling Silver",
-    weight: product.weight || "2.5g",
-    certification: product.certification || "Hallmarked",
-    finish: product.finish || "Polished",
-    closureType: product.closureType || "Lobster Clasp",
+    material: product.material || "N/A",
+    height: product.height || "N/A",
+    width: product.width || "N/A",
+    weight: product.weight || "N/A",
+    certification: product.certification || "N/A",
+    finish: product.finish || "N/A",
+    closureType: product.closureType || "N/A",
   };
 
   return (
