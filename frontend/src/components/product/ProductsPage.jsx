@@ -3,8 +3,6 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
-// import Sidebar from "./Sidebar";
-// import ProductGrid from "./ProductGrid";
 import AnimatedPage from "../AnimatedPage";
 
 function Sidebar() {
