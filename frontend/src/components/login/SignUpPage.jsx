@@ -8,7 +8,7 @@ export default function SignUpPage() {
     firstName: "",
     lastName: "",
     PhoneNumber: "",
-    artisanId: "",
+    adminPassKey: "",
     password: "",
     confirmPassword: "",
     agreeToTerms: false,
@@ -16,6 +16,8 @@ export default function SignUpPage() {
   const [error, setError] = useState("");
   const [phoneError, setPhoneError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [generatedArtisanId, setGeneratedArtisanId] = useState("");
   const navigate = useNavigate();
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const signupurl = `${backendUrl}/auth/signup`;
@@ -100,8 +102,9 @@ export default function SignUpPage() {
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("username", response.data.username);
         localStorage.setItem("ArtisanId", response.data.artisanId);
-        alert("Signup successful !!!");
-        navigate("/");
+        setGeneratedArtisanId(response.data.artisanId);
+        setSuccess(true);
+        setTimeout(() => navigate("/"), 3000);
       }
     } catch (err) {
       console.error(err);
@@ -109,7 +112,7 @@ export default function SignUpPage() {
     }
   };
 
-  return (
+   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
       <div className="w-full max-w-md bg-white rounded-lg shadow-md p-8">
         <div className="flex justify-center mb-6">
@@ -180,16 +183,16 @@ export default function SignUpPage() {
           </div>
 
           <div className="mb-4">
-            <label htmlFor="artisanId" className="block text-gray-700 mb-2">
-              Artisan id
+            <label htmlFor="adminPassKey" className="block text-gray-700 mb-2">
+              Admin Pass Key
             </label>
             <input
-              id="artisanId"
-              name="artisanId"
-              type="text"
+              id="adminPassKey"
+              name="adminPassKey"
+              type="password"
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter your Artisan id"
-              value={formData.artisanId}
+              placeholder="Enter Admin Pass Key"
+              value={formData.adminPassKey}
               onChange={handleChange}
               required
             />
@@ -291,6 +294,49 @@ export default function SignUpPage() {
           </p>
         </div>
       </div>
+
+      {success && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-8 rounded-lg text-center">
+            <svg className="checkmark animate-checkmark mx-auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+              <circle className="checkmark__circle" cx="26" cy="26" r="25" fill="none" stroke="#4CAF50" strokeWidth="2"/>
+              <path className="checkmark__check" fill="none" stroke="#4CAF50" strokeWidth="2" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+            </svg>
+            <h2 className="text-xl font-bold mt-4 mb-2">Signup Successful!</h2>
+            <p className="text-gray-600">Your Artisan ID is: <span className="font-mono">{generatedArtisanId}</span></p>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        .animate-checkmark {
+          animation: scale 0.3s ease-in-out;
+        }
+
+        @keyframes scale {
+          0% { transform: scale(0); }
+          50% { transform: scale(1.2); }
+          100% { transform: scale(1); }
+        }
+
+        .checkmark__circle {
+          stroke-dasharray: 166;
+          stroke-dashoffset: 166;
+          animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+
+        .checkmark__check {
+          stroke-dasharray: 48;
+          stroke-dashoffset: 48;
+          animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.6s forwards;
+        }
+
+        @keyframes stroke {
+          100% {
+            stroke-dashoffset: 0;
+          }
+        }
+      `}</style>
     </div>
   );
 }

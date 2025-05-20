@@ -368,11 +368,11 @@ function ProductForm({ productNumber, product, onDelete, maxProducts, isNewSlot,
 
 function EmployeeTable() {
   const [profile, setProfile] = useState({
-    name: "",
-    specialization: "Silver Ornaments Expert", // Default value
-    contact: "",
-    artisanId: "",
-    isEditing: false,
+   name: localStorage.getItem("username") || "",
+  specialization: "Silver Ornaments Expert",
+  contact: localStorage.getItem("phoneNumber") || "",
+  artisanId: localStorage.getItem("ArtisanId") || "",
+  isEditing: false,
   });
   const handleEditToggle = () => {
     setProfile((prev) => ({ ...prev, isEditing: !prev.isEditing }));
@@ -390,7 +390,7 @@ function EmployeeTable() {
         `${backendUrl}/auth/profile`,
         {
           specialization: profile.specialization?.trim() || null,
-          contact: profile.contact,
+          PhoneNumber: profile.contact,
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );

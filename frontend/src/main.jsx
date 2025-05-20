@@ -16,11 +16,15 @@ import { SpeedInsights } from "@vercel/speed-insights/react";
 import PrivateRoute from "./components/PrivateRoute/PrivateRoute.jsx";
 import ArtisanDB from "./components/artisandb/ArtisanDB.jsx";
 import IndividualProduct from "./components/individualproduct/IndividualProduct.jsx";
+import AdminDashboard from "./components/admin/AdminDashboard.jsx";
+import ErrorPage from "./components/ErrorPage.jsx";
+import AppErrorBoundary from "./components/AppErrorBoundary.jsx";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
+    errorElement: <ErrorPage />, 
     children: [
       { index: true, element: <LandingPage /> },
       { path: "about", element: <Explore /> },
@@ -43,6 +47,7 @@ const router = createBrowserRouter([
       { path: "contact", element: <ContactForm /> },
       { path: "login", element: <LoginPage /> },
       { path: "signup", element: <SignUpPage /> },
+      { path: "admin", element: <AdminDashboard /> },
       { path: "*", element: <NotFound /> },
     ],
   },
@@ -50,7 +55,9 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <AppErrorBoundary>
+     <RouterProvider router={router} />
+    </AppErrorBoundary>
     <Analytics />
     <SpeedInsights />
   </StrictMode>

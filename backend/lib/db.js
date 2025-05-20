@@ -2,6 +2,7 @@ import mysql from "mysql2/promise";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
+import bcrypt from "bcrypt";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -108,32 +109,60 @@ async function createTables() {
       is_read BOOLEAN DEFAULT FALSE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
   `);
+  // ADMIN table (unchanged)
+  await connection.query(`
+  CREATE TABLE IF NOT EXISTS admindata (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) DEFAULT NULL,
+    adminId VARCHAR(50) NOT NULL UNIQUE,
+    adminPassword VARCHAR(255) NOT NULL,
+    adminPassKey VARCHAR(255) NOT NULL,
+    phonenumber VARCHAR(20) DEFAULT NULL,
+    email VARCHAR(255) DEFAULT NULL,
+    address VARCHAR(255) DEFAULT NULL,
+    profileimage VARCHAR(255) DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+`);
 
   // Add default data if tables are empty
   await addDefaultData();
 }
 
 async function addDefaultData() {
-  // Updated admin user with firstName/lastName
-  const [users] = await connection.query('SELECT COUNT(*) as count FROM users');
-  if (users[0].count === 0) {
+  // Add default admin
+  const [admins] = await connection.query('SELECT COUNT(*) as count FROM admindata');
+  if (admins[0].count === 0) {
+    const hashedPassword = await bcrypt.hash('admin2003', 10); // <-- Correct password
     await connection.query(`
-      INSERT INTO users (username, artisanId, PhoneNumber, password, listed)
-      VALUES ('Adminuser','ADMIN001', '1234567890', '$2b$10$defaultpasswordhash', TRUE)
-    `);
-    console.log('Default admin user created');
+      INSERT INTO admindata (adminId, adminPassword, adminPassKey)
+      VALUES ('admin123', ?, ?) 
+    `, [hashedPassword , process.env.ADMIN_PASS_KEY || 'ADMIN123']);// Use environment variable
+    console.log('Default admin created');
   }
 
-  // Products (unchanged)
+  // Add demo artisan for sample products
+  const [users] = await connection.query('SELECT COUNT(*) as count FROM users');
+  if (users[0].count === 0) {
+    const hashedArtisanPass = await bcrypt.hash('demo123', 10);
+    await connection.query(`
+      INSERT INTO users (username, artisanId, PhoneNumber, password, listed)
+      VALUES ('Demo Artisan', 'DEMO001', '0000000000', ?, TRUE)
+    `, [hashedArtisanPass]);
+    console.log('Demo artisan created for sample products');
+  }
+
+  // Add sample products with valid artisan reference
   const [products] = await connection.query('SELECT COUNT(*) as count FROM products');
   if (products[0].count === 0) {
     await connection.query(`
       INSERT INTO products (artisanId, productName, productPrice, productDescription, is_listed)
       VALUES 
-        ('ADMIN001', 'Sample Product 1', 19.99, 'This is a sample product description', TRUE),
-        ('ADMIN001', 'Sample Product 2', 29.99, 'Another sample product description', TRUE)
+        ('DEMO001', 'Handcrafted Vase', 49.99, 'Beautiful ceramic vase with traditional patterns', TRUE),
+        ('DEMO001', 'Artisan Necklace', 89.99, 'Silver necklace with hand-carved pendant', TRUE)
     `);
-    console.log('Default products created');
+    console.log('Sample products created for featured slider');
   }
 }
 

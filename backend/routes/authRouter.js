@@ -11,7 +11,7 @@ router.post("/signup", async (req, res) => {
   const {
     firstName,
     lastName,
-    artisanId,
+    adminPassKey,
     PhoneNumber,
     password,
     confirmPassword,
@@ -23,21 +23,32 @@ router.post("/signup", async (req, res) => {
   }
   try {
     const db = await connectToDatabase();
+    // Verify Admin Pass Key
+    const [adminRows] = await db.query('SELECT adminPassKey FROM admindata LIMIT 1');
+    if (!adminRows.length || adminRows[0].adminPassKey !== adminPassKey) {
+      return res.status(403).json({ message: "Invalid Admin Pass Key." });
+    }
+    // Check if the Mobile Number already exists
     const [existing] = await db.query(
-      "SELECT * FROM users WHERE artisanId = ? OR PhoneNumber = ?",
-      [artisanId, PhoneNumber]
+      "SELECT * FROM users WHERE PhoneNumber = ?",
+      [PhoneNumber]
     );
     if (existing.length) {
-      return res
-        .status(409)
-        .json({ message: "Artisan already has an account." });
+      return res.status(409).json({ message: "Phone number already registered." });
     }
     const username = `${firstName} ${lastName}`;
     const hashed = await bcrypt.hash(password, 10);
-    const [result] = await db.query(
-      "INSERT INTO users (username, artisanId, PhoneNumber, password) VALUES (?, ?, ?, ?)",
-      [username, artisanId, PhoneNumber, hashed]
+     const [result] = await db.query(
+      "INSERT INTO users (username, PhoneNumber, password) VALUES (?, ?, ?)",
+      [username, PhoneNumber, hashed]
     );
+    // Generate artisanId from insertId
+    const generatedArtisanId = `ART${String(result.insertId).padStart(5, '0')}`;
+    await db.query(
+      "UPDATE users SET artisanId = ? WHERE id = ?",
+      [generatedArtisanId, result.insertId]
+    );
+
     const [[newUser]] = await db.query("SELECT * FROM users WHERE id = ?", [
       result.insertId,
     ]);
@@ -45,7 +56,7 @@ router.post("/signup", async (req, res) => {
     const token = jwt.sign(
       { id: newUser.id, artisanId: newUser.artisanId },
       process.env.JWT_KEY,
-      { expiresIn: "3h" }
+      { expiresIn: "7d" }
     );
     return res.status(201).json({
       message: "Welcome aboard!",
@@ -81,7 +92,7 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign(
       { id: user.id, artisanId: user.artisanId },
       process.env.JWT_KEY,
-      { expiresIn: "3h" }
+      { expiresIn: "7d" }
     );
     return res.status(200).json({
       message: "Login successful!",
@@ -93,105 +104,130 @@ router.post("/login", async (req, res) => {
     return res.status(500).json({ message: `Server error: ${err.message}` });
   }
 });
+// Add admin login route
+router.post('/admin/login', async (req, res) => {  // <-- Ensure this line is exactly like this
+  const { adminId, adminPassword } = req.body;
+  try {
+    const db = await connectToDatabase();
+    const [admins] = await db.query(
+      'SELECT * FROM admindata WHERE adminId = ?',
+      [adminId]
+    );
+
+    if (!admins.length) {
+      return res.status(404).json({ message: 'Admin not found' });
+    }
+
+    const admin = admins[0];
+    const match = await bcrypt.compare(adminPassword, admin.adminPassword);
+    
+    if (!match) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    const token = jwt.sign(
+      { id: admin.id, adminId: admin.adminId, role: 'admin' },
+      process.env.JWT_KEY,
+      { expiresIn: '7d' }
+    );
+
+    return res.status(200).json({
+      message: 'Admin login successful',
+      token,
+      adminId: admin.adminId
+    });
+  } catch (err) {
+    return res.status(500).json({ message: `Server error: ${err.message}` });
+  }
+});
+
 
 // Ensure verifyToken middleware properly handles JWT errors
 export const verifyToken = (req, res, next) => {
-  const authHeader = req.headers["authorization"];
-  if (!authHeader)
-    return res.status(403).json({ message: "No token provided." });
-
+  const authHeader = req.headers['authorization'];
+  if (!authHeader) return res.status(403).json({ message: "No token provided." });
+  
   const token = authHeader.split(" ")[1];
   jwt.verify(token, process.env.JWT_KEY, (err, decoded) => {
     if (err) {
-      return res.status(401).json({
-        message:
-          err.name === "TokenExpiredError" ? "Token expired" : "Invalid token",
+      return res.status(401).json({ 
+        message: err.name === 'TokenExpiredError' 
+          ? "Token expired" 
+          : "Invalid token"
       });
     }
     req.userId = decoded.id;
-    req.artisanId = decoded.artisanId;
+    if(decoded.role === 'admin') {
+      req.adminId = decoded.adminId;
+      req.role = 'admin';
+    } else {
+      req.artisanId = decoded.artisanId;
+      req.role = 'artisan';
+    }
     next();
   });
 };
 
 // Keep only the PUT route for safe updates
+// In authRouter.js
+
+// Add this route before the PUT profile route
+router.get("/profile", verifyToken, async (req, res) => {
+  try {
+    const db = await connectToDatabase();
+    const [[profile]] = await db.query(
+      "SELECT username AS name, specialization, PhoneNumber AS contact, artisanId FROM users WHERE artisanId = ?",
+      [req.artisanId]
+    );
+    
+    res.status(200).json({
+      profile: {
+        ...profile,
+        specialization: profile.specialization || "Not Specified",
+        contact: profile.contact || "No contact provided"
+      }
+    });
+  } catch (error) {
+    console.error("Profile fetch error:", error);
+    res.status(500).json({ message: "Failed to fetch profile" });
+  }
+});
+
 router.put("/profile", verifyToken, async (req, res) => {
   try {
     const db = await connectToDatabase();
-    let { specialization, contact } = req.body;
-
-    // Validation
-    if (!contact || contact.length !== 10) {
-      return res.status(400).json({
-        message: "Valid 10-digit contact number required",
-      });
-    }
-
-    // Clean specialization
-    specialization = specialization?.trim() || null;
-
-    // Check if contact exists for other users
-    const [[existing]] = await db.query(
-      `SELECT id FROM users 
-       WHERE PhoneNumber = ? AND artisanId != ?`,
-      [contact, req.artisanId]
-    );
-
-    if (existing) {
-      return res.status(409).json({
-        message: "Contact number already registered to another artisan",
-      });
-    }
-
-    // Update database
+    
+    // Only update specialization and phone number
     await db.query(
-      `UPDATE users SET
-        specialization = ?,
-        PhoneNumber = ?
-       WHERE artisanId = ?`,
-      [specialization, contact, req.artisanId]
+      "UPDATE users SET specialization = ?, PhoneNumber = ? WHERE artisanId = ?",
+      [
+        req.body.specialization,
+        req.body.PhoneNumber,
+        req.artisanId,
+      ]
     );
 
-    // Return updated profile
-    const [[updatedUser]] = await db.query(
-      `SELECT 
-        username as name,
-        COALESCE(specialization, 'Not Specified') as specialization,
-        PhoneNumber as contact
-       FROM users WHERE artisanId = ?`,
+    // Get updated profile
+    const [[updatedProfile]] = await db.query(
+      "SELECT username, specialization, PhoneNumber, artisanId FROM users WHERE artisanId = ?",
       [req.artisanId]
     );
 
-    res.json({
+    res.status(200).json({
       message: "Profile updated successfully",
-      profile: updatedUser,
+      profile: {
+        name: updatedProfile.username, // Keep using original username
+        specialization: updatedProfile.specialization,
+        contact: updatedProfile.PhoneNumber,
+        artisanId: updatedProfile.artisanId
+      }
     });
   } catch (error) {
     console.error("Profile update error:", error);
     res.status(500).json({
-      message: error.message.includes("Duplicate")
-        ? "Contact number already exists"
-        : "Server error",
+      message: "Database update failed",
+      error: error.message,
     });
-  }
-});
-
-router.get("/profile", verifyToken, async (req, res) => {
-  try {
-    const db = await connectToDatabase();
-    const [[user]] = await db.query(
-      "SELECT username as name, specialization, PhoneNumber as contact, artisanId " +
-        "FROM users WHERE artisanId = ?",
-      [req.artisanId]
-    );
-
-    if (!user) {
-      return res.status(404).json({ message: "Profile not found" });
-    }
-
-    res.json({ profile: user });
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching profile" });
   }
 });
 
