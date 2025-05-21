@@ -2,25 +2,8 @@ import express from "express";
 import { connectToDatabase } from "../lib/db.js";
 import { verifyToken } from "./authRouter.js";
 import multer from "multer";
-const upload = multer({ dest: 'uploads/' });
 
 const router = express.Router();
-// Get admin profile
-
-router.get('/admin/profile', verifyToken, async (req, res) => {
-  try {
-    const db = await connectToDatabase();
-    const [admin] = await db.query(
-      'SELECT * FROM admindata WHERE adminId = ?',
-      [req.adminId]
-    );
-    res.json(admin[0]);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Add proper file handling
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'uploads/');
@@ -29,13 +12,40 @@ const storage = multer.diskStorage({
     cb(null, `${Date.now()}-${file.originalname}`);
   }
 });
+const upload = multer({ storage });
 
-router.put('/admin/profile', verifyToken, upload.single('profileImage'), async (req, res) => {
+// Get admin profile
+router.get('/profile', verifyToken, async (req, res) => {
+  try {
+    const db = await connectToDatabase();
+    const [admin] = await db.query(
+      'SELECT adminId, name, phonenumber, email, address, profileimage, adminPassword, adminPassKey FROM admindata WHERE adminId = ?',
+      [req.adminId]
+    );
+    
+    if (!admin || admin.length === 0) {
+      return res.status(404).json({ success: false, message: 'Admin not found' });
+    }
+
+    res.json({
+      success: true,
+      ...admin[0],
+      phoneNumber: admin[0].phonenumber,
+      emailId: admin[0].email,
+      profileImage: admin[0].profileimage
+    });
+  } catch (error) {
+    console.error('Fetch error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Update admin profile
+router.put('/profile', verifyToken, upload.single('profileImage'), async (req, res) => {
   try {
     const db = await connectToDatabase();
     const { name, address, phoneNumber, emailId } = req.body;
     
-    // Get existing data first
     const [currentAdmin] = await db.query(
       'SELECT * FROM admindata WHERE adminId = ?',
       [req.adminId]
@@ -44,9 +54,9 @@ router.put('/admin/profile', verifyToken, upload.single('profileImage'), async (
     const updateData = {
       name: name || currentAdmin[0].name,
       address: address || currentAdmin[0].address,
-      phoneNumber: phoneNumber || currentAdmin[0].phoneNumber,
-      emailId: emailId || currentAdmin[0].emailId,
-      profileImage: req.file ? `/uploads/${req.file.filename}` : currentAdmin[0].profileImage,
+      phonenumber: phoneNumber || currentAdmin[0].phonenumber,
+      email: emailId || currentAdmin[0].email,
+      profileimage: req.file ? `/uploads/${req.file.filename}` : currentAdmin[0].profileimage
     };
 
     await db.query(
@@ -60,16 +70,31 @@ router.put('/admin/profile', verifyToken, upload.single('profileImage'), async (
       [
         updateData.name,
         updateData.address,
-        updateData.phoneNumber,
-        updateData.emailId,
-        updateData.profileImage,
+        updateData.phonenumber,
+        updateData.email,
+        updateData.profileimage,
         req.adminId
       ]
     );
 
-    res.json({ message: 'Profile updated', data: updateData });
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      name: updateData.name,
+      phoneNumber: updateData.phonenumber,
+      emailId: updateData.email,
+      address: updateData.address,
+      profileimage: updateData.profileimage
+    });
+    
   } catch (error) {
-    res.status(500).json({ message: 'Update failed' });
+    console.error('Update error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Update failed',
+      error: error.message 
+    });
   }
 });
+
 export default router;

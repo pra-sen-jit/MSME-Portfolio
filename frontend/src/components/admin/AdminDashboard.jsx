@@ -44,18 +44,28 @@ const AdminDashboard = () => {
   // In fetchAdminData, ensure backend returns all fields
 const fetchAdminData = async () => {
   try {
-    const response = await axios.get(`${backendUrl}/api/admin/profile`);
-    // Ensure response contains all fields
-    setAdminData({
-      ...response.data,
-      adminId: response.data.adminId || "N/A",
-      adminPassword: response.data.adminPassword || " " ,
-      adminPassKey: response.data.adminPassKey || "N/A"
+    const response = await axios.get(`${backendUrl}/api/admin/profile`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
     });
+    
+    if (response.data.success) {
+      setAdminData({
+        ...response.data,
+        phoneNumber: response.data.phoneNumber,
+        emailId: response.data.emailId,
+        profileImage: response.data.profileImage 
+          ? `${backendUrl}${response.data.profileImage}`
+          : null
+      });
+    }
   } catch (error) {
     console.error("Error fetching admin data:", error);
+    alert(error.response?.data?.message || "Failed to load admin profile");
   }
 };
+
   
   const fetchArtisans = async () => {
     try {
@@ -103,31 +113,44 @@ const fetchAdminData = async () => {
   };
   
   const handleSaveProfile = async () => {
-    try {
-      const formData = new FormData();
-      
-      // Add only editable fields
-      formData.append("name", adminData.name);
-      formData.append("phoneNumber", adminData.phoneNumber);
-      formData.append("emailId", adminData.emailId);
-      formData.append("address", adminData.address);
-      
-      if (adminData.profileImage instanceof File) {
-        formData.append("profileImage", adminData.profileImage);
+  try {
+    const formData = new FormData();
+    formData.append("name", adminData.name);
+    formData.append("phoneNumber", adminData.phoneNumber);
+    formData.append("emailId", adminData.emailId);
+    formData.append("address", adminData.address);
+    
+    if (adminData.profileImage instanceof File) {
+      formData.append("profileImage", adminData.profileImage);
+    }
+
+    const response = await axios.put(
+      `${backendUrl}/api/admin/profile`,
+      formData,
+      {
+        headers: { 
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
       }
+    );
 
-      await axios.put(`${backendUrl}/api/admin/profile`, formData, {
-        headers: { "Content-Type": "multipart/form-data" }
-      });
-
+    if (response.data.success) {
+      setAdminData(prev => ({
+        ...prev,
+        ...response.data,
+        profileImage: response.data.profileImage 
+          ? `${backendUrl}${response.data.profileImage}`
+          : prev.profileImage
+      }));
       setIsEditing(false);
       alert("Profile updated successfully!");
-      fetchAdminData(); // Refresh data
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      alert("Failed to update profile.");
     }
-  };
+  } catch (error) {
+    console.error("Update error:", error);
+    alert(error.response?.data?.message || "Profile update failed");
+  }
+};
 
   const handleDeleteArtisan = async (artisanId) => {
     if (window.confirm("Are you sure you want to delete this artisan?")) {
