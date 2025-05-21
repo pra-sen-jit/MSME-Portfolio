@@ -47,7 +47,15 @@ const router = createBrowserRouter([
       { path: "contact", element: <ContactForm /> },
       { path: "login", element: <LoginPage /> },
       { path: "signup", element: <SignUpPage /> },
-      { path: "admin", element: <AdminDashboard /> },
+      {
+        path: "admin",
+        element: (
+          <PrivateRoute>
+            {" "}
+            <AdminDashboard />{" "}
+          </PrivateRoute>
+        ),
+      },
       { path: "*", element: <NotFound /> },
     ],
   },

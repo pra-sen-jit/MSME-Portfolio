@@ -9,7 +9,7 @@ const App = () => {
   const location = useLocation();
 
   // Define the routes where Navbar and Footer should NOT be shown
-  const noNavFooterRoutes = ["/login", "/signup"];
+  const noNavFooterRoutes = ["/login", "/signup", "/admin"];
 
   return (
     <>

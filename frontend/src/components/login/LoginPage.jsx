@@ -34,7 +34,7 @@ export default function LoginPage() {
         
         if(loginType === 'admin') {
           localStorage.setItem("adminId", response.data.adminId);
-          navigate("/admin/dashboard");
+          navigate("/admin");
         } else {
           localStorage.setItem("username", response.data.username);
           localStorage.setItem("ArtisanId", response.data.artisanId);
