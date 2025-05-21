@@ -12,6 +12,7 @@ import { verifyToken } from "./routes/authRouter.js";
 import featuredProductsRouter from "./routes/featuredProductsRouter.js";
 import userRouter from "./routes/userRouter.js";
 import { connectToDatabase } from "./lib/db.js";
+import adminProfileRouter from "./routes/adminProfileRouter.js";
 
 dotenv.config();
 const app = express();
@@ -51,6 +52,7 @@ app.use("/api/feedback", feedbackRouter);
 app.use("/public", publicRouter);
 app.use("/api/featured", featuredProductsRouter);
 app.use("/api/users", userRouter); // Made public by removing verifyToken
+app.use("/api/admin", adminProfileRouter);
 
 // Health check endpoint
 app.get("/health", (req, res) => {

@@ -13,7 +13,7 @@ router.get("/featured-products", async (req, res) => {
       SELECT COUNT(*) as count 
       FROM products p
       JOIN users u ON p.artisanId = u.artisanId
-      WHERE p.is_listed = TRUE AND u.artisanId != 'ADMIN001'
+      WHERE p.is_listed = TRUE AND u.artisanId != 'DEMO001'
     `);
     
     const nonDummyCount = countResult[0].count;
@@ -39,7 +39,7 @@ router.get("/featured-products", async (req, res) => {
           u.artisanId
         FROM products p
         JOIN users u ON p.artisanId = u.artisanId
-        WHERE p.is_listed = TRUE AND u.artisanId != 'ADMIN001'
+        WHERE p.is_listed = TRUE AND u.artisanId != 'DEMO001'
         ORDER BY RAND()
         LIMIT ?
       `, [sliderItemsNeeded]);
