@@ -1,6 +1,9 @@
+
+//ADMIN DASHBOARD:
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import bcrypt from 'bcryptjs';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -30,6 +33,12 @@ const AdminDashboard = () => {
   const [newPasskey, setNewPasskey] = useState('');
   const [confirmPasskey, setConfirmPasskey] = useState('');
   const artisansPerPage = 4;
+  // Add the missing state variables that are referenced in the code
+  const [editingArtisan, setEditingArtisan] = useState(null);
+  const [editName, setEditName] = useState('');
+  const [editContact, setEditContact] = useState('');
+  const [editSpecialization, setEditSpecialization] = useState('');
+  const [editPassword, setEditPassword] = useState('');
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   const specializations = [
@@ -157,19 +166,19 @@ const fetchAdminData = async () => {
   }
 };
 
-  const handleDeleteArtisan = async (artisanId) => {
-    if (window.confirm("Are you sure you want to delete this artisan?")) {
-      try {
-        await axios.delete(`${backendUrl}/api/artisans/${artisanId}`);
-        fetchArtisans();
-        alert("Artisan deleted successfully!");
-      } catch (error) {
-        console.error("Error deleting artisan:", error);
-        alert("Failed to delete artisan.");
-      }
+// Update the delete handler
+const handleDeleteArtisan = async (artisanId) => {
+  if (window.confirm("Are you sure you want to delete this artisan?")) {
+    try {
+      await axios.delete(`${backendUrl}/api/users/artisans/${artisanId}`);
+      fetchArtisans();
+      alert("Artisan deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting artisan:", error);
+      alert("Failed to delete artisan.");
     }
-  };
-  
+  }
+};
   const handleDeleteProduct = async (productId) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
       try {
@@ -252,9 +261,43 @@ const handleUpdatePasskey = async () => {
   };
 
   
-  const handleEditArtisan = (artisanId) => {
-    navigate(`/profile/${artisanId}`);
+  // const handleEditArtisan = (artisanId) => {
+  //   navigate(`/profile/${artisanId}`);
+  // };
+  // Update the handleEditArtisan function
+  const handleEditArtisan = (artisan) => {
+    setEditingArtisan(artisan);
+    setEditName(artisan.name);
+    setEditContact(artisan.contact);
+    setEditSpecialization(artisan.specialization);
+    setEditPassword(artisan.password);
   };
+
+  // Add this update handler
+const handleUpdateArtisan = async () => {
+  try {
+    // Hash the password before sending
+    const hashedPassword = await bcrypt.hash(editPassword, 10);
+
+    const response = await axios.put(
+      `${backendUrl}/api/users/artisans/${editingArtisan.artisanId}`,
+      {
+        name: editName,
+        contact: editContact,
+        specialization: editSpecialization,
+        password: hashedPassword
+      }
+    );
+
+    if (response.data.success) {
+      fetchArtisans();
+      setEditingArtisan(null);
+      alert("Artisan updated successfully!");
+    }
+  } catch (error) {
+    alert(error.response?.data?.message || "Failed to update artisan");
+  }
+};
   
   const exportToExcel = () => {
     if (filteredArtisans.length === 0) {
@@ -328,8 +371,7 @@ const handleUpdatePasskey = async () => {
   
   // Find the selected artisan
   const selectedArtisan = artisans.find((artisan) => artisan.artisanId === showProductsFor);
-
-  return (
+return (
   <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
     {/* Sidebar */}
     <div className="w-full md:w-64 bg-gray-900 text-white flex flex-col">
@@ -362,7 +404,7 @@ const handleUpdatePasskey = async () => {
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
             <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
           </svg>
-          <span>Artisan Database</span>
+          <span>Notifications</span>
         </div>
         <div 
           className="py-3 px-4 border-b border-gray-800 flex items-center gap-3 cursor-pointer hover:bg-gray-800"
@@ -737,7 +779,7 @@ const handleUpdatePasskey = async () => {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex gap-2">
                               <button 
-                                onClick={() => handleEditArtisan(artisan.artisanId)}
+                                onClick={() => handleEditArtisan(artisan)}
                                 className="p-1 bg-yellow-400 text-white rounded hover:bg-yellow-500"
                                 title="Edit Artisan"
                               >
@@ -861,28 +903,120 @@ const handleUpdatePasskey = async () => {
                     {artisanProducts.length > 0 ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {artisanProducts.map((product) => (
-                          <div key={product.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                            <div className="aspect-square mb-3 overflow-hidden rounded-lg bg-gray-100">
+                          <div key={product.id} className="border rounded-lg p-4 space-y-3">
+                            <div className="aspect-w-16 aspect-h-12">
                               <img 
-                                src={product.image || "/api/placeholder/200/200"} 
+                                src={product.image ? `${backendUrl}${product.image}` : '/placeholder-image.jpg'} 
                                 alt={product.name}
-                                className="w-full h-full object-cover"
+                                className="w-full h-32 object-cover rounded"
                               />
                             </div>
-                            <h4 className="font-medium text-gray-900 mb-2">{product.name}</h4>
-                            <p className="text-lg font-semibold text-blue-600">{product.price}</p>
-                            <p className="text-sm text-gray-500 mt-1">{product.description}</p>
+                            <div>
+                              <h4 className="font-medium text-lg">{product.name}</h4>
+                              <p className="text-gray-600 text-sm">{product.description}</p>
+                              <div className="flex justify-between items-center mt-2">
+                                <span className="text-lg font-bold text-green-600">₹{product.price}</span>
+                                <span className="text-sm text-gray-500">Stock: {product.stock}</span>
+                              </div>
+                              <div className="flex justify-between items-center mt-3">
+                                <span className="text-xs text-gray-500">Category: {product.category}</span>
+                                <button 
+                                  onClick={() => handleDeleteProduct(product.id)}
+                                  className="p-1 bg-red-500 text-white rounded hover:bg-red-600"
+                                  title="Delete Product"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                                  </svg>
+                                </button>
+                              </div>
+                            </div>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <div className="text-center text-gray-500 py-8">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto mb-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                        </svg>
-                        <p>No products found for this artisan</p>
+                      <div className="text-center py-8">
+                        <div className="text-gray-500 mb-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                          </svg>
+                        </div>
+                        <p className="text-gray-500">No products found for this artisan</p>
                       </div>
                     )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Edit Artisan Modal */}
+            {editingArtisan && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+                  <div className="p-6 border-b border-gray-200">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-medium">Edit Artisan</h3>
+                      <button
+                        onClick={() => setEditingArtisan(null)}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div className="p-6 space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Name</label>
+                      <input
+                        type="text"
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        className="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Contact</label>
+                      <input
+                        type="text"
+                        value={editContact}
+                        onChange={(e) => setEditContact(e.target.value)}
+                        className="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Specialization</label>
+                      <input
+                                        type="text"
+                        value={editSpecialization}
+                        onChange={(e) => setEditSpecialization(e.target.value)}
+                        className="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Password</label>
+                      <input
+                        type="text"
+                        value={editPassword}
+                        onChange={(e) => setEditPassword(e.target.value)}
+                        className="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div className="flex gap-2 pt-4">
+                      <button 
+                        onClick={handleUpdateArtisan}
+                        className="flex-1 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                      >
+                        Update
+                      </button>
+                      <button 
+                        onClick={() => setEditingArtisan(null)}
+                        className="flex-1 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -892,7 +1026,7 @@ const handleUpdatePasskey = async () => {
       </div>
     </div>
   </div>
-);
+  );
 };
 
 export default AdminDashboard;
