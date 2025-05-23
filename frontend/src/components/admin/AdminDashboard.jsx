@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import bcrypt from 'bcryptjs';
+import { ProductGridForAdmin } from "./ProductGridForAdmin";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -98,15 +99,27 @@ const fetchAdminData = async () => {
     }
   };
   
-  const fetchArtisanProducts = async (artisanId) => {
-    try {
-      const response = await axios.get(`${backendUrl}/api/artisans/${artisanId}/products`);
-      setArtisanProducts(response.data);
-    } catch (error) {
-      console.error("Error fetching artisan products:", error);
-      setArtisanProducts([]);
-    }
-  };
+// In AdminDashboard's fetchArtisanProducts function
+const fetchArtisanProducts = async (artisanId) => {
+  try {
+    const response = await axios.get(`${backendUrl}/api/public/artisans/${artisanId}/products`);
+    
+    // Handle empty array case
+    const products = response.data || [];
+    
+    setArtisanProducts(products.map(p => ({
+      ...p,
+      // Keep original field names used by ProductCard
+      image1: p.image ? `${backendUrl}${p.image}` : "/placeholder-image.jpg",
+      productName: p.name || "Untitled Product",
+      productDescription: p.description || "No description available",
+      productPrice: p.price ? Number(p.price) : 0 
+    })));
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    setArtisanProducts([]);
+  }
+};
   
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -371,6 +384,10 @@ const handleUpdateArtisan = async () => {
   
   // Find the selected artisan
   const selectedArtisan = artisans.find((artisan) => artisan.artisanId === showProductsFor);
+  // Add this right after the selectedArtisan declaration
+  const selectedArtisanIndex = artisans.findIndex(
+    a => a.artisanId === showProductsFor
+  );
 return (
   <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
     {/* Sidebar */}
@@ -881,73 +898,49 @@ return (
             </div>
 
             {/* Artisan Products Modal */}
-            {showProductsFor && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-auto">
-                  <div className="p-6 border-b border-gray-200">
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-lg font-medium">
-                        Products from {selectedArtisan?.name || "Artisan"}
-                      </h3>
-                      <button
-                        onClick={() => setShowProductsFor(null)}
-                        className="text-gray-500 hover:text-gray-700"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
+              {showProductsFor && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                  <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-auto">
+                    <div className="p-6 border-b border-gray-200">
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-lg font-medium">
+                          Products from {selectedArtisan?.name || "Artisan"}
+                        </h3>
+                        <button
+                          onClick={() => setShowProductsFor(null)}
+                          className="text-gray-500 hover:text-gray-700"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      {artisanProducts.length > 0 ? (
+                        <ProductGridForAdmin 
+                          products={artisanProducts}
+                          onDeleteProduct={handleDeleteProduct}
+                          color={`hsl(${selectedArtisanIndex * 60}, 70%, 30%)`}
+                        />
+                      ) : (
+                        <div className="text-center py-8">
+                          <div className="text-gray-500 mb-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                            </svg>
+                          </div>
+                          <p className="text-gray-500">No products found for this artisan</p>
+                          <div className="mt-4 text-sm text-gray-400">
+                            Artisan ID: {showProductsFor} | 
+                            API Status: {artisanProducts.length === 0 ? "No products found" : "Data Received"}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <div className="p-6">
-                    {artisanProducts.length > 0 ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {artisanProducts.map((product) => (
-                          <div key={product.id} className="border rounded-lg p-4 space-y-3">
-                            <div className="aspect-w-16 aspect-h-12">
-                              <img 
-                                src={product.image ? `${backendUrl}${product.image}` : '/placeholder-image.jpg'} 
-                                alt={product.name}
-                                className="w-full h-32 object-cover rounded"
-                              />
-                            </div>
-                            <div>
-                              <h4 className="font-medium text-lg">{product.name}</h4>
-                              <p className="text-gray-600 text-sm">{product.description}</p>
-                              <div className="flex justify-between items-center mt-2">
-                                <span className="text-lg font-bold text-green-600">₹{product.price}</span>
-                                <span className="text-sm text-gray-500">Stock: {product.stock}</span>
-                              </div>
-                              <div className="flex justify-between items-center mt-3">
-                                <span className="text-xs text-gray-500">Category: {product.category}</span>
-                                <button 
-                                  onClick={() => handleDeleteProduct(product.id)}
-                                  className="p-1 bg-red-500 text-white rounded hover:bg-red-600"
-                                  title="Delete Product"
-                                >
-                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                                  </svg>
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <div className="text-gray-500 mb-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                          </svg>
-                        </div>
-                        <p className="text-gray-500">No products found for this artisan</p>
-                      </div>
-                    )}
-                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* Edit Artisan Modal */}
             {editingArtisan && (
@@ -988,12 +981,14 @@ return (
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Specialization</label>
                       <input
-                                        type="text"
+                        type="text"
                         value={editSpecialization}
                         onChange={(e) => setEditSpecialization(e.target.value)}
                         className="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Enter specialization"
                       />
                     </div>
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Password</label>
                       <input

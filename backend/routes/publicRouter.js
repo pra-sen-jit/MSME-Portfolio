@@ -32,10 +32,10 @@ router.get("/artisans/:artisanId/products", async (req, res) => {
       [req.params.artisanId]
     );
 
-    // Validate 3 products (if required)
-    if (products.length < 3) {
-      return res.status(404).json({ message: "Artisan not properly listed" });
-    }
+    // // Validate 3 products (if required)
+    // if (products.length < 3) {
+    //   return res.status(404).json({ message: "Artisan not properly listed" });
+    // }
 
     res.json(products);
   } catch (err) {

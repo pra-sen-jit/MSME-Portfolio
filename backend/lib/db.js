@@ -60,6 +60,7 @@ async function createTables() {
       specialization VARCHAR(255) DEFAULT NULL,
       profileImage VARCHAR(255) DEFAULT NULL,
       listed BOOLEAN DEFAULT FALSE,
+      forgetpassword BOOLEAN DEFAULT FALSE,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       INDEX idx_artisanId (artisanId),

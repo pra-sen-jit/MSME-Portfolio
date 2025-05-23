@@ -3,6 +3,7 @@ import express from "express";
 import { connectToDatabase } from "../lib/db.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import nodemailer from 'nodemailer';
 
 const router = express.Router();
 
@@ -230,5 +231,98 @@ router.put("/profile", verifyToken, async (req, res) => {
     });
   }
 });
+
+// Artisan Forgot Password
+router.post('/forgot-password/artisan', async (req, res) => {
+  const { name, phoneNumber } = req.body;
+  try {
+    const db = await connectToDatabase();
+    const [users] = await db.query(
+      'SELECT * FROM users WHERE username = ? AND PhoneNumber = ?',
+      [name, phoneNumber]
+    );
+    
+    if (!users.length) return res.status(404).json({ success: false, message: 'User not found' });
+
+    await db.query(
+      'UPDATE users SET forgetpassword = TRUE WHERE id = ?',
+      [users[0].id]
+    );
+    
+    return res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Admin Forgot Password
+router.post('/forgot-password/admin', async (req, res) => {
+  const { adminId, email } = req.body;
+  try {
+    const db = await connectToDatabase();
+    const [admins] = await db.query(
+      'SELECT * FROM admindata WHERE adminId = ?',
+      [adminId] // Removed email check for more flexible recovery
+    );
+
+    if (!admins.length) return res.status(404).json({ success: false, message: 'Admin not found' });
+
+    // Verify email matches registered email
+    if (admins[0].email !== email) {
+      return res.status(400).json({ success: false, message: 'Email does not match registered account' });
+    }
+
+    const newPassword = generateRandomPassword();
+    await sendPasswordEmail(email, newPassword);
+    
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await db.query(
+      'UPDATE admindata SET adminPassword = ? WHERE adminId = ?',
+      [hashedPassword, adminId]
+    );
+
+    return res.json({ 
+      success: true,
+      message: 'Password reset instructions sent to your email'
+    });
+  } catch (err) {
+    console.error('Password reset error:', err);
+    res.status(500).json({ 
+      success: false,
+      message: err.message || 'Password reset failed'
+    });
+  }
+});
+
+// Helper functions
+function generateRandomPassword() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  return Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+}
+
+// Replace the sendPasswordEmail function with:
+async function sendPasswordEmail(to, password) {
+  try {
+    const transporter = nodemailer.createTransport({
+      service: 'SendGrid',
+      auth: {
+        user: 'apikey', // This is literal string 'apikey'
+        pass: process.env.SENDGRID_API_KEY
+      }
+    });
+
+    await transporter.sendMail({
+      from: `"CraftHub Support" <${process.env.EMAIL_FROM}>`,
+      to,
+      subject: 'Your New Password',
+      html: `<p>Your temporary password: <strong>${password}</strong></p>
+             <p>Please login and change it immediately.</p>`
+    });
+  } catch (err) {
+    console.error('Email sending error:', err);
+    throw new Error('Failed to send password email');
+  }
+}
 
 export default router;
