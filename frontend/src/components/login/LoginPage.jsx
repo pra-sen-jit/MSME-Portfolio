@@ -20,6 +20,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [isSending, setIsSending] = useState(false);
  // Correct endpoint URL construction
   const loginUrl = loginType === 'admin' 
     ? `${backendUrl}/auth/admin/login`
@@ -81,18 +82,23 @@ export default function LoginPage() {
 
   const handleAdminForgotSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setIsSending(true);
     try {
       const response = await axios.post(`${backendUrl}/auth/forgot-password/admin`, {
         adminId,
         email
       });
+      
       if (response.data.success) {
         setShowSuccessPopup(true);
-        setSuccessMessage('Password sent to your email.');
+        setSuccessMessage(response.data.message || 'Password reset instructions sent to your email');
         setShowForgotPassword(false);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Request failed');
+      setError(err.response?.data?.message || 'Password reset failed. Please contact support.');
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -102,11 +108,15 @@ export default function LoginPage() {
     {/* Success Popup */}
     {showSuccessPopup && (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-        <div className="bg-white p-6 rounded-lg max-w-sm w-full mx-4">
+        <div className="bg-white p-6 rounded-lg max-w-sm w-full mx-4 animate-scale-in">
           <p className="text-center mb-4">{successMessage}</p>
           <button
-            onClick={() => setShowSuccessPopup(false)}
-            className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
+            onClick={() => {
+              setShowSuccessPopup(false);
+              setAdminId('');
+              setEmail('');
+            }}
+            className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors"
           >
             Close
           </button>
@@ -122,22 +132,28 @@ export default function LoginPage() {
         
         <div className="flex items-center justify-center gap-4 mb-8">
           <button
-            onClick={() => setLoginType("artisan")}
+            onClick={() => {
+              setLoginType("artisan");
+              setError('');
+            }}
             className={`text-lg font-medium ${
               loginType === 'artisan' 
                 ? 'text-blue-600 border-b-2 border-blue-600' 
                 : 'text-gray-500 hover:text-gray-700'
-            }`}
+            } transition-colors`}
           >
             Artisan Login
           </button>
           <button
-            onClick={() => setLoginType("admin")}
+            onClick={() => {
+              setLoginType("admin");
+              setError('');
+            }}
             className={`text-lg font-medium ${
               loginType === 'admin' 
                 ? 'text-blue-600 border-b-2 border-blue-600' 
                 : 'text-gray-500 hover:text-gray-700'
-            }`}
+            } transition-colors`}
           >
             Admin Login
           </button>
@@ -150,7 +166,7 @@ export default function LoginPage() {
             {loginType === 'admin' ? 'Admin Sign In' : 'Artisan Sign In'}
           </h1>
 
-          {error && <p className="mb-4 text-center text-red-600">{error}</p>}
+          {error && <p className="mb-4 text-center text-red-600 animate-fade-in">{error}</p>}
 
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
@@ -159,7 +175,7 @@ export default function LoginPage() {
               </label>
               <input
                 type="text"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                 placeholder={loginType === 'admin' ? 'Enter admin ID' : 'Enter phone number'}
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
@@ -173,7 +189,7 @@ export default function LoginPage() {
               </label>
               <input
                 type="password"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -186,7 +202,7 @@ export default function LoginPage() {
                 <input
                   id="remember-me"
                   type="checkbox"
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded transition-colors"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
                 />
@@ -197,7 +213,7 @@ export default function LoginPage() {
               <div>
                 <button
                   onClick={handleForgotPasswordClick}
-                  className="text-blue-600 hover:text-blue-800"
+                  className="text-blue-600 hover:text-blue-800 transition-colors"
                 >
                   Forgot password?
                 </button>
@@ -206,7 +222,7 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              className="w-full bg-black text-white py-3 rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              className="w-full bg-black text-white py-3 rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
             >
               Sign In →
             </button>
@@ -216,7 +232,7 @@ export default function LoginPage() {
             <div className="mt-6 text-center">
               <p className="text-gray-600">
                 Don't have an account?{" "}
-                <Link to="/signup" className="text-blue-600 font-semibold hover:text-blue-800">
+                <Link to="/signup" className="text-blue-600 font-semibold hover:text-blue-800 transition-colors">
                   Register now
                 </Link>
               </p>
@@ -226,13 +242,15 @@ export default function LoginPage() {
       ) : (
         <div className="forgot-password-form">
           <h2 className="text-2xl font-bold text-center mb-6">Reset Password</h2>
+          {error && <p className="mb-4 text-center text-red-600 animate-fade-in">{error}</p>}
+          
           {loginType === 'artisan' ? (
             <form onSubmit={handleArtisanForgotSubmit}>
               <div className="mb-4">
                 <label className="block text-gray-700 mb-2">Full Name</label>
                 <input
                   type="text"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
@@ -242,7 +260,7 @@ export default function LoginPage() {
                 <label className="block text-gray-700 mb-2">Phone Number</label>
                 <input
                   type="text"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   required
@@ -251,16 +269,27 @@ export default function LoginPage() {
               <div className="flex gap-4">
                 <button
                   type="button"
-                  className="w-1/2 bg-gray-200 text-black py-2 rounded-md hover:bg-gray-300"
+                  className="w-1/2 bg-gray-200 text-black py-2 rounded-md hover:bg-gray-300 transition-colors"
                   onClick={() => setShowForgotPassword(false)}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="w-1/2 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
+                  className="w-1/2 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 flex items-center justify-center gap-2 transition-colors"
+                  disabled={isSending}
                 >
-                  Notify Admin
+                  {isSending ? (
+                    <>
+                      <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Sending...
+                    </>
+                  ) : (
+                    'Notify Admin'
+                  )}
                 </button>
               </div>
             </form>
@@ -270,7 +299,7 @@ export default function LoginPage() {
                 <label className="block text-gray-700 mb-2">Admin ID</label>
                 <input
                   type="text"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                   value={adminId}
                   onChange={(e) => setAdminId(e.target.value)}
                   required
@@ -280,7 +309,7 @@ export default function LoginPage() {
                 <label className="block text-gray-700 mb-2">Email</label>
                 <input
                   type="email"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -289,16 +318,27 @@ export default function LoginPage() {
               <div className="flex gap-4">
                 <button
                   type="button"
-                  className="w-1/2 bg-gray-200 text-black py-2 rounded-md hover:bg-gray-300"
+                  className="w-1/2 bg-gray-200 text-black py-2 rounded-md hover:bg-gray-300 transition-colors"
                   onClick={() => setShowForgotPassword(false)}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="w-1/2 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
+                  className="w-1/2 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 flex items-center justify-center gap-2 transition-colors"
+                  disabled={isSending}
                 >
-                  Send Password
+                  {isSending ? (
+                    <>
+                      <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Sending...
+                    </>
+                  ) : (
+                    'Send Password'
+                  )}
                 </button>
               </div>
             </form>

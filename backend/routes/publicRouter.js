@@ -1,5 +1,6 @@
 import express from "express";
 import { connectToDatabase } from "../lib/db.js";
+import { verifyToken } from "./authRouter.js";
 
 const router = express.Router();
 
@@ -63,6 +64,32 @@ router.get("/artisans/:artisanId", async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.delete('/:productId', verifyToken, async (req, res) => {
+  try {
+    const db = await connectToDatabase();
+    // First, get artisanId to verify ownership if needed
+    const [product] = await db.query(
+      'SELECT artisanId FROM products WHERE id = ?',
+      [req.params.productId]
+    );
+    
+    // Optional: Add admin check or ownership verification here
+    
+    const [result] = await db.query(
+      'DELETE FROM products WHERE id = ?',
+      [req.params.productId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    
+    res.json({ success: true, message: 'Product deleted' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 });
 
