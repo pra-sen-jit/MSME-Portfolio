@@ -8,14 +8,15 @@ function HistorySection() {
     >
       <div className="max-w-5xl mx-auto">
         <h2
-            id="art-heading"
-            className="text-3xl sm:text-3xl font-bold text-center text-gray-900 relative"
-          >
-            History & Heritage
-            <span className="absolute -bottom-2 sm:-bottom-3 left-1/2 transform -translate-x-1/2 w-16 sm:w-20 md:w-24 h-1 bg-blue-600 rounded-full"></span>
-          </h2>
+          id="history-heading"
+          className="text-3xl sm:text-3xl font-bold text-center text-gray-900 relative mb-10"
+        >
+          History & Heritage
+          <span className="absolute -bottom-2 sm:-bottom-3 left-1/2 transform -translate-x-1/2 w-16 sm:w-20 md:w-24 h-1 bg-blue-600 rounded-full"></span>
+        </h2>
 
-        <div className="flex flex-col md:flex-row gap-8 md:gap-10 items-center">
+        <div className="flex flex-col md:flex-row gap-8 md:gap-10 items-start justify-between">
+          {/* Text Section */}
           <div className="w-full md:w-3/5">
             <article className="text-gray-600">
               <p className="text-base lg:text-lg mb-6 leading-relaxed">
@@ -32,8 +33,9 @@ function HistorySection() {
             </article>
           </div>
 
+          {/* Image Section */}
           <div className="w-full md:w-2/5">
-            <div className="aspect-square max-w-sm mx-auto">
+            <div className="aspect-square max-w-sm mx-auto md:mx-0">
               <img
                 src="https://cdn.builder.io/api/v1/image/assets/TEMP/cc5e627a658559614f429b8e6de1f7f583585dc3?placeholderIfAbsent=true&apiKey=6db93a0a2eaa482cb9c3ed3428be7ade"
                 alt="Historical artifacts from Magrahat"
