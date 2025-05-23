@@ -53,7 +53,8 @@ app.use("/public", publicRouter);
 app.use("/api/featured", featuredProductsRouter);
 app.use("/api/users", userRouter); // Made public by removing verifyToken
 app.use("/api/admin", adminProfileRouter);
-app.use('/api/public', publicRouter);
+app.use("/api/public", publicRouter);
+app.use("/api/products", verifyToken, productRouter);
 // Health check endpoint
 app.get("/health", (req, res) => {
   res.status(200).json({ 

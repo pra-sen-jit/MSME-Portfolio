@@ -103,18 +103,22 @@ const fetchAdminData = async () => {
 const fetchArtisanProducts = async (artisanId) => {
   try {
     const response = await axios.get(`${backendUrl}/api/public/artisans/${artisanId}/products`);
-    
-    // Handle empty array case
     const products = response.data || [];
-    
-    setArtisanProducts(products.map(p => ({
+    console.log('Fetched products from backend:', products); // DEBUG
+    // Map fields to what ProductGridForAdmin expects
+    const mappedProducts = products.map(p => ({
       ...p,
-      // Keep original field names used by ProductCard
-      image1: p.image ? `${backendUrl}${p.image}` : "/placeholder-image.jpg",
-      productName: p.name || "Untitled Product",
-      productDescription: p.description || "No description available",
-      productPrice: p.price ? Number(p.price) : 0 
-    })));
+      image1: p.image1 
+        ? `${backendUrl}${p.image1}` 
+        : (p.image ? `${backendUrl}${p.image}` : "/placeholder-image.jpg"),
+      productName: p.productName || p.name || "Untitled Product",
+      productDescription: p.productDescription || p.description || "No description available",
+      productPrice: p.productPrice ,
+        // ? Number(p.productPrice) 
+        // : (p.price !== undefined ? Number(p.price) : 0),
+      id: p.id || p.productId // ensure there's an id for key and delete
+    }));
+    setArtisanProducts(mappedProducts);
   } catch (error) {
     console.error("Error fetching products:", error);
     setArtisanProducts([]);
@@ -193,18 +197,27 @@ const handleDeleteArtisan = async (artisanId) => {
   }
 };
   const handleDeleteProduct = async (productId) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
-      try {
-        await axios.delete(`${backendUrl}/api/products/${productId}`);
-        // Refresh products list
-        fetchArtisanProducts(showProductsFor);
+  if (window.confirm("Are you sure you want to delete this product?")) {
+    try {
+      const response = await axios.delete(
+        `${backendUrl}/products/${productId}`, // Fixed endpoint
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}` // Add token
+          }
+        }
+      );
+
+      if (response.data.success) {
+        fetchArtisanProducts(showProductsFor); // Refresh list
         alert("Product deleted successfully!");
-      } catch (error) {
-        console.error("Error deleting product:", error);
-        alert("Failed to delete product.");
       }
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      alert(error.response?.data?.message || "Failed to delete product.");
     }
-  };
+  }
+};
 
   // Add these new handler functions
 const handleUpdatePassword = async () => {

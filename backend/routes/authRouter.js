@@ -3,9 +3,23 @@ import express from "express";
 import { connectToDatabase } from "../lib/db.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import nodemailer from 'nodemailer';
+import nodemailer from "nodemailer";
 
 const router = express.Router();
+
+// Initialize SendGrid
+
+// Initialize Nodemailer transporter
+const transporter = nodemailer.createTransport({
+  host: "smtp.sendgrid.net",
+  port: 587,
+  secure: false,
+  auth: {
+    user: "apikey",
+    pass: process.env.SENDGRID_API_KEY,
+  },
+});
+
 
 // Signup Route
 router.post("/signup", async (req, res) => {
@@ -114,6 +128,7 @@ router.post('/admin/login', async (req, res) => {  // <-- Ensure this line is ex
       'SELECT * FROM admindata WHERE adminId = ?',
       [adminId]
     );
+    
 
     if (!admins.length) {
       return res.status(404).json({ message: 'Admin not found' });
@@ -256,72 +271,140 @@ router.post('/forgot-password/artisan', async (req, res) => {
   }
 });
 
-// Admin Forgot Password
+// Add this function above the admin forgot password route
+const generateRandomPassword = () => {
+  const length = 12;
+  const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+  let password = "";
+  
+  // Ensure at least one character from each category
+  password += charset[Math.floor(Math.random() * 26)]; // Uppercase
+  password += charset[26 + Math.floor(Math.random() * 26)]; // Lowercase
+  password += charset[52 + Math.floor(Math.random() * 10)]; // Number
+  password += charset[62 + Math.floor(Math.random() * 8)]; // Special character
+
+  // Fill remaining characters
+  for (let i = 4; i < length; i++) {
+    password += charset[Math.floor(Math.random() * charset.length)];
+  }
+
+  // Shuffle the password to mix the required characters
+  return password.split('').sort(() => Math.random() - 0.5).join('');
+};
+
+// Admin Forgot Password route (updated with better error handling)
+
+// Updated retry handler for SMTP
+const sendWithRetry = async (mailOptions, retries = 3) => {
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    return info;
+  } catch (err) {
+    if (retries > 0) {
+      console.log(`Retrying... (${retries} attempts left)`);
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      return sendWithRetry(mailOptions, retries - 1);
+    }
+    throw err;
+  }
+};
+
+// Admin Forgot Password route (updated with better error handling)
 router.post('/forgot-password/admin', async (req, res) => {
   const { adminId, email } = req.body;
   try {
     const db = await connectToDatabase();
+    
+    // 1. Verify admin exists
     const [admins] = await db.query(
       'SELECT * FROM admindata WHERE adminId = ?',
-      [adminId] // Removed email check for more flexible recovery
+      [adminId]
     );
 
-    if (!admins.length) return res.status(404).json({ success: false, message: 'Admin not found' });
-
-    // Verify email matches registered email
-    if (admins[0].email !== email) {
-      return res.status(400).json({ success: false, message: 'Email does not match registered account' });
+    if (!admins.length) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Admin not found' 
+      });
     }
 
-    const newPassword = generateRandomPassword();
-    await sendPasswordEmail(email, newPassword);
+    const admin = admins[0];
     
+    // 2. Validate email match
+    if (admin.email !== email) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Email does not match registered account' 
+      });
+    }
+
+    // 3. Generate and log password (temporarily for debugging)
+    const newPassword = generateRandomPassword();
+    console.log('Generated Password:', newPassword); // Remove in production
+
+    // 4. Send email with the ACTUAL password
+    await sendPasswordEmail(email, newPassword);
+
+    // 5. Hash and update password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     await db.query(
       'UPDATE admindata SET adminPassword = ? WHERE adminId = ?',
       [hashedPassword, adminId]
     );
 
+    // 6. Verify update
+    const [updatedAdmin] = await db.query(
+      'SELECT adminId FROM admindata WHERE adminId = ?',
+      [adminId]
+    );
+
+    if (!updatedAdmin.length) {
+      throw new Error('Password update verification failed');
+    }
+
     return res.json({ 
       success: true,
-      message: 'Password reset instructions sent to your email'
+      message: 'Password reset email sent successfully'
     });
+    
   } catch (err) {
-    console.error('Password reset error:', err);
-    res.status(500).json({ 
+    console.error('Password Reset Error:', {
+      error: err.message,
+      stack: err.stack
+    });
+    return res.status(500).json({ 
       success: false,
-      message: err.message || 'Password reset failed'
+      message: 'Password reset failed. Contact support with reference ID: ' + Date.now()
     });
   }
 });
 
-// Helper functions
-function generateRandomPassword() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  return Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-}
 
-// Replace the sendPasswordEmail function with:
+// Updated sendPasswordEmail function
 async function sendPasswordEmail(to, password) {
   try {
-    const transporter = nodemailer.createTransport({
-      service: 'SendGrid',
-      auth: {
-        user: 'apikey', // This is literal string 'apikey'
-        pass: process.env.SENDGRID_API_KEY
-      }
-    });
-
-    await transporter.sendMail({
-      from: `"CraftHub Support" <${process.env.EMAIL_FROM}>`,
+    const mailOptions = {
+      from: {
+        name: "CraftHub Support",
+        address: process.env.EMAIL_FROM
+      },
       to,
       subject: 'Your New Password',
-      html: `<p>Your temporary password: <strong>${password}</strong></p>
+      text: `Your new temporary password is: ${password}\n\nPlease login and change it immediately.`,
+      html: `<p>Your new temporary password is: <strong>${password}</strong></p>
              <p>Please login and change it immediately.</p>`
-    });
+    };
+
+    console.log('Sending email with password:', password); // Debug log
+    const info = await sendWithRetry(mailOptions);
+    console.log('Email delivery confirmed:', info.response);
+    return true;
   } catch (err) {
-    console.error('Email sending error:', err);
-    throw new Error('Failed to send password email');
+    console.error('Email Send Failure:', {
+      error: err.response || err.message,
+      emailDetails: mailOptions // Shows actual password in logs
+    });
+    throw new Error('Failed to deliver password email');
   }
 }
 
