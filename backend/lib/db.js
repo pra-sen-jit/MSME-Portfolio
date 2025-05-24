@@ -103,11 +103,13 @@ async function createTables() {
   await connection.query(`
     CREATE TABLE IF NOT EXISTS feedback (
       id INT AUTO_INCREMENT PRIMARY KEY,
+      artisanId VARCHAR(50) NOT NULL,
       name VARCHAR(255) NOT NULL,
       email VARCHAR(255),
       message TEXT NOT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      is_read BOOLEAN DEFAULT FALSE
+      is_read BOOLEAN DEFAULT FALSE,
+      FOREIGN KEY (artisanId) REFERENCES users(artisanId) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
   `);
   // ADMIN table (unchanged)
@@ -133,29 +135,39 @@ async function createTables() {
 
 async function addDefaultData() {
   // Add default admin
-  const [admins] = await connection.query('SELECT COUNT(*) as count FROM admindata');
+  const [admins] = await connection.query(
+    "SELECT COUNT(*) as count FROM admindata"
+  );
   if (admins[0].count === 0) {
-    const hashedPassword = await bcrypt.hash('admin2003', 10); // <-- Correct password
-    await connection.query(`
+    const hashedPassword = await bcrypt.hash("admin2003", 10); // <-- Correct password
+    await connection.query(
+      `
       INSERT INTO admindata (adminId, adminPassword, adminPassKey)
       VALUES ('admin123', ?, ?) 
-    `, [hashedPassword , process.env.ADMIN_PASS_KEY || 'ADMIN123']);// Use environment variable
-    console.log('Default admin created');
+    `,
+      [hashedPassword, process.env.ADMIN_PASS_KEY || "ADMIN123"]
+    ); // Use environment variable
+    console.log("Default admin created");
   }
 
   // Add demo artisan for sample products
-  const [users] = await connection.query('SELECT COUNT(*) as count FROM users');
+  const [users] = await connection.query("SELECT COUNT(*) as count FROM users");
   if (users[0].count === 0) {
-    const hashedArtisanPass = await bcrypt.hash('demo123', 10);
-    await connection.query(`
+    const hashedArtisanPass = await bcrypt.hash("demo123", 10);
+    await connection.query(
+      `
       INSERT INTO users (username, artisanId, PhoneNumber, password, listed)
       VALUES ('Demo Artisan', 'DEMO001', '0000000000', ?, TRUE)
-    `, [hashedArtisanPass]);
-    console.log('Demo artisan created for sample products');
+    `,
+      [hashedArtisanPass]
+    );
+    console.log("Demo artisan created for sample products");
   }
 
   // Add sample products with valid artisan reference
-  const [products] = await connection.query('SELECT COUNT(*) as count FROM products');
+  const [products] = await connection.query(
+    "SELECT COUNT(*) as count FROM products"
+  );
   if (products[0].count === 0) {
     await connection.query(`
       INSERT INTO products (artisanId, productName, productPrice, productDescription, is_listed)
@@ -163,7 +175,7 @@ async function addDefaultData() {
         ('DEMO001', 'Handcrafted Vase', 49.99, 'Beautiful ceramic vase with traditional patterns', TRUE),
         ('DEMO001', 'Artisan Necklace', 89.99, 'Silver necklace with hand-carved pendant', TRUE)
     `);
-    console.log('Sample products created for featured slider');
+    console.log("Sample products created for featured slider");
   }
 }
 

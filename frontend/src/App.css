@@ -54,3 +54,45 @@
 .read-the-docs {
   color: #888;
 }
+
+@media (max-width: 640px) {
+  .artisan-table {
+    border: 0;
+  }
+  .artisan-table thead {
+    display: none;
+  }
+  .artisan-table tr {
+    margin-bottom: 1rem;
+    display: block;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+  }
+  .artisan-table td {
+    display: block;
+    text-align: right;
+    padding: 0.5rem;
+  }
+  .artisan-table td::before {
+    content: attr(data-label);
+    float: left;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #6b7280;
+  }
+}
+
+@keyframes modalEntry {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal-animation {
+  animation: modalEntry 0.2s ease-out;
+}

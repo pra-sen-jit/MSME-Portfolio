@@ -66,12 +66,16 @@ function CustomerFeedback() {
               className="flex-shrink-0 w-80 lg:w-96"
             >
               <FeedbackCard
+                artisanName={feedback.artisanName}
                 name={feedback.name}
-                time={new Date(feedback.created_at).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                })}
+                time={new Date(feedback.created_at).toLocaleDateString(
+                  "en-US",
+                  {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  }
+                )}
                 feedback={feedback.message}
               />
             </div>
