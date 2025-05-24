@@ -4,6 +4,7 @@ import ProductsSection from "./ProductsSection";
 import CustomerFeedback from "./CustomerFeedback";
 import ContactSection from "./ContactSection";
 import TeamSection from "./TeamSection";
+import GuideSection from "./GuideSection";
 import AnimatedPage from "./AnimatedPage";
 import { Link } from "react-router-dom";
 
@@ -48,11 +49,6 @@ function LandingPage() {
             <ProductsSection />
           </section>
 
-          {/* Customer Feedback Section */}
-          <section className="px-6 md:px-10 pt-4 pb-4 md:pt-6 md:pb-6 bg-gray-50">
-            <CustomerFeedback />
-          </section>
-
           {/* Contact Section */}
           <section className="px-6 md:px-10 pt-4 pb-8 md:pt-6 md:pb-10">
             <ContactSection />
@@ -61,6 +57,11 @@ function LandingPage() {
           {/* Team Section */}
           <section className="px-6 md:px-10 pt-6 pb-12 md:pt-8 md:pb-14">
             <TeamSection />
+          </section>
+
+          {/* Guide Section */}
+          <section className="px-6 md:px-10 pt-4 pb-4 md:pt-6 md:pb-6 bg-gray-50">
+            <GuideSection />
           </section>
         </div>
       </main>

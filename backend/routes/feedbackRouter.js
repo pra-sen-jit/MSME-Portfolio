@@ -7,9 +7,12 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   try {
     const db = await connectToDatabase();
-    const [feedbacks] = await db.query(
-      "SELECT * FROM feedback ORDER BY created_at DESC"
-    );
+    const [feedbacks] = await db.query(`
+      SELECT feedback.*, users.username as artisanName 
+      FROM feedback 
+      JOIN users ON feedback.artisanId = users.artisanId 
+      ORDER BY feedback.created_at DESC
+    `);
     res.json(feedbacks);
   } catch (error) {
     res.status(500).json({ message: "Error fetching feedback" });
@@ -21,7 +24,13 @@ router.get("/:artisanId", async (req, res) => {
   try {
     const db = await connectToDatabase();
     const [feedbacks] = await db.query(
-      "SELECT * FROM feedback WHERE artisanId = ? ORDER BY created_at DESC",
+      `
+      SELECT feedback.*, users.username as artisanName 
+      FROM feedback 
+      JOIN users ON feedback.artisanId = users.artisanId 
+      WHERE feedback.artisanId = ? 
+      ORDER BY feedback.created_at DESC
+    `,
       [req.params.artisanId]
     );
     res.json(feedbacks);

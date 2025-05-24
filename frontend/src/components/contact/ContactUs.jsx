@@ -5,10 +5,6 @@ import AnimatedPage from "../AnimatedPage";
 
 function ContactUs() {
   const [isContactSubmitting, setIsContactSubmitting] = useState(false);
-  const [isFeedbackSubmitting, setIsFeedbackSubmitting] = useState(false);
-  const [feedbackRefresh, setFeedbackRefresh] = useState(false);
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
-  const feedbackUrl = `${backendUrl}/api/feedback`;
 
   const handleContactSubmit = async (event) => {
     event.preventDefault();
@@ -64,50 +60,6 @@ function ContactUs() {
       });
     } finally {
       setIsContactSubmitting(false);
-    }
-  };
-
-  const handleFeedbackSubmit = async (event) => {
-    event.preventDefault();
-    setIsFeedbackSubmitting(true);
-
-    try {
-      const formData = new FormData(event.target);
-      const response = await fetch(feedbackUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.get("feedbackName"),
-          message: formData.get("feedbackMessage"),
-        }),
-      });
-
-      if (response.ok) {
-        Swal.fire({
-          title: "Thank You!",
-          text: "Feedback submitted successfully!",
-          icon: "success",
-        });
-        event.target.reset();
-        setFeedbackRefresh((prev) => !prev); // Trigger refresh
-      }
-
-      // Swal.fire({
-      //   title: "Thank You!",
-      //   text: "Feedback submitted successfully!",
-      //   icon: "success",
-      // });
-      // event.target.reset();
-    } catch (error) {
-      Swal.fire({
-        icon: "error",
-        title: "Submission Failed",
-        text: "Failed to submit feedback. Please try again.",
-      });
-    } finally {
-      setIsFeedbackSubmitting(false);
     }
   };
 
@@ -175,57 +127,6 @@ function ContactUs() {
                   </>
                 ) : (
                   "Send Message"
-                )}
-              </button>
-            </form>
-          </section>
-
-          {/* Feedback Section */}
-          <section className="bg-purple-50 rounded-2xl shadow-lg p-8">
-            <div className="mb-8 text-center">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                Share Your Feedback
-              </h2>
-              <p className="text-gray-600">We value your opinions</p>
-            </div>
-            <form onSubmit={handleFeedbackSubmit} className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  name="feedbackName"
-                  placeholder="Your name"
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Feedback
-                </label>
-                <textarea
-                  name="feedbackMessage"
-                  placeholder="Your feedback..."
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent h-32"
-                ></textarea>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isFeedbackSubmitting}
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-              >
-                {isFeedbackSubmitting ? (
-                  <>
-                    <FaSpinner className="animate-spin" />
-                    Submitting...
-                  </>
-                ) : (
-                  "Submit Feedback"
                 )}
               </button>
             </form>
