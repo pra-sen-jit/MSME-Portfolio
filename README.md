@@ -17,7 +17,7 @@ git clone https://github.com/D-roy-2003/Catalogue_MSME.git
 cd Catalogue_MSME
 ```
 
-### Install Dependencies
+## Install Dependencies
 ```bash
 # Backend dependencies
 cd backend
@@ -28,9 +28,9 @@ cd ../frontend
 npm install
 ```
 
-### Environment Configuration
+## Environment Configuration
 ```bash
-##Backend (create .env in /backend)
+## Backend (create .env in /backend)
 PORT=3000
 DB_HOST=localhost
 DB_USER=root
@@ -41,39 +41,38 @@ CORS_ORIGIN=http://localhost:5173
 SENDGRID_API_KEY=your_sendgrid_key
 EMAIL_FROM=your_verified_email@domain.com
 
-##Frontend (create .env in /frontend)
+## Frontend (create .env in /frontend)
 VITE_BACKEND_URL=http://localhost:3000
 VITE_EMAIL_KEY=""
 
 ```
 
-###File Storage Setup
+## File Storage Setup
 ```bash
 mkdir backend/uploads
 ```
 
 
-#🖥️ Deployment
+## 🖥️ Deployment
 ```bash
 # 1.Start backend server:
 cd backend
 npm run dev
 ```
 
-###In a new terminal, start frontend:
+## In a new terminal, start frontend:
 ```bash
 cd frontend
 npm run dev
 ```
 
-###🌐 Access Application
+## 🌐 Access Application
 ```bash
 Frontend: http://localhost:5173
 Backend API: http://localhost:3000
 ```
 
-#
-**Replace all placeholder values (your_mysql_password, your_sendgrid_key, etc.) with your actual credentials**
+## **Replace all placeholder values (your_mysql_password, your_sendgrid_key, etc.) with your actual credentials**
 
 ## 📚 Documentation
 [API Documentation](http://localhost:3000/api-docs) (Available after starting backend server)
