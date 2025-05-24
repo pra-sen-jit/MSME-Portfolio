@@ -75,7 +75,7 @@ Backend API: http://localhost:3000
 ## **Replace all placeholder values (your_mysql_password, your_sendgrid_key,your_web3forms.com_api_key etc.) with your actual credentials**
 
 ## 📚 Documentation
-[API Documentation](http://localhost:3000/api-docs) (Available after starting backend server)
+[API Documentation](http://localhost:3000) (Available after starting backend server)
 
 ## ⚠️ Troubleshooting
 - If MySQL connection fails:
