@@ -13,6 +13,11 @@ function ArtisanSection({ artisan, index }) {
   const products = artisan?.products || [];
   const initial = username[0]?.toUpperCase() || "A";
   const color = `hsl(${index * 60}, 70%, 30%)`;
+  // Create displayed products array with placeholders
+  const displayedProducts = [];
+  for (let i = 0; i < 3; i++) {
+    displayedProducts.push(products[i] || { isPlaceholder: true });
+  }
 
   return (
     <section
@@ -44,14 +49,41 @@ function ArtisanSection({ artisan, index }) {
         </div>
       </div>
 
-      {/* Products Grid */}
+      {/* Products Grid with Placeholders */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {products.map((product) => (
-          <ProductCard
-            key={product?.id || Math.random()}
-            product={product}
-            color={color}
-          />
+        {displayedProducts.map((product, index) => (
+          product.isPlaceholder ? (
+            <div 
+              key={`placeholder-${index}`}
+              className="bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 p-4 h-full min-h-[300px] flex flex-col items-center justify-center"
+            >
+              <div className="w-full aspect-square bg-gray-100 rounded-lg flex items-center justify-center mb-4">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-12 w-12 text-gray-400"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <div className="w-full space-y-2">
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+              </div>
+            </div>
+          ) : (
+            <ProductCard
+              key={product.id}
+              product={product}
+              color={color}
+            />
+          )
         ))}
       </div>
     </section>
@@ -169,9 +201,7 @@ function ProductGrid() {
 
         const artisansWithProducts = (
           await Promise.all(artisanPromises)
-        ).filter(
-          (artisan) => artisan !== null && artisan.products.length === 3
-        );
+        ).filter((artisan) => artisan !== null && artisan.products.length > 0);
 
         setArtisans(artisansWithProducts);
       } catch (error) {
@@ -301,6 +331,23 @@ function ProductsPage() {
         </div>
       </div>
     </AnimatedPage>
+  );
+}
+function PlaceholderProductCard() {
+  return (
+    <div className="bg-gray-100 rounded-lg shadow-md overflow-hidden h-full flex flex-col">
+      <div className="h-64 bg-gray-200 flex items-center justify-center">
+        <span className="text-gray-500">No products</span>
+      </div>
+      <div className="p-4 flex-1 flex flex-col">
+        <div className="h-6 bg-gray-300 rounded mb-2 w-3/4"></div>
+        <div className="h-4 bg-gray-300 rounded mb-4 w-1/2"></div>
+        <div className="mt-auto flex justify-between items-center">
+          <div className="h-5 bg-gray-300 rounded w-1/4"></div>
+          <div className="h-8 bg-gray-300 rounded w-1/3"></div>
+        </div>
+      </div>
+    </div>
   );
 }
 
