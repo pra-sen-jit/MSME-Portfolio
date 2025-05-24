@@ -124,9 +124,9 @@ function ProductCard({ product, color }) {
             ₹{Number(product.productPrice).toLocaleString("en-IN")}
           </span>
           <div className="flex flex-col items-end gap-2">
-            <button className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1 rounded-md text-sm font-medium hover:from-blue-600 hover:to-blue-700 transition-colors">
+            {/* <button className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1 rounded-md text-sm font-medium hover:from-blue-600 hover:to-blue-700 transition-colors">
               Add to Cart
-            </button>
+            </button> */}
             {product.listed_at && (
               <span className="text-xs text-gray-500">
                 Listed: {new Date(product.listed_at).toLocaleDateString()}
