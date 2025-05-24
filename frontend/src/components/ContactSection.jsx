@@ -7,7 +7,7 @@ function ContactSection() {
       <div className="max-w-4xl mx-auto px-6">
         <h2
           id="contact-section"
-          className="text-2xl font-semibold mb-6 text-center text-gray-800"
+          className="text-4xl font-bold text-center text-black mb-10 max-md:text-3xl"
         >
           Our Location
         </h2>

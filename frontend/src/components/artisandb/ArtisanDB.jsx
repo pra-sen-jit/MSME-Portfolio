@@ -202,7 +202,7 @@ function ArtisanDatabase() {
               </svg>
             </div>
           </div>
-          <select
+          {/* <select
             className="px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             value={specializationFilter}
             onChange={(e) => {
@@ -215,7 +215,7 @@ function ArtisanDatabase() {
                 {spec}
               </option>
             ))}
-          </select>
+          </select> */}
         </div>
 
         <div className="bg-white shadow overflow-hidden rounded-lg mb-4">

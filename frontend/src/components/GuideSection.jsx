@@ -24,7 +24,7 @@ function GuideSection() {
     <section className="bg-white py-10 px-6" aria-labelledby="team-heading">
       <div className="max-w-7xl mx-auto text-center">
         <h2 id="team-heading" className="text-3xl font-bold text-black mb-6">
-          Meet The Guide Team
+          Meet The Mentors
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 place-items-center">
           {teamMembers.map((member) => (
