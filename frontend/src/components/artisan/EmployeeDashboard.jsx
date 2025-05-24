@@ -656,9 +656,9 @@ export default function EmployeeDashboard() {
           <div className="mt-4 flex justify-end gap-4">
             <button
               onClick={handleListAll}
-              disabled={products.length !== 3}
+              disabled={products.length === 0}
               className={`flex items-center gap-2 
-                ${products.length === 3  
+                ${products.length > 0  
                   ? 'bg-green-600 hover:bg-green-700' 
                   : 'bg-gray-400 cursor-not-allowed'} text-white px-5 py-2 rounded-md`}
             >
