@@ -43,7 +43,7 @@ EMAIL_FROM=your_verified_email@domain.com
 
 ## Frontend (create .env in /frontend)
 VITE_BACKEND_URL=http://localhost:3000
-VITE_EMAIL_KEY=""
+VITE_EMAIL_KEY="your_web3forms.com_api_key"
 
 ```
 
@@ -72,10 +72,10 @@ Frontend: http://localhost:5173
 Backend API: http://localhost:3000
 ```
 
-## **Replace all placeholder values (your_mysql_password, your_sendgrid_key, etc.) with your actual credentials**
+## **Replace all placeholder values (your_mysql_password, your_sendgrid_key,your_web3forms.com_api_key etc.) with your actual credentials**
 
 ## 📚 Documentation
-[API Documentation](http://localhost:3000/api-docs) (Available after starting backend server)
+[API Documentation](http://localhost:3000) (Available after starting backend server)
 
 ## ⚠️ Troubleshooting
 - If MySQL connection fails:
