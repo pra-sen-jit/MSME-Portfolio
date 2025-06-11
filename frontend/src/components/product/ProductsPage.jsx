@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
@@ -56,6 +56,12 @@ function Sidebar({ activeFilters, setActiveFilters, priceRange, setPriceRange })
     activeFilters.categories.length +
     activeFilters.materials.length +
     (priceRange < 15000 ? 1 : 0);
+
+  // Material mapping for display vs value
+  const materials = [
+    { display: "Silver (925)", value: "Silver" },
+    { display: "Mixed Metals", value: "Mixed Metals" }
+  ];
 
   return (
     <aside className="w-full lg:max-w-xs px-4 py-6 bg-white rounded-xl shadow-md text-gray-800 sticky top-20 max-h-[calc(100vh-100px)] overflow-y-auto transition-all duration-300">
@@ -187,7 +193,7 @@ function Sidebar({ activeFilters, setActiveFilters, priceRange, setPriceRange })
           </div>
         </section>
 
-        {/* Material Filter */}
+        {/* Material Filter - FIXED */}
         <section>
           <h3 className="text-lg font-semibold mb-4 flex items-center">
             <span className="mr-2">
@@ -207,12 +213,12 @@ function Sidebar({ activeFilters, setActiveFilters, priceRange, setPriceRange })
             Material
           </h3>
           <div className="space-y-3">
-            {["Silver (925)", "Mixed Metals"].map((material) => (
+            {materials.map((material) => (
               <label
-                key={material}
+                key={material.display}
                 className={`flex items-center gap-3 p-2 rounded-md cursor-pointer transition-all duration-200
                   ${
-                    activeFilters.materials.includes(material)
+                    activeFilters.materials.includes(material.value)
                       ? "bg-indigo-100"
                       : ""
                   }`}
@@ -221,10 +227,10 @@ function Sidebar({ activeFilters, setActiveFilters, priceRange, setPriceRange })
                   <input
                     type="checkbox"
                     className="appearance-none h-5 w-5 border-2 border-gray-300 rounded-md checked:border-indigo-500 transition-colors duration-200"
-                    checked={activeFilters.materials.includes(material)}
-                    onChange={() => toggleMaterial(material)}
+                    checked={activeFilters.materials.includes(material.value)}
+                    onChange={() => toggleMaterial(material.value)}
                   />
-                  {activeFilters.materials.includes(material) && (
+                  {activeFilters.materials.includes(material.value) && (
                     <svg
                       className="absolute top-0 left-0 h-5 w-5 text-indigo-500 pointer-events-none"
                       viewBox="0 0 20 20"
@@ -238,7 +244,7 @@ function Sidebar({ activeFilters, setActiveFilters, priceRange, setPriceRange })
                     </svg>
                   )}
                 </div>
-                <span className="font-medium">{material}</span>
+                <span className="font-medium">{material.display}</span>
               </label>
             ))}
           </div>
@@ -462,6 +468,7 @@ function ProductGrid({ refreshTrigger, filters, resetFilters }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         const artisansRes = await axios.get(`${backendUrl}/public/artisans`);
         
         // Filter out demo artisans (artisanId 1 and 2)
@@ -475,7 +482,11 @@ function ProductGrid({ refreshTrigger, filters, resetFilters }) {
               const productsRes = await axios.get(
                 `${backendUrl}/public/artisans/${artisan.artisanId}/products`
               );
-              return { ...artisan, products: productsRes.data };
+              // Filter out demo products within each artisan
+              const realProducts = productsRes.data.filter(
+                product => ![1, 2].includes(product.artisanId)
+              );
+              return { ...artisan, products: realProducts };
             } catch (error) {
               console.error(
                 `Error fetching products for ${artisan.artisanId}:`,
@@ -498,15 +509,10 @@ function ProductGrid({ refreshTrigger, filters, resetFilters }) {
           }))
         );
 
-        // Filter out demo products (from demo artisans)
-        const filteredAllProducts = allProducts.filter(
-          product => ![1, 2].includes(product.artisanId)
-        );
-
         setArtisans(artisansWithProducts.filter(
           (artisan) => artisan.products.length >= 3
         ));
-        setAllProducts(filteredAllProducts);
+        setAllProducts(allProducts);
       } catch (error) {
         console.error("Fetch error:", error);
       } finally {
@@ -543,10 +549,11 @@ function ProductGrid({ refreshTrigger, filters, resetFilters }) {
         if (!foundCategory) return false;
       }
       
-      // Material filter
-      if (filters.materials.length > 0 && 
-          !filters.materials.includes(product.material)) {
-        return false;
+      // Material filter - FIXED
+      if (filters.materials.length > 0) {
+        if (!filters.materials.includes(product.material)) {
+          return false;
+        }
       }
       
       // Price filter - only apply if user changed from default
@@ -683,41 +690,7 @@ function ProductsPage() {
             </div>
           </div>
 
-          {/* Filter Controls */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-            <div className="flex gap-4">
-              {/* Mobile Filter Toggle */}
-              <button
-                onClick={() => setFilterOpen(!filterOpen)}
-                className="flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-500"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 mr-1"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                {filterOpen ? "Hide Filters" : "Show Filters"}
-              </button>
-
-              {/* Refresh Button */}
-              <button 
-                onClick={() => setRefreshTrigger(prev => prev + 1)}
-                className="flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-500"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
-                </svg>
-                Refresh
-              </button>
-            </div>
-          </div>
+          {/* REMOVED USELESS BUTTONS */}
 
           {/* Products Layout */}
           <div className="flex flex-col md:flex-row gap-8">
