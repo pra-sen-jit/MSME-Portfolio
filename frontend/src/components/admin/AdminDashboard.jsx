@@ -126,6 +126,18 @@ const fetchArtisanProducts = async (artisanId) => {
   
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    
+    // Add phone number validation
+    if (name === 'phoneNumber') {
+      // Only allow numbers and limit to 10 digits
+      const phoneNumber = value.replace(/\D/g, '').slice(0, 10);
+      setAdminData((prev) => ({
+        ...prev,
+        [name]: phoneNumber,
+      }));
+      return;
+    }
+
     setAdminData((prev) => ({
       ...prev,
       [name]: value,
@@ -666,13 +678,20 @@ return (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                         <input
-                          type="text"
+                          type="tel"
                           name="phoneNumber"
                           value={adminData.phoneNumber || ""}
                           onChange={handleInputChange}
                           disabled={!isEditing}
+                          maxLength={10}
+                          pattern="[0-9]{10}"
+                          title="Please enter a 10-digit phone number"
                           className="w-full p-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
+                          placeholder="Enter 10-digit phone number"
                         />
+                        {isEditing && adminData.phoneNumber && adminData.phoneNumber.length !== 10 && (
+                          <p className="text-red-500 text-sm mt-1">Phone number must be 10 digits</p>
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Email ID</label>
