@@ -8,13 +8,20 @@ router.get("/", async (req, res) => {
   try {
     const db = await connectToDatabase();
     const [feedbacks] = await db.query(`
-      SELECT feedback.*, users.username as artisanName 
-      FROM feedback 
-      JOIN users ON feedback.artisanId = users.artisanId 
-      ORDER BY feedback.created_at DESC
+      SELECT 
+        f.*,
+        CASE 
+          WHEN f.artisanId IS NOT NULL THEN u.username 
+          ELSE f.artisanName 
+        END as artisanName,
+        f.created_at
+      FROM feedback f
+      LEFT JOIN users u ON f.artisanId = u.artisanId
+      ORDER BY f.created_at DESC
     `);
     res.json(feedbacks);
   } catch (error) {
+    console.error("Error fetching feedback:", error);
     res.status(500).json({ message: "Error fetching feedback" });
   }
 });
@@ -25,35 +32,43 @@ router.get("/:artisanId", async (req, res) => {
     const db = await connectToDatabase();
     const [feedbacks] = await db.query(
       `
-      SELECT feedback.*, users.username as artisanName 
-      FROM feedback 
-      JOIN users ON feedback.artisanId = users.artisanId 
-      WHERE feedback.artisanId = ? 
-      ORDER BY feedback.created_at DESC
+      SELECT 
+        f.*,
+        CASE 
+          WHEN f.artisanId IS NOT NULL THEN u.username 
+          ELSE f.artisanName 
+        END as artisanName,
+        f.created_at
+      FROM feedback f
+      LEFT JOIN users u ON f.artisanId = u.artisanId
+      WHERE f.artisanId = ? 
+      ORDER BY f.created_at DESC
     `,
       [req.params.artisanId]
     );
     res.json(feedbacks);
   } catch (error) {
+    console.error("Error fetching feedback:", error);
     res.status(500).json({ message: "Error fetching feedback" });
   }
 });
 
 // Submit new feedback
 router.post("/", async (req, res) => {
-  const { name, message, artisanId } = req.body;
-  if (!name || !message || !artisanId) {
+  const { name, email, artisanName, feedback } = req.body;
+  if (!name || !email || !feedback) {
     return res.status(400).json({ message: "Missing required fields" });
   }
 
   try {
     const db = await connectToDatabase();
     await db.query(
-      "INSERT INTO feedback (name, message, artisanId) VALUES (?, ?, ?)",
-      [name, message, artisanId]
+      "INSERT INTO feedback (name, email, artisanName, message) VALUES (?, ?, ?, ?)",
+      [name, email, artisanName || null, feedback]
     );
     res.status(201).json({ message: "Feedback submitted successfully" });
   } catch (error) {
+    console.error("Error submitting feedback:", error);
     res.status(500).json({ message: "Error submitting feedback" });
   }
 });
