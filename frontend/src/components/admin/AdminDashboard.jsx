@@ -40,6 +40,7 @@ const AdminDashboard = () => {
   const [editSpecialization, setEditSpecialization] = useState('');
   const [editPassword, setEditPassword] = useState('');
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const [passwordResetRequests, setPasswordResetRequests] = useState([]);
 
   const specializations = [
     "All Specializations",
@@ -126,18 +127,6 @@ const fetchArtisanProducts = async (artisanId) => {
   
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
-    // Add phone number validation
-    if (name === 'phoneNumber') {
-      // Only allow numbers and limit to 10 digits
-      const phoneNumber = value.replace(/\D/g, '').slice(0, 10);
-      setAdminData((prev) => ({
-        ...prev,
-        [name]: phoneNumber,
-      }));
-      return;
-    }
-
     setAdminData((prev) => ({
       ...prev,
       [name]: value,
@@ -390,6 +379,43 @@ const handleUpdateArtisan = async () => {
   
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
   
+  const fetchPasswordResetRequests = async () => {
+    try {
+      const response = await axios.get(`${backendUrl}/api/admin/password-reset-requests`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (response.data.success) {
+        setPasswordResetRequests(response.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching password reset requests:", error);
+      alert(error.response?.data?.message || "Failed to fetch password reset requests");
+    }
+  };
+
+  const handleMarkAsResolved = async (artisanId) => {
+    try {
+      const response = await axios.put(
+        `${backendUrl}/api/admin/resolve-password-reset/${artisanId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+      if (response.data.success) {
+        alert("Password reset request marked as resolved!");
+        fetchPasswordResetRequests(); // Refresh the list
+      }
+    } catch (error) {
+      console.error("Error marking as resolved:", error);
+      alert(error.response?.data?.message || "Failed to mark as resolved");
+    }
+  };
+  
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -440,7 +466,10 @@ return (
         </div>
         <div 
           className="py-3 px-4 border-b border-gray-800 flex items-center gap-3 cursor-pointer hover:bg-gray-800"
-          onClick={() => setActiveView('main')}
+          onClick={() => {
+            setActiveView('notifications');
+            fetchPasswordResetRequests();
+          }}
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
             <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
@@ -558,6 +587,40 @@ return (
                 Update Pass Key
               </button>
             </div>
+          </div>
+        ) : activeView === 'notifications' ? (
+          <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
+            <h2 className="text-xl font-semibold">Password Reset Requests</h2>
+            {passwordResetRequests.length > 0 ? (
+              <div className="space-y-3">
+                {passwordResetRequests.map((request) => (
+                  <div key={request.artisanId} className="flex items-center justify-between p-3 border border-gray-200 rounded-md bg-gray-50">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-800 font-bold">
+                        {request.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <div className="font-semibold text-gray-800">{request.name}</div>
+                        <div className="text-sm text-gray-600">Requested Password Reset</div>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => handleMarkAsResolved(request.artisanId)}
+                      className="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors"
+                      title="Mark as Resolved"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                No new password reset requests.
+              </div>
+            )}
           </div>
         ) : (
           <>
@@ -678,20 +741,13 @@ return (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                         <input
-                          type="tel"
+                          type="text"
                           name="phoneNumber"
                           value={adminData.phoneNumber || ""}
                           onChange={handleInputChange}
                           disabled={!isEditing}
-                          maxLength={10}
-                          pattern="[0-9]{10}"
-                          title="Please enter a 10-digit phone number"
                           className="w-full p-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
-                          placeholder="Enter 10-digit phone number"
                         />
-                        {isEditing && adminData.phoneNumber && adminData.phoneNumber.length !== 10 && (
-                          <p className="text-red-500 text-sm mt-1">Phone number must be 10 digits</p>
-                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Email ID</label>
@@ -1056,3 +1112,7 @@ return (
 };
 
 export default AdminDashboard;
+
+
+
+

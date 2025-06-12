@@ -47,14 +47,6 @@ router.put('/profile', verifyToken, upload.single('profileImage'), async (req, r
     const db = await connectToDatabase();
     const { name, address, phoneNumber, emailId } = req.body;
     
-    // Validate phone number
-    if (phoneNumber && phoneNumber.length !== 10) {
-      return res.status(400).json({
-        success: false,
-        message: 'Phone number must be 10 digits'
-      });
-    }
-
     const [currentAdmin] = await db.query(
       'SELECT * FROM admindata WHERE adminId = ?',
       [req.adminId]
@@ -67,14 +59,6 @@ router.put('/profile', verifyToken, upload.single('profileImage'), async (req, r
       email: emailId || currentAdmin[0].email,
       profileimage: req.file ? `/uploads/${req.file.filename}` : currentAdmin[0].profileimage
     };
-
-    // Additional validation before update
-    if (updateData.phonenumber && updateData.phonenumber.length !== 10) {
-      return res.status(400).json({
-        success: false,
-        message: 'Phone number must be 10 digits'
-      });
-    }
 
     await db.query(
       `UPDATE admindata SET 
@@ -149,7 +133,7 @@ router.put('/update-passkey', verifyToken, async (req, res) => {
       [newPasskey, req.adminId]
     );
 
-    res.json({ 
+    res.json({
       success: true,
       message: 'Passkey updated successfully'
     });
@@ -159,6 +143,41 @@ router.put('/update-passkey', verifyToken, async (req, res) => {
       success: false,
       message: 'Passkey update failed'
     });
+  }
+});
+
+// Add new route to get all artisans with forgetpassword = 1
+router.get('/password-reset-requests', verifyToken, async (req, res) => {
+  try {
+    const db = await connectToDatabase();
+    const [requests] = await db.query(
+      'SELECT id, username AS name, artisanId, PhoneNumber AS contact, specialization FROM users WHERE forgetpassword = 1'
+    );
+    res.json({ success: true, data: requests });
+  } catch (error) {
+    console.error('Fetch password reset requests error:', error.message);
+    res.status(500).json({ success: false, message: 'Failed to fetch password reset requests', detailedError: error.message });
+  }
+});
+
+// Add new route to set forgetpassword to 0 for a specific artisan
+router.put('/resolve-password-reset/:artisanId', verifyToken, async (req, res) => {
+  try {
+    const { artisanId } = req.params;
+    const db = await connectToDatabase();
+    const [result] = await db.query(
+      'UPDATE users SET forgetpassword = 0 WHERE artisanId = ?',
+      [artisanId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Artisan not found or no pending request' });
+    }
+
+    res.json({ success: true, message: 'Password reset request resolved successfully' });
+  } catch (error) {
+    console.error('Resolve password reset error:', error);
+    res.status(500).json({ success: false, message: 'Failed to resolve password reset request' });
   }
 });
 
