@@ -461,12 +461,22 @@ function ProductForm({ productNumber, product, onDelete, maxProducts, isNewSlot,
 
 function EmployeeTable() {
   const [profile, setProfile] = useState({
-   name: localStorage.getItem("username") || "",
-  specialization: "Silver Ornaments Expert",
-  contact: localStorage.getItem("phoneNumber") || "",
-  artisanId: localStorage.getItem("ArtisanId") || "",
-  isEditing: false,
+    name: localStorage.getItem("username") || "",
+    specialization: localStorage.getItem("specialization") || "Silver Ornaments Expert",
+    contact: localStorage.getItem("phoneNumber") || "",
+    artisanId: localStorage.getItem("ArtisanId") || "",
+    isEditing: false,
   });
+
+  const specializationOptions = [
+    { value: "Ornaments", label: "Ornaments" },
+    { value: "Idol Maker", label: "Idol Maker" },
+    { value: "Metalworking", label: "Metalworking" },
+    { value: "Utensils", label: "Utensils" },
+    { value: "Premium Products", label: "Premium Products" },
+    { value: "Others", label: "Others" }
+  ];
+
   const handleEditToggle = () => {
     setProfile((prev) => ({ ...prev, isEditing: !prev.isEditing }));
   };
@@ -494,6 +504,9 @@ function EmployeeTable() {
         specialization: response.data.profile.specialization || "Not Specified",
       });
 
+      // Update local storage
+      localStorage.setItem("specialization", response.data.profile.specialization || "");
+
       alert("Profile updated successfully!");
     } catch (error) {
       const errorMessage = error.response?.data?.message;
@@ -518,11 +531,13 @@ function EmployeeTable() {
         setProfile({
           ...response.data.profile,
           isEditing: false,
+          specialization: response.data.profile.specialization || "Silver Ornaments Expert",
         });
 
         // Update local storage
         localStorage.setItem("username", response.data.profile.name);
         localStorage.setItem("phoneNumber", response.data.profile.contact);
+        localStorage.setItem("specialization", response.data.profile.specialization || "");
       } catch (error) {
         console.error("Profile fetch error:", error);
       }
@@ -538,8 +553,6 @@ function EmployeeTable() {
       }
     }
   }, []);
-
-  // Removed delete functionality
 
   return (
     <section className="w-full mb-6 bg-white border border-solid border-neutral-200 rounded-lg">
@@ -572,17 +585,22 @@ function EmployeeTable() {
 
         <div className="col-span-4 flex items-center font-normal text-neutral-600">
           {profile.isEditing ? (
-            <input
+            <select
               value={profile.specialization || ""}
               onChange={(e) =>
                 setProfile((p) => ({
                   ...p,
-                  specialization: e.target.value || null,
+                  specialization: e.target.value,
                 }))
               }
               className="border rounded px-2 py-1 w-full"
-              placeholder="Enter specialization"
-            />
+            >
+              {specializationOptions.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           ) : (
             profile.specialization || "Not Specified"
           )}
