@@ -59,7 +59,6 @@ function IndividualProduct() {
   );
 }
 
-// Helper components
 function ErrorPage({ error }) {
   return (
     <AnimatedPage>
@@ -89,15 +88,20 @@ function NotFoundPage() {
 function ProductDetails({ product }) {
   const [selectedImage, setSelectedImage] = useState(0);
 
-  // Handle arrow navigation
+  // Fixed navigation handlers
   const handlePrev = () => {
-    setSelectedImage(
-      (prev) => (prev - 1 + product.images.length) % product.images.length
+    setSelectedImage((prev) =>
+      prev === 0 ? product.images.length - 1 : prev - 1
     );
   };
 
   const handleNext = () => {
     setSelectedImage((prev) => (prev + 1) % product.images.length);
+  };
+
+  // Fixed thumbnail click handler
+  const handleThumbnailClick = (index) => {
+    setSelectedImage(index);
   };
 
   const specifications = {
@@ -111,17 +115,14 @@ function ProductDetails({ product }) {
 
   return (
     <section className="lg:grid lg:grid-cols-[40%_60%] lg:gap-16">
-      {" "}
       {/* Product Images */}
       <div className="flex flex-col gap-6">
         <div className="aspect-square overflow-hidden rounded-2xl bg-white shadow-lg relative max-w-md mx-auto">
-          {" "}
-          {/* Navigation Arrows */}
           {product.images.length > 1 && (
             <>
               <button
                 onClick={handlePrev}
-                className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-30 text-white rounded-full p-1 hover:bg-opacity-50 z-10"
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/30 text-white rounded-full p-2 hover:bg-black/50 transition-all z-10"
                 aria-label="Previous image"
               >
                 <svg
@@ -141,7 +142,7 @@ function ProductDetails({ product }) {
               </button>
               <button
                 onClick={handleNext}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-30 text-white rounded-full p-1 hover:bg-opacity-50 z-10"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/30 text-white rounded-full p-2 hover:bg-black/50 transition-all z-10"
                 aria-label="Next image"
               >
                 <svg
@@ -161,22 +162,25 @@ function ProductDetails({ product }) {
               </button>
             </>
           )}
+          {/* Key fix: Add unique key to force re-render */}
           <ImageWithFallback
+            key={`main-${selectedImage}`} // Crucial fix
             src={product.images[selectedImage]}
-            alt="Main product view"
+            alt={`Main product view ${selectedImage + 1}`}
             className="h-full w-full object-cover"
           />
         </div>
 
         {/* Thumbnails */}
-        <div className="grid grid-cols-4 gap-4 max-w-md mx-auto">
-          {" "}
+        <div className="flex flex-wrap justify-center gap-4 max-w-md mx-auto">
           {product.images.map((img, index) => (
             <button
               key={index}
-              onClick={() => setSelectedImage(index)}
-              className={`aspect-square overflow-hidden rounded-xl transition-all ${
-                selectedImage === index ? "ring-2 ring-emerald-500" : ""
+              onClick={() => handleThumbnailClick(index)}
+              className={`w-16 h-16 md:w-20 md:h-20 overflow-hidden rounded-xl transition-all duration-200 ${
+                selectedImage === index
+                  ? "ring-3 ring-emerald-500 scale-105"
+                  : "ring-1 ring-gray-300 hover:ring-emerald-300"
               }`}
             >
               <ImageWithFallback
@@ -188,7 +192,6 @@ function ProductDetails({ product }) {
           ))}
         </div>
       </div>
-      {/* Product Info Section */}
       <div className="mt-8 lg:mt-0">
         <h1 className="text-3xl font-bold text-gray-900">
           {product.productName}
@@ -319,7 +322,6 @@ function RelatedProductCard({ product }) {
   );
 }
 
-// Reusable components
 function ImageWithFallback({ src, alt, className, fallback }) {
   const [imgSrc, setImgSrc] = useState(src);
   const [errored, setErrored] = useState(false);
