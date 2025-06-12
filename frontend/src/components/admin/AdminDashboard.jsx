@@ -1,4 +1,3 @@
-
 //ADMIN DASHBOARD:
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -197,27 +196,27 @@ const handleDeleteArtisan = async (artisanId) => {
   }
 };
   const handleDeleteProduct = async (productId) => {
-  if (window.confirm("Are you sure you want to delete this product?")) {
-    try {
-      const response = await axios.delete(
-        `${backendUrl}/products/${productId}`, // Fixed endpoint
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}` // Add token
+    if (window.confirm("Are you sure you want to delete this product?")) {
+      try {
+        const response = await axios.delete(
+          `${backendUrl}/api/admin/products/${productId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`
+            }
           }
-        }
-      );
+        );
 
-      if (response.data.success) {
-        fetchArtisanProducts(showProductsFor); // Refresh list
-        alert("Product deleted successfully!");
+        if (response.data.success) {
+          fetchArtisanProducts(showProductsFor); // Refresh list
+          alert("Product deleted successfully!");
+        }
+      } catch (error) {
+        console.error("Error deleting product:", error);
+        alert(error.response?.data?.message || "Failed to delete product.");
       }
-    } catch (error) {
-      console.error("Error deleting product:", error);
-      alert(error.response?.data?.message || "Failed to delete product.");
     }
-  }
-};
+  };
 
   // Add these new handler functions
 const handleUpdatePassword = async () => {
