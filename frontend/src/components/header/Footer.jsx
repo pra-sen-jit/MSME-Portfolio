@@ -145,15 +145,6 @@ function Footer() {
     </a>
     <span className="text-neutral-500">•</span>
     <a
-      // href="https://www.linkedin.com/in/subhrajit-ghosh"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="hover:text-white"
-    >
-      Subhrajit Ghosh
-    </a>
-    <span className="text-neutral-500">•</span>
-    <a
       href="https://www.linkedin.com/in/prasenjit-datta/"
       target="_blank"
       rel="noopener noreferrer"

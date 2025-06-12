@@ -11,7 +11,6 @@ function TeamSection() {
   const teamMembers = [
     { id: 1, image: Debu, name: "Debangshu Roy" },
     { id: 2, image: Prasenjit, name: "Prasenjit Datta" },
-    { id: 3, image: subhrajit, name: "Subhrajit Ghosh" },
     { id: 4, image: premImage, name: "Prem Ghosh" },
     { id: 5, image: gourav, name: "Gourav Majumder" },
     { id: 6, image: subho, name: "Subhobrata Maity" },
