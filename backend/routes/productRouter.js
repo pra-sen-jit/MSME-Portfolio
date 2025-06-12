@@ -57,19 +57,21 @@ router.post(
         return res.status(400).json({ message: "productName is required." });
       }
       const db = await connectToDatabase();
-      // enforce ≤3
+
+      // Get existing product count
       const [[{ cnt }]] = await db.query(
         "SELECT COUNT(*) AS cnt FROM products WHERE artisanId = ?",
         [artisanId]
       );
+
+      // FIX: Use cnt directly instead of existingProducts
+      const productId = `${artisanId}${String.fromCharCode(65 + cnt)}`;
+
       if (cnt >= 3) {
         return res
           .status(400)
           .json({ message: "Maximum of 3 products allowed." });
       }
-
-      const productCount = existingProducts[0].cnt;
-      const productId = `${artisanId}${String.fromCharCode(65 + productCount)}`;
 
       // file paths
       const image1 = req.files.image1?.[0].filename
@@ -98,7 +100,7 @@ router.post(
            height, width, weight, certification, finish,
            image1, image2, image3, image4, image5,
            productDescription, category
-         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           artisanId,
           productId,
