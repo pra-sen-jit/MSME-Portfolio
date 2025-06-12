@@ -25,7 +25,11 @@ function ArtisanDatabase() {
   const artisansPerPage = 10;
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const scrollSpeed = 0.5; // Reduced speed for smoother animation
   const sliderRef = useRef(null);
+  const containerRef = useRef(null);
 
   const specializations = [
     "All Specializations",
@@ -90,6 +94,40 @@ function ArtisanDatabase() {
     fetchArtisans();
     fetchFeedbacks();
   }, [backendUrl]);
+
+  useEffect(() => {
+    if (!sliderRef.current || feedbacks.length === 0) return;
+
+    let animationFrameId;
+    let lastTimestamp = performance.now();
+
+    const animate = (timestamp) => {
+      if (!lastTimestamp) lastTimestamp = timestamp;
+      const delta = timestamp - lastTimestamp;
+      lastTimestamp = timestamp;
+
+      if (!isPaused) {
+        setScrollPosition((prev) => {
+          const newPosition = prev + (scrollSpeed * delta) / 16;
+          const sliderWidth = sliderRef.current.scrollWidth / 2; // Since we duplicated the products
+          
+          // Reset position before reaching the end to avoid jump
+          if (newPosition >= sliderWidth) {
+            return 0;
+          }
+          return newPosition;
+        });
+      }
+
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    animationFrameId = requestAnimationFrame(animate);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [isPaused, feedbacks]);
 
   const scroll = (direction) => {
     if (sliderRef.current) {
@@ -384,60 +422,51 @@ function ArtisanDatabase() {
         {feedbackLoading ? (
           <div className="text-center py-4">Loading feedbacks...</div>
         ) : feedbacks.length > 0 ? (
-          <div className="relative w-full overflow-hidden py-4">
-            <button
-              onClick={() => scroll('left')}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-              aria-label="Scroll left"
-            >
-              <ChevronLeft size={20} />
-            </button>
+          <div 
+            className="relative w-full overflow-x-hidden"
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+            ref={containerRef}
+          >
             <div
               ref={sliderRef}
-              className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide space-x-6 px-4"
+              className="flex gap-10 w-max"
               style={{
-                scrollBehavior: 'smooth',
-                WebkitOverflowScrolling: 'touch',
+                transform: `translateX(-${scrollPosition}px)`,
+                transition: isPaused ? "transform 0.5s ease" : "none",
               }}
             >
-            {feedbacks.map((feedback, index) => (
-              <div key={index} className="flex-none w-80 snap-center p-2">
-                <div className="relative bg-white p-6 rounded-lg shadow-md flex flex-col items-start space-y-4 h-full">
-                  {feedback.artisanName && (
-                    <div className="absolute top-3 right-3 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                      For: {feedback.artisanName}
+              {[...feedbacks, ...feedbacks].map((feedback, index) => (
+                <div key={`${feedback.id}-${index}`} className="w-[320px] flex-shrink-0">
+                  <div className="relative bg-white p-6 rounded-lg shadow-md flex flex-col items-start space-y-4 h-full">
+                    {feedback.artisanName && (
+                      <div className="absolute top-3 right-3 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                        For: {feedback.artisanName}
+                      </div>
+                    )}
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center text-lg font-bold">
+                        {feedback.name?.[0]?.toUpperCase() || 'U'}
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 text-base">{feedback.name}</h3>
+                        <span className="text-sm text-gray-500">
+                          {new Date(feedback.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
                     </div>
-                  )}
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center text-lg font-bold">
-                      {feedback.name?.[0]?.toUpperCase() || 'U'}
+                    <div className="relative w-full flex-grow border-l-4 border-blue-400 pl-4 pt-4">
+                      <span className="absolute top-0 left-4 text-gray-300 text-6xl font-serif select-none opacity-50">"</span>
+                      <p className="text-gray-700 text-base leading-relaxed mt-4">
+                        {feedback.message}
+                        <span className="absolute bottom-0 right-0 text-gray-300 text-6xl font-serif select-none opacity-50">"</span>
+                      </p>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900 text-base">{feedback.name}</h3>
-                      <span className="text-sm text-gray-500">
-                        {new Date(feedback.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="relative w-full flex-grow border-l-4 border-blue-400 pl-4 pt-4">
-                    <span className="absolute top-0 left-4 text-gray-300 text-6xl font-serif select-none opacity-50">“</span>
-                    <p className="text-gray-700 text-base leading-relaxed mt-4">
-                      {feedback.message}
-                      <span className="absolute bottom-0 right-0 text-gray-300 text-6xl font-serif select-none opacity-50">”</span>
-                    </p>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-          <button
-            onClick={() => scroll('right')}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label="Scroll right"
-          >
-            <ChevronRight size={20} />
-          </button>
-        </div>
         ) : (
           <div className="text-center py-4 text-gray-500">
             No feedbacks available yet. Be the first to share your thoughts!
