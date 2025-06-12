@@ -32,7 +32,10 @@ router.post(
   async (req, res) => {
     try {
       const artisanId = req.artisanId;
-      const { productName, productPrice, material, height, width, weight, productDescription,certification, finish } = req.body;
+      const { 
+        productName, productPrice, material, height, width, weight, 
+        productDescription, certification, finish, category 
+      } = req.body;
       if (!productName) {
         return res.status(400).json({ message: "productName is required." });
       }
@@ -54,10 +57,10 @@ router.post(
       const [result] = await db.query(
         `INSERT INTO products (
            artisanId, productName, productPrice, material,
-           height, width, weight,certification, finish,
+           height, width, weight, certification, finish,
            image1, image2, image3, image4, image5,
-           productDescription
-         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?)`,
+           productDescription, category
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           artisanId,
           productName,
@@ -73,7 +76,8 @@ router.post(
           image3,
           image4,
           image5,
-          productDescription || null
+          productDescription || null,
+          category || null
         ]
       );
       return res.status(201).json({ message: "Product created", productId: result.insertId });
@@ -83,6 +87,7 @@ router.post(
     }
   }
 );
+
 // UPDATE existing product
 router.put(
   "/:productId",
@@ -109,7 +114,10 @@ router.put(
       if (!product) return res.status(404).json({ message: "Product not found" });
 
       // Process updates
-      const { productName, productPrice, material, height, width, weight, productDescription,certification, finish  } = req.body;
+      const { 
+        productName, productPrice, material, height, width, weight, 
+        productDescription, certification, finish, category 
+      } = req.body;
       
       // Handle file updates (keep existing if no new file)
       const updateData = {
@@ -120,8 +128,9 @@ router.put(
         width: width || product.width,
         weight: weight || product.weight,
         productDescription: productDescription || product.productDescription,
-         certification: certification || product.certification,
+        certification: certification || product.certification,
         finish: finish || product.finish,
+        category: category || product.category,
         image1: req.files.image1?.[0]?.filename ? `/uploads/${req.files.image1[0].filename}` : product.image1,
         image2: req.files.image2?.[0]?.filename ? `/uploads/${req.files.image2[0].filename}` : product.image2,
         image3: req.files.image3?.[0]?.filename ? `/uploads/${req.files.image3[0].filename}` : product.image3,
@@ -134,7 +143,8 @@ router.put(
           productName = ?, productPrice = ?, material = ?,
           height = ?, width = ?, weight = ?, certification = ?, finish = ?,
           image1 = ?, image2 = ?, image3 = ?,
-          image4 = ?, image5 = ?, productDescription = ?
+          image4 = ?, image5 = ?, productDescription = ?,
+          category = ?
          WHERE id = ?`,
         [
           updateData.productName,
@@ -151,6 +161,7 @@ router.put(
           updateData.image4,
           updateData.image5,
           updateData.productDescription,
+          updateData.category,
           productId
         ]
       );
@@ -179,6 +190,7 @@ router.delete("/:productId", verifyToken, async (req, res) => {
     return res.status(500).json({ message: err.message });
   }
 });
+
 // Add after DELETE endpoint
 router.post('/unlist-product/:productId', verifyToken, async (req, res) => {
   try {
@@ -262,6 +274,5 @@ router.post('/list-products', verifyToken, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-
 
 export default router;

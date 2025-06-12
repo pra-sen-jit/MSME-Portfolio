@@ -68,7 +68,7 @@ async function createTables() {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
   `);
 
-  // Products table (unchanged)
+  // Updated products table with category
   await connection.query(`
     CREATE TABLE IF NOT EXISTS products (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -92,6 +92,7 @@ async function createTables() {
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       is_listed BOOLEAN NOT NULL DEFAULT FALSE,
       listed_at DATETIME DEFAULT NULL,
+      category VARCHAR(255) DEFAULT NULL,
       FOREIGN KEY (artisanId) REFERENCES users(artisanId) ON DELETE CASCADE,
       INDEX idx_artisanId (artisanId),
       INDEX idx_is_listed (is_listed),

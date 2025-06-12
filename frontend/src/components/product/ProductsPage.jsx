@@ -14,7 +14,7 @@ function Sidebar({ activeFilters, setActiveFilters, priceRange, setPriceRange })
   const allCategories = [
     "Earrings", "Necklaces", "Showpieces", 
     "Idol", "Ornaments", "Utensils", "Bracelets",
-    "Rings", "Sculptures", "Home Decor"
+    "Rings", "Sculptures", "Home Decor", "Others"
   ];
   const displayedCategories = showAllCategories 
     ? allCategories 
@@ -425,6 +425,11 @@ function ProductCard({ product, color = "#4f46e5" }) {
                 Listed: {new Date(product.listed_at).toLocaleDateString()}
               </span>
             )}
+            {product.category && (
+              <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+                {product.category}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -537,16 +542,11 @@ function ProductGrid({ refreshTrigger, filters, resetFilters }) {
     
     setIsFiltered(true);
     const filtered = allProducts.filter(product => {
-      // Category filter - search in name and description
+      // Category filter - use the product's category field
       if (filters.categories.length > 0) {
-        const foundCategory = filters.categories.some(category => {
-          const lowerCategory = category.toLowerCase();
-          return (
-            product.productName.toLowerCase().includes(lowerCategory) ||
-            product.productDescription.toLowerCase().includes(lowerCategory)
-          );
-        });
-        if (!foundCategory) return false;
+        if (!filters.categories.includes(product.category)) {
+          return false;
+        }
       }
       
       // Material filter - FIXED

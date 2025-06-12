@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import AnimatedPage from "../AnimatedPage";
 import axios from "axios";
 import { Edit2, Save, UploadCloud, Trash2, Plus } from "lucide-react";
+//import { Select, Option } from "@material-tailwind/react";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 const productUrl = `${backendUrl}/products`;
@@ -55,7 +56,18 @@ function AdditionalImages({ productNumber, images, onImageChange, disabled }) {
   );
 }
 
-function ProductSpecifications({ productNumber, specs, onChange, disabled }) {
+function ProductSpecifications({ 
+  productNumber, 
+  specs, 
+  onChange, 
+  category,
+  onCategoryChange,
+  customCategory,
+  onCustomCategoryChange,
+  isOtherCategory,
+  onOtherToggle,
+  disabled 
+}) {
   const materialOptions = [
     { value: 'Silver', label: 'Silver' },
     { value: 'Gold', label: 'Gold' },
@@ -74,10 +86,15 @@ function ProductSpecifications({ productNumber, specs, onChange, disabled }) {
     { value: 'Others', label: 'Others' }
   ];
 
+  const categoryOptions = [
+    "Earrings", "Necklaces", "Showpieces", "Idol", "Ornaments", 
+    "Utensils", "Bracelets", "Rings", "Sculptures", "Home Decor", "Others"
+  ];
+
   return (
     <div className="w-full mb-4">
       <h3 className="text-sm font-normal text-black mb-3">Product Specifications</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div>
           <label
             htmlFor={`material-${productNumber}`}
@@ -153,7 +170,7 @@ function ProductSpecifications({ productNumber, specs, onChange, disabled }) {
           </select>
         </div>
 
-        {['height', 'width', 'weight'].map((field) => (
+        {['height', 'width'].map((field) => (
           <div key={field}>
             <label
               htmlFor={`${field}-${productNumber}`}
@@ -173,6 +190,69 @@ function ProductSpecifications({ productNumber, specs, onChange, disabled }) {
             />
           </div>
         ))}
+
+        <div>
+          <label
+            htmlFor={`weight-${productNumber}`}
+            className="block text-sm mb-1"
+          >
+            Weight
+          </label>
+          <input
+            id={`weight-${productNumber}`}
+            type="text"
+            value={specs.weight || ''}
+            onChange={(e) => onChange('weight', e.target.value)}
+            className={`w-full h-10 px-3 rounded border border-black shadow-sm
+              transition-shadow duration-200 focus:shadow-md focus:outline-none
+              focus:ring-1 focus:ring-gray-400 ${disabled ? 'bg-gray-100' : ''}`}
+            disabled={disabled}
+          />
+        </div>
+
+        <div className="lg:col-span-2">
+          <label
+            htmlFor={`category-${productNumber}`}
+            className="block text-sm mb-1"
+          >
+            Category
+          </label>
+          {!isOtherCategory ? (
+            <select
+              id={`category-${productNumber}`}
+              value={category}
+              onChange={(e) => {
+                const val = e.target.value;
+                onCategoryChange(val);
+                if (val === "Others") {
+                  onOtherToggle(true);
+                }
+              }}
+              className={`w-full h-10 px-3 rounded border border-black shadow-sm
+                transition-shadow duration-200 focus:shadow-md focus:outline-none
+                focus:ring-1 focus:ring-gray-400 ${disabled ? 'bg-gray-100' : ''}`}
+              disabled={disabled}
+            >
+              <option value="">Select Category</option>
+              {categoryOptions.map(option => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              type="text"
+              value={customCategory}
+              onChange={(e) => onCustomCategoryChange(e.target.value)}
+              placeholder="Enter custom category"
+              className={`w-full h-10 px-3 rounded border border-black shadow-sm
+                transition-shadow duration-200 focus:shadow-md focus:outline-none
+                focus:ring-1 focus:ring-gray-400 ${disabled ? 'bg-gray-100' : ''}`}
+              disabled={disabled}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
@@ -180,6 +260,10 @@ function ProductSpecifications({ productNumber, specs, onChange, disabled }) {
 
 function ProductForm({ productNumber, product, onDelete, maxProducts, isNewSlot, fetchProducts }) {
   const [isEditing, setIsEditing] = useState(isNewSlot);
+  const [category, setCategory] = useState(product?.category || '');
+  const [customCategory, setCustomCategory] = useState('');
+  const [isOtherCategory, setIsOtherCategory] = useState(false);
+  
   const [formData, setFormData] = useState({
     productName: product?.productName || '',
     productPrice: product?.productPrice || '',
@@ -200,27 +284,38 @@ function ProductForm({ productNumber, product, onDelete, maxProducts, isNewSlot,
 
   useEffect(() => {
     if (product?.id) {
+      const cat = product.category || '';
+      setCategory(cat);
+      setIsOtherCategory(![
+        "Earrings", "Necklaces", "Showpieces", "Idol", "Ornaments", 
+        "Utensils", "Bracelets", "Rings", "Sculptures", "Home Decor"
+      ].includes(cat) && cat !== '');
+      setCustomCategory(![
+        "Earrings", "Necklaces", "Showpieces", "Idol", "Ornaments", 
+        "Utensils", "Bracelets", "Rings", "Sculptures", "Home Decor"
+      ].includes(cat) ? cat : '');
+      
       setFormData({
-          productName: product.productName,
-          productPrice: product.productPrice,
-          specs: {
-            material: product.material,
-            height: product.height,
-            width: product.width,
-            weight: product.weight,
-            certification: product.certification || '', // Add this line
-            finish: product.finish || '' // Add this line
-          },
-          description: product.productDescription,
-          mainImage: product.image1 ? { 
-            preview: `${backendUrl}${product.image1.startsWith('/') ? product.image1 : '/' + product.image1}`
-          } : null,
-          extraImages: [2, 3, 4, 5].map(i => 
-            product[`image${i}`] ? { 
-              preview: `${backendUrl}${product[`image${i}`].startsWith('/') ? '' : '/'}${product[`image${i}`]}`
-            } : null
-          )
-        });
+        productName: product.productName,
+        productPrice: product.productPrice,
+        specs: {
+          material: product.material,
+          height: product.height,
+          width: product.width,
+          weight: product.weight,
+          certification: product.certification || '',
+          finish: product.finish || ''
+        },
+        description: product.productDescription,
+        mainImage: product.image1 ? { 
+          preview: `${backendUrl}${product.image1.startsWith('/') ? product.image1 : '/' + product.image1}`
+        } : null,
+        extraImages: [2, 3, 4, 5].map(i => 
+          product[`image${i}`] ? { 
+            preview: `${backendUrl}${product[`image${i}`].startsWith('/') ? '' : '/'}${product[`image${i}`]}`
+          } : null
+        )
+      });
     } else {
       setFormData({
         productName: '',
@@ -279,6 +374,7 @@ function ProductForm({ productNumber, product, onDelete, maxProducts, isNewSlot,
       formPayload.append('certification', formData.specs.certification);
       formPayload.append('finish', formData.specs.finish);
       formPayload.append('productDescription', formData.description);
+      formPayload.append('category', isOtherCategory ? customCategory : category);
 
       if (formData.mainImage?.file) {
         formPayload.append('image1', formData.mainImage.file);
@@ -439,6 +535,12 @@ function ProductForm({ productNumber, product, onDelete, maxProducts, isNewSlot,
             productNumber={productNumber}
             specs={formData.specs}
             onChange={handleSpecChange}
+            category={category}
+            onCategoryChange={setCategory}
+            customCategory={customCategory}
+            onCustomCategoryChange={setCustomCategory}
+            isOtherCategory={isOtherCategory}
+            onOtherToggle={setIsOtherCategory}
             disabled={!isEditing}
           />
 
