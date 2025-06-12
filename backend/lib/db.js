@@ -74,6 +74,7 @@ async function createTables() {
     CREATE TABLE IF NOT EXISTS products (
       id INT AUTO_INCREMENT PRIMARY KEY,
       artisanId VARCHAR(50) NOT NULL,
+      productId VARCHAR(50) NOT NULL,
       productName VARCHAR(255) NOT NULL,
       productPrice DECIMAL(10,2),
       material VARCHAR(255),
