@@ -1,3 +1,4 @@
+// Remove all demo-related code completely
 import mysql from "mysql2/promise";
 import dotenv from "dotenv";
 import path from "path";
@@ -39,7 +40,7 @@ export const connectToDatabase = async () => {
 
       // Create tables
       await createTables();
-      console.log("Database initialized successfully");
+      console.log("Database initialized with empty tables");
     }
     return connection;
   } catch (err) {
@@ -49,7 +50,7 @@ export const connectToDatabase = async () => {
 };
 
 async function createTables() {
-  // Updated users table with username
+  // Users table
   await connection.query(`
     CREATE TABLE IF NOT EXISTS users (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -68,7 +69,7 @@ async function createTables() {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
   `);
 
-  // Updated products table with category
+  // Products table
   await connection.query(`
     CREATE TABLE IF NOT EXISTS products (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -89,10 +90,10 @@ async function createTables() {
       image5 VARCHAR(255),
       productDescription TEXT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      category VARCHAR(255) DEFAULT NULL,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       is_listed BOOLEAN NOT NULL DEFAULT FALSE,
       listed_at DATETIME DEFAULT NULL,
-      category VARCHAR(255) DEFAULT NULL,
       FOREIGN KEY (artisanId) REFERENCES users(artisanId) ON DELETE CASCADE,
       INDEX idx_artisanId (artisanId),
       INDEX idx_is_listed (is_listed),
@@ -100,7 +101,7 @@ async function createTables() {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
   `);
 
-  // Feedback table (updated)
+  // Feedback table
   await connection.query(`
     CREATE TABLE IF NOT EXISTS feedback (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -114,74 +115,43 @@ async function createTables() {
       FOREIGN KEY (artisanId) REFERENCES users(artisanId) ON DELETE SET NULL
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
   `);
-  // ADMIN table (unchanged)
-  await connection.query(`
-  CREATE TABLE IF NOT EXISTS admindata (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) DEFAULT NULL,
-    adminId VARCHAR(50) NOT NULL UNIQUE,
-    adminPassword VARCHAR(255) NOT NULL,
-    adminPassKey VARCHAR(255) NOT NULL,
-    phonenumber VARCHAR(20) DEFAULT NULL,
-    email VARCHAR(255) DEFAULT NULL,
-    address VARCHAR(255) DEFAULT NULL,
-    profileimage VARCHAR(255) DEFAULT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-`);
 
-  // Add default data if tables are empty
-  await addDefaultData();
+  // Admin table
+  await connection.query(`
+    CREATE TABLE IF NOT EXISTS admindata (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(255) DEFAULT NULL,
+      adminId VARCHAR(50) NOT NULL UNIQUE,
+      adminPassword VARCHAR(255) NOT NULL,
+      adminPassKey VARCHAR(255) NOT NULL,
+      phonenumber VARCHAR(20) DEFAULT NULL,
+      email VARCHAR(255) DEFAULT NULL,
+      address VARCHAR(255) DEFAULT NULL,
+      profileimage VARCHAR(255) DEFAULT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+  `);
+
+  // Only create admin account if doesn't exist
+  await addDefaultAdmin();
 }
 
-async function addDefaultData() {
-  // Add default admin
+async function addDefaultAdmin() {
   const [admins] = await connection.query(
     "SELECT COUNT(*) as count FROM admindata"
   );
   if (admins[0].count === 0) {
-    const hashedPassword = await bcrypt.hash("admin2003", 10); // <-- Correct password
+    const hashedPassword = await bcrypt.hash("admin2003", 10);
     await connection.query(
-      `
-      INSERT INTO admindata (adminId, adminPassword, adminPassKey)
-      VALUES ('admin123', ?, ?) 
-    `,
+      `INSERT INTO admindata (adminId, adminPassword, adminPassKey)
+       VALUES ('admin123', ?, ?)`,
       [hashedPassword, process.env.ADMIN_PASS_KEY || "ADMIN123"]
-    ); // Use environment variable
-    console.log("Default admin created");
-  }
-
-  // Add demo artisan for sample products
-  const [users] = await connection.query("SELECT COUNT(*) as count FROM users");
-  if (users[0].count === 0) {
-    const hashedArtisanPass = await bcrypt.hash("demo123", 10);
-    await connection.query(
-      `
-      INSERT INTO users (username, artisanId, PhoneNumber, password, listed)
-      VALUES ('Demo Artisan', 'DEMO001', '0000000000', ?, TRUE)
-    `,
-      [hashedArtisanPass]
     );
-    console.log("Demo artisan created for sample products");
-  }
-
-  // Add sample products with valid artisan reference
-  const [products] = await connection.query(
-    "SELECT COUNT(*) as count FROM products"
-  );
-  if (products[0].count === 0) {
-    await connection.query(`
-      INSERT INTO products (artisanId, productName, productPrice, productDescription, is_listed)
-      VALUES 
-        ('DEMO001', 'Handcrafted Vase', 49.99, 'Beautiful ceramic vase with traditional patterns', TRUE),
-        ('DEMO001', 'Artisan Necklace', 89.99, 'Silver necklace with hand-carved pendant', TRUE)
-    `);
-    console.log("Sample products created for featured slider");
+    console.log("Default admin created (only required account)");
   }
 }
 
-// Handle connection errors
 process.on("unhandledRejection", (err) => {
   if (err.code === "PROTOCOL_CONNECTION_LOST") {
     console.error("Database connection was closed. Reconnecting...");
