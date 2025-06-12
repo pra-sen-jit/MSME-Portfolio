@@ -47,6 +47,14 @@ router.put('/profile', verifyToken, upload.single('profileImage'), async (req, r
     const db = await connectToDatabase();
     const { name, address, phoneNumber, emailId } = req.body;
     
+    // Validate phone number
+    if (phoneNumber && phoneNumber.length !== 10) {
+      return res.status(400).json({
+        success: false,
+        message: 'Phone number must be 10 digits'
+      });
+    }
+
     const [currentAdmin] = await db.query(
       'SELECT * FROM admindata WHERE adminId = ?',
       [req.adminId]
@@ -59,6 +67,14 @@ router.put('/profile', verifyToken, upload.single('profileImage'), async (req, r
       email: emailId || currentAdmin[0].email,
       profileimage: req.file ? `/uploads/${req.file.filename}` : currentAdmin[0].profileimage
     };
+
+    // Additional validation before update
+    if (updateData.phonenumber && updateData.phonenumber.length !== 10) {
+      return res.status(400).json({
+        success: false,
+        message: 'Phone number must be 10 digits'
+      });
+    }
 
     await db.query(
       `UPDATE admindata SET 
