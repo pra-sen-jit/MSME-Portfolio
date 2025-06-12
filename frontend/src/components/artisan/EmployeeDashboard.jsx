@@ -56,11 +56,104 @@ function AdditionalImages({ productNumber, images, onImageChange, disabled }) {
 }
 
 function ProductSpecifications({ productNumber, specs, onChange, disabled }) {
+  const materialOptions = [
+    { value: 'Silver', label: 'Silver' },
+    { value: 'Gold', label: 'Gold' },
+    { value: 'Mixed Materials', label: 'Mixed Materials' },
+    { value: 'Others', label: 'Others' }
+  ];
+
+  const certificationOptions = [
+    { value: 'Hallmark', label: 'Hallmark' },
+    { value: 'No certification', label: 'No certification' }
+  ];
+
+  const finishOptions = [
+    { value: 'Polished', label: 'Polished' },
+    { value: 'Unpolished', label: 'Unpolished' },
+    { value: 'Others', label: 'Others' }
+  ];
+
   return (
     <div className="w-full mb-4">
       <h3 className="text-sm font-normal text-black mb-3">Product Specifications</h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {['material', 'height', 'width', 'weight','certification', 'finish'].map((field) => (
+        <div>
+          <label
+            htmlFor={`material-${productNumber}`}
+            className="block text-sm mb-1"
+          >
+            Material
+          </label>
+          <select
+            id={`material-${productNumber}`}
+            value={specs.material || ''}
+            onChange={(e) => onChange('material', e.target.value)}
+            className={`w-full h-10 px-3 rounded border border-black shadow-sm
+              transition-shadow duration-200 focus:shadow-md focus:outline-none
+              focus:ring-1 focus:ring-gray-400 ${disabled ? 'bg-gray-100' : ''}`}
+            disabled={disabled}
+          >
+            <option value="">Select Material</option>
+            {materialOptions.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label
+            htmlFor={`certification-${productNumber}`}
+            className="block text-sm mb-1"
+          >
+            Certification
+          </label>
+          <select
+            id={`certification-${productNumber}`}
+            value={specs.certification || ''}
+            onChange={(e) => onChange('certification', e.target.value)}
+            className={`w-full h-10 px-3 rounded border border-black shadow-sm
+              transition-shadow duration-200 focus:shadow-md focus:outline-none
+              focus:ring-1 focus:ring-gray-400 ${disabled ? 'bg-gray-100' : ''}`}
+            disabled={disabled}
+          >
+            <option value="">Select Certification</option>
+            {certificationOptions.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label
+            htmlFor={`finish-${productNumber}`}
+            className="block text-sm mb-1"
+          >
+            Finish
+          </label>
+          <select
+            id={`finish-${productNumber}`}
+            value={specs.finish || ''}
+            onChange={(e) => onChange('finish', e.target.value)}
+            className={`w-full h-10 px-3 rounded border border-black shadow-sm
+              transition-shadow duration-200 focus:shadow-md focus:outline-none
+              focus:ring-1 focus:ring-gray-400 ${disabled ? 'bg-gray-100' : ''}`}
+            disabled={disabled}
+          >
+            <option value="">Select Finish</option>
+            {finishOptions.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {['height', 'width', 'weight'].map((field) => (
           <div key={field}>
             <label
               htmlFor={`${field}-${productNumber}`}
@@ -656,14 +749,14 @@ export default function EmployeeDashboard() {
           <div className="mt-4 flex justify-end gap-4">
             <button
               onClick={handleListAll}
-              disabled={products.length !== 3}
+              disabled={products.length === 0}
               className={`flex items-center gap-2 
-                ${products.length === 3  
+                ${products.length > 0
                   ? 'bg-green-600 hover:bg-green-700' 
                   : 'bg-gray-400 cursor-not-allowed'} text-white px-5 py-2 rounded-md`}
             >
               <UploadCloud size={16} /> 
-              {products[0]?.is_listed ? 'Update Listing' : 'List All Products'}
+              {products[0]?.is_listed ? 'Update Listing' : `List ${products.length} Product${products.length > 1 ? 's' : ''}`}
             </button>
           </div>
 
