@@ -1,11 +1,12 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import fs from "fs"; // Added for directory creation
+import path from "path";
+import { fileURLToPath } from "url";
 import authRouter from "./routes/authRouter.js";
 import productRouter from "./routes/productRouter.js";
 import individualProductRouter from "./routes/individualProductRouter.js";
-import path from "path";
-import { fileURLToPath } from "url";
 import publicRouter from "./routes/publicRouter.js";
 import feedbackRouter from "./routes/feedbackRouter.js";
 import { verifyToken } from "./routes/authRouter.js";
@@ -21,6 +22,15 @@ const port = process.env.PORT || 3000;
 // For ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// 🚀 AUTOMATIC UPLOADS DIRECTORY CREATION 🚀
+const uploadsDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+  console.log("✅ Created uploads directory");
+} else {
+  console.log("📁 Uploads directory already exists");
+}
 
 // Initialize database connection
 connectToDatabase().catch((err) => {
@@ -42,7 +52,7 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Serve static files from /uploads folder
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/uploads", express.static(uploadsDir)); // Use the variable
 
 // Routes
 app.use("/auth", authRouter);
@@ -51,10 +61,11 @@ app.use("/api/public/products", individualProductRouter);
 app.use("/api/feedback", feedbackRouter);
 app.use("/public", publicRouter);
 app.use("/api/featured", featuredProductsRouter);
-app.use("/api/users", userRouter); // Made public by removing verifyToken
+app.use("/api/users", userRouter);
 app.use("/api/admin", adminProfileRouter);
 app.use("/api/public", publicRouter);
 app.use("/api/products", verifyToken, productRouter);
+
 // Health check endpoint
 app.get("/health", (req, res) => {
   res.status(200).json({ 
