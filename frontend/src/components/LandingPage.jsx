@@ -49,6 +49,11 @@ function LandingPage() {
             <ProductsSection />
           </section>
 
+          {/* Guide Section */}
+          <section className="px-6 md:px-10 pt-4 pb-4 md:pt-6 md:pb-6 bg-gray-50">
+            <GuideSection />
+          </section> 
+
           {/* Contact Section */}
           <section className="px-6 md:px-10 pt-4 pb-8 md:pt-6 md:pb-10">
             <ContactSection />
@@ -59,10 +64,6 @@ function LandingPage() {
             <TeamSection />
           </section>
 
-          {/* Guide Section */}
-          <section className="px-6 md:px-10 pt-4 pb-4 md:pt-6 md:pb-6 bg-gray-50">
-            <GuideSection />
-          </section>
         </div>
       </main>
     </AnimatedPage>
