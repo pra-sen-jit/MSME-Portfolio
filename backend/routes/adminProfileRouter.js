@@ -146,4 +146,36 @@ router.put('/update-passkey', verifyToken, async (req, res) => {
   }
 });
 
+// Add delete product route
+router.delete('/products/:productId', verifyToken, async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const db = await connectToDatabase();
+    
+    // Delete the product
+    const [result] = await db.query(
+      'DELETE FROM products WHERE id = ?',
+      [productId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Product deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete product error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete product'
+    });
+  }
+});
+
 export default router;
