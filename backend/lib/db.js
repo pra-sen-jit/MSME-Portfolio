@@ -92,6 +92,7 @@ async function createTables() {
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       is_listed BOOLEAN NOT NULL DEFAULT FALSE,
       listed_at DATETIME DEFAULT NULL,
+      category VARCHAR(255) DEFAULT NULL,
       FOREIGN KEY (artisanId) REFERENCES users(artisanId) ON DELETE CASCADE,
       INDEX idx_artisanId (artisanId),
       INDEX idx_is_listed (is_listed),
