@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import CustomerFeedback from "../CustomerFeedback";
-import { FaCommentAlt, FaEye, FaTimes } from "react-icons/fa";
+import { FaTimes, FaPlus } from "react-icons/fa";
 
 function ArtisanDatabase() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -12,11 +12,13 @@ function ArtisanDatabase() {
   const [artisans, setArtisans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedArtisanId, setSelectedArtisanId] = useState(null);
-  const [showSubmitModal, setShowSubmitModal] = useState(false);
-  const [showViewModal, setShowViewModal] = useState(false);
-  const [feedbackForm, setFeedbackForm] = useState({ name: "", message: "" });
-  const [viewFeedbacks, setViewFeedbacks] = useState([]);
+  const [showGeneralFeedbackModal, setShowGeneralFeedbackModal] = useState(false);
+  const [generalFeedbackForm, setGeneralFeedbackForm] = useState({
+    name: "",
+    email: "",
+    artisanName: "",
+    feedback: ""
+  });
   const artisansPerPage = 10;
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -29,35 +31,21 @@ function ArtisanDatabase() {
     "Premium Products",
   ];
 
-  const handleOpenFeedbackModal = (artisanId) => {
-    setSelectedArtisanId(artisanId);
-    setShowSubmitModal(true);
-  };
-
-  const handleViewFeedback = async (artisanId) => {
-    try {
-      const response = await axios.get(
-        `${backendUrl}/api/feedback/${artisanId}`
-      );
-      setViewFeedbacks(response.data);
-      setShowViewModal(true);
-    } catch (error) {
-      console.error("Error fetching feedbacks:", error);
-    }
-  };
-
-  const handleSubmitFeedback = async (e) => {
+  const handleSubmitGeneralFeedback = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${backendUrl}/api/feedback`, {
-        ...feedbackForm,
-        artisanId: selectedArtisanId,
+      await axios.post(`${backendUrl}/api/general-feedback`, generalFeedbackForm);
+      setShowGeneralFeedbackModal(false);
+      setGeneralFeedbackForm({
+        name: "",
+        email: "",
+        artisanName: "",
+        feedback: ""
       });
-      setShowSubmitModal(false);
-      setFeedbackForm({ name: "", message: "" });
+      alert("Thank you for your feedback!");
     } catch (error) {
-      console.error("Error submitting feedback:", error);
-      // Handle error
+      console.error("Error submitting general feedback:", error);
+      alert("Failed to submit feedback. Please try again.");
     }
   };
 
@@ -202,7 +190,7 @@ function ArtisanDatabase() {
               </svg>
             </div>
           </div>
-          {/* <select
+          <select
             className="px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             value={specializationFilter}
             onChange={(e) => {
@@ -215,7 +203,7 @@ function ArtisanDatabase() {
                 {spec}
               </option>
             ))}
-          </select> */}
+          </select>
         </div>
 
         <div className="bg-white shadow overflow-hidden rounded-lg mb-4">
@@ -235,9 +223,6 @@ function ArtisanDatabase() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Contact Details
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -256,24 +241,6 @@ function ArtisanDatabase() {
                       <td className="px-3 py-3 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-500">
                         {artisan.contact}
                       </td>
-                      <td className="px-3 py-3 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-500 space-x-2">
-                        <button
-                          onClick={() =>
-                            handleOpenFeedbackModal(artisan.artisanId)
-                          }
-                          className="text-blue-600 hover:text-blue-900 p-2 rounded-full hover:bg-blue-50 transition-colors"
-                          title="Submit Feedback"
-                        >
-                          <FaCommentAlt className="inline-block text-lg" />
-                        </button>
-                        <button
-                          onClick={() => handleViewFeedback(artisan.artisanId)}
-                          className="text-green-600 hover:text-green-900 p-2 rounded-full hover:bg-green-50 transition-colors"
-                          title="View Feedback"
-                        >
-                          <FaEye className="inline-block text-lg" />
-                        </button>
-                      </td>
                     </tr>
                   ))
                 ) : (
@@ -289,131 +256,6 @@ function ArtisanDatabase() {
               </tbody>
             </table>
           </div>
-
-          {/* Modals */}
-          {showSubmitModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-              <div className="bg-white rounded-xl p-6 max-w-md w-full transform transition-all">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-xl font-semibold text-gray-800">
-                    Submit Feedback
-                  </h3>
-                  <button
-                    onClick={() => setShowSubmitModal(false)}
-                    className="text-gray-500 hover:text-gray-700"
-                  >
-                    <FaTimes className="text-lg" />
-                  </button>
-                </div>
-                <form onSubmit={handleSubmitFeedback} className="space-y-4">
-                  <div>
-                    <label
-                      htmlFor="name"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                      Your Name
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
-                      required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      value={feedbackForm.name}
-                      onChange={(e) =>
-                        setFeedbackForm({
-                          ...feedbackForm,
-                          name: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="message"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                      Your Feedback
-                    </label>
-                    <textarea
-                      id="message"
-                      required
-                      rows="4"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      value={feedbackForm.message}
-                      onChange={(e) =>
-                        setFeedbackForm({
-                          ...feedbackForm,
-                          message: e.target.value,
-                        })
-                      }
-                    ></textarea>
-                  </div>
-                  <div className="flex justify-end space-x-3">
-                    <button
-                      type="button"
-                      onClick={() => setShowSubmitModal(false)}
-                      className="px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center"
-                    >
-                      <FaCommentAlt className="mr-2" /> Submit Feedback
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
-
-          {showViewModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-              <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-xl font-semibold text-gray-800">
-                    Feedback History
-                  </h3>
-                  <button
-                    onClick={() => setShowViewModal(false)}
-                    className="text-gray-500 hover:text-gray-700"
-                  >
-                    <FaTimes className="text-lg" />
-                  </button>
-                </div>
-                {viewFeedbacks.length > 0 ? (
-                  viewFeedbacks.map((feedback) => (
-                    <div
-                      key={feedback.id}
-                      className="mb-4 p-4 bg-gray-50 rounded-lg"
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="font-medium text-gray-800">
-                          {feedback.name}
-                        </span>
-                        <span className="text-sm text-gray-500">
-                          {new Date(feedback.created_at).toLocaleDateString(
-                            "en-US",
-                            {
-                              year: "numeric",
-                              month: "short",
-                              day: "numeric",
-                            }
-                          )}
-                        </span>
-                      </div>
-                      <p className="text-gray-600">{feedback.message}</p>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-4 text-gray-500">
-                    No feedback available for this artisan
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
 
           {filteredArtisans.length > 0 && (
             <div className="px-6 py-3 bg-gray-50 flex items-center justify-between">
@@ -486,10 +328,141 @@ function ArtisanDatabase() {
           )}
         </div>
       </main>
+      
       {/* Customer Feedback Section */}
       <section className="px-6 md:px-10 pt-4 pb-4 md:pt-6 md:pb-6 bg-gray-50">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-semibold text-gray-800">Customer Feedback</h2>
+        </div>
+        <div className="flex justify-center">
+          <button
+            onClick={() => setShowGeneralFeedbackModal(true)}
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            <FaPlus className="mr-2" /> Add Feedback
+          </button>
+        </div>
         <CustomerFeedback />
       </section>
+
+      {/* General Feedback Modal */}
+      {showGeneralFeedbackModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full transform transition-all">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-semibold text-gray-800">
+                Submit Your Feedback
+              </h3>
+              <button
+                onClick={() => setShowGeneralFeedbackModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <FaTimes className="text-lg" />
+              </button>
+            </div>
+            <form onSubmit={handleSubmitGeneralFeedback} className="space-y-4">
+              <div>
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Your Name *
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={generalFeedbackForm.name}
+                  onChange={(e) =>
+                    setGeneralFeedbackForm({
+                      ...generalFeedbackForm,
+                      name: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Your Email *
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={generalFeedbackForm.email}
+                  onChange={(e) =>
+                    setGeneralFeedbackForm({
+                      ...generalFeedbackForm,
+                      email: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="artisanName"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Artisan Name (Optional)
+                </label>
+                <input
+                  type="text"
+                  id="artisanName"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={generalFeedbackForm.artisanName}
+                  onChange={(e) =>
+                    setGeneralFeedbackForm({
+                      ...generalFeedbackForm,
+                      artisanName: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="feedback"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Your Feedback *
+                </label>
+                <textarea
+                  id="feedback"
+                  required
+                  rows="4"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={generalFeedbackForm.feedback}
+                  onChange={(e) =>
+                    setGeneralFeedbackForm({
+                      ...generalFeedbackForm,
+                      feedback: e.target.value,
+                    })
+                  }
+                ></textarea>
+              </div>
+              <div className="flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setShowGeneralFeedbackModal(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center"
+                >
+                  Submit Feedback
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
