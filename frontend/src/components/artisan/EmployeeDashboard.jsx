@@ -59,7 +59,7 @@ function ProductSpecifications({ productNumber, specs, onChange, disabled }) {
   const materialOptions = [
     { value: 'Silver', label: 'Silver' },
     { value: 'Gold', label: 'Gold' },
-    { value: 'Mixed Materials', label: 'Mixed Materials' },
+    { value: 'Mixed Metals', label: 'Mixed Metals' },
     { value: 'Others', label: 'Others' }
   ];
 
