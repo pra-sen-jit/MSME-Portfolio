@@ -21,7 +21,27 @@ export default function LoginPage() {
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
- // Correct endpoint URL construction
+
+  // Add phone number validation function
+  const validatePhoneNumber = (number) => {
+    return number.replace(/\D/g, '').slice(0, 10);
+  };
+
+  const handlePhoneChange = (e) => {
+    const validatedNumber = validatePhoneNumber(e.target.value);
+    setPhone(validatedNumber);
+  };
+
+  const handleIdentifierChange = (e) => {
+    if (loginType === 'artisan') {
+      const validatedNumber = validatePhoneNumber(e.target.value);
+      setIdentifier(validatedNumber);
+    } else {
+      setIdentifier(e.target.value);
+    }
+  };
+
+  // Correct endpoint URL construction
   const loginUrl = loginType === 'admin' 
     ? `${backendUrl}/auth/admin/login`
     : `${backendUrl}/auth/login`;
@@ -174,13 +194,19 @@ export default function LoginPage() {
                 {loginType === 'admin' ? 'Admin ID' : 'Phone Number'}
               </label>
               <input
-                type="text"
+                type={loginType === 'admin' ? 'text' : 'tel'}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                placeholder={loginType === 'admin' ? 'Enter admin ID' : 'Enter phone number'}
+                placeholder={loginType === 'admin' ? 'Enter admin ID' : 'Enter 10-digit phone number'}
                 value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
+                onChange={handleIdentifierChange}
+                maxLength={loginType === 'admin' ? undefined : 10}
+                pattern={loginType === 'admin' ? undefined : "[0-9]{10}"}
+                title={loginType === 'admin' ? undefined : "Please enter a 10-digit phone number"}
                 required
               />
+              {loginType === 'artisan' && identifier && identifier.length !== 10 && (
+                <p className="text-red-500 text-sm mt-1">Phone number must be 10 digits</p>
+              )}
             </div>
 
             <div className="mb-4">
@@ -259,12 +285,19 @@ export default function LoginPage() {
               <div className="mb-6">
                 <label className="block text-gray-700 mb-2">Phone Number</label>
                 <input
-                  type="text"
+                  type="tel"
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={handlePhoneChange}
+                  maxLength={10}
+                  pattern="[0-9]{10}"
+                  title="Please enter a 10-digit phone number"
+                  placeholder="Enter 10-digit phone number"
                   required
                 />
+                {phone && phone.length !== 10 && (
+                  <p className="text-red-500 text-sm mt-1">Phone number must be 10 digits</p>
+                )}
               </div>
               <div className="flex gap-4">
                 <button
