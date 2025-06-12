@@ -210,7 +210,7 @@ router.post('/unlist-product/:productId', verifyToken, async (req, res) => {
 // GET /products/:artisanId — list up to 3 products
 router.get("/:artisanId", verifyToken, async (req, res) => {
   try {
-    // ensure the token’s artisanId matches the param
+    // ensure the token's artisanId matches the param
     if (req.params.artisanId !== req.artisanId) {
       return res.status(403).json({ message: "Forbidden." });
     }
@@ -231,16 +231,16 @@ router.post('/list-products', verifyToken, async (req, res) => {
   try {
     const db = await connectToDatabase();
     
-    // Verify exactly 3 products exist (regardless of listing status)
+    // Get count of products
     const [[{ count }]] = await db.query(
       `SELECT COUNT(*) AS count FROM products 
        WHERE artisanId = ?`,
       [req.artisanId]
     );
 
-    if (count !== 3) {
+    if (count === 0) {
       return res.status(400).json({ 
-        message: 'You must have exactly 3 products to list' 
+        message: 'You must have at least 1 product to list' 
       });
     }
 

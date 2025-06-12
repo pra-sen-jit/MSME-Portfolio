@@ -59,8 +59,10 @@ function Sidebar({ activeFilters, setActiveFilters, priceRange, setPriceRange })
 
   // Material mapping for display vs value
   const materials = [
-    { display: "Silver (925)", value: "Silver" },
-    { display: "Mixed Metals", value: "Mixed Metals" }
+    { display: "Silver", value: "Silver" },
+    { display: "Mixed Metals", value: "Mixed Metals" },
+    { display: "Gold", value: "Gold" },
+    { display: "Other", value: "Other" },
   ];
 
   return (
@@ -509,9 +511,7 @@ function ProductGrid({ refreshTrigger, filters, resetFilters }) {
           }))
         );
 
-        setArtisans(artisansWithProducts.filter(
-          (artisan) => artisan.products.length >= 3
-        ));
+        setArtisans(artisansWithProducts);
         setAllProducts(allProducts);
       } catch (error) {
         console.error("Fetch error:", error);
