@@ -183,7 +183,7 @@ function Sidebar() {
             Material
           </h3>
           <div className="space-y-3">
-            {["Silver (925)", "Mixed Metals"].map((material) => (
+            {["Silver", "Mixed Metals"].map((material) => (
               <label
                 key={material}
                 className={`flex items-center gap-3 p-2 rounded-md cursor-pointer transition-all duration-200
