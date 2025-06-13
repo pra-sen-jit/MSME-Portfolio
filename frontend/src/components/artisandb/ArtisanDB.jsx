@@ -290,7 +290,7 @@ function ArtisanDatabase() {
                         {artisan.specialization || "Not specified"}
                       </td>
                       <td className="px-3 py-3 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-500">
-                        {artisan.contact}
+                        {artisan.contact ? `+91 ${artisan.contact}` : "Not provided"}
                       </td>
                     </tr>
                   ))
@@ -438,12 +438,12 @@ function ArtisanDatabase() {
                     </div>
                     <div className="relative w-full flex-grow border-l-4 border-blue-400 pl-4 pt-4">
                       <span className="absolute top-0 left-4 text-gray-300 text-6xl font-serif select-none opacity-50">
-                        “
+                        "
                       </span>
                       <p className="text-gray-700 text-base leading-relaxed mt-4">
                         {feedback.message}
                         <span className="absolute bottom-0 right-0 text-gray-300 text-6xl font-serif select-none opacity-50">
-                          ”
+                          "
                         </span>
                       </p>
                     </div>
