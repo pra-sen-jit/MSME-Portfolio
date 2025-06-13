@@ -39,6 +39,7 @@ const AdminDashboard = () => {
   const [editContact, setEditContact] = useState('');
   const [editSpecialization, setEditSpecialization] = useState('');
   const [editPassword, setEditPassword] = useState('');
+  const [contactError, setContactError] = useState('');
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const [passwordResetRequests, setPasswordResetRequests] = useState([]);
   const [hasUnresolvedNotifications, setHasUnresolvedNotifications] = useState(false);
@@ -316,6 +317,11 @@ const handleUpdatePasskey = async () => {
   // Add this update handler
 const handleUpdateArtisan = async () => {
   try {
+    // Validate contact number
+    if (!validateContact(editContact)) {
+      return;
+    }
+
     // Password validation
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
     if (!passwordRegex.test(editPassword)) {
@@ -440,6 +446,15 @@ const handleUpdateArtisan = async () => {
       console.error("Error marking as resolved:", error);
       alert(error.response?.data?.message || "Failed to mark as resolved");
     }
+  };
+  
+  const validateContact = (contact) => {
+    if (contact.length !== 10) {
+      setContactError("Contact number must be exactly 10 digits");
+      return false;
+    }
+    setContactError("");
+    return true;
   };
   
   if (loading) {
@@ -1098,9 +1113,17 @@ return (
                       <input
                         type="text"
                         value={editContact}
-                        onChange={(e) => setEditContact(e.target.value)}
+                        onChange={(e) => {
+                          // Only allow numbers and limit to 10 digits
+                          const numericValue = e.target.value.replace(/\D/g, '').slice(0, 10);
+                          setEditContact(numericValue);
+                          if (contactError) setContactError("");
+                        }}
+                        onBlur={() => validateContact(editContact)}
                         className="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Enter 10-digit contact number"
                       />
+                      {contactError && <p className="mt-1 text-sm text-red-600">{contactError}</p>}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Specialization</label>
