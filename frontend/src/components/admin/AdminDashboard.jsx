@@ -41,6 +41,7 @@ const AdminDashboard = () => {
   const [editPassword, setEditPassword] = useState('');
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const [passwordResetRequests, setPasswordResetRequests] = useState([]);
+  const [hasUnresolvedNotifications, setHasUnresolvedNotifications] = useState(false);
 
   const specializations = [
     "All Specializations",
@@ -54,6 +55,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     fetchAdminData();
     fetchArtisans();
+    fetchPasswordResetRequests(); // Add this line to fetch notifications on component mount
   }, []);
   
   // In fetchAdminData, ensure backend returns all fields
@@ -127,6 +129,18 @@ const fetchArtisanProducts = async (artisanId) => {
   
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    
+    // Special handling for phone number
+    if (name === "phoneNumber") {
+      // Only allow digits and limit to 10 characters
+      const digitsOnly = value.replace(/\D/g, '').slice(0, 10);
+      setAdminData((prev) => ({
+        ...prev,
+        [name]: digitsOnly,
+      }));
+      return;
+    }
+
     setAdminData((prev) => ({
       ...prev,
       [name]: value,
@@ -388,6 +402,8 @@ const handleUpdateArtisan = async () => {
       });
       if (response.data.success) {
         setPasswordResetRequests(response.data.data);
+        // Check if there are any unresolved notifications
+        setHasUnresolvedNotifications(response.data.data.length > 0);
       }
     } catch (error) {
       console.error("Error fetching password reset requests:", error);
@@ -408,7 +424,10 @@ const handleUpdateArtisan = async () => {
       );
       if (response.data.success) {
         alert("Password reset request marked as resolved!");
-        fetchPasswordResetRequests(); // Refresh the list
+        // Update the notifications list
+        setPasswordResetRequests(prev => prev.filter(req => req.artisanId !== artisanId));
+        // Update the unresolved notifications state
+        setHasUnresolvedNotifications(prev => prev && passwordResetRequests.length > 1);
       }
     } catch (error) {
       console.error("Error marking as resolved:", error);
@@ -471,9 +490,14 @@ return (
             fetchPasswordResetRequests();
           }}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
-          </svg>
+          <div className="relative">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+            </svg>
+            {hasUnresolvedNotifications && (
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+            )}
+          </div>
           <span>Notifications</span>
         </div>
         <div 
@@ -741,13 +765,19 @@ return (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                         <input
-                          type="text"
+                          type="tel"
                           name="phoneNumber"
                           value={adminData.phoneNumber || ""}
                           onChange={handleInputChange}
                           disabled={!isEditing}
+                          maxLength={10}
+                          pattern="[0-9]{10}"
+                          placeholder="Enter 10 digit number"
                           className="w-full p-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
                         />
+                        {adminData.phoneNumber && adminData.phoneNumber.length !== 10 && (
+                          <p className="text-red-500 text-xs mt-1">Phone number must be 10 digits</p>
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Email ID</label>
@@ -1112,7 +1142,3 @@ return (
 };
 
 export default AdminDashboard;
-
-
-
-
