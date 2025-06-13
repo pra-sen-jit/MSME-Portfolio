@@ -316,6 +316,13 @@ const handleUpdatePasskey = async () => {
   // Add this update handler
 const handleUpdateArtisan = async () => {
   try {
+    // Password validation
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
+    if (!passwordRegex.test(editPassword)) {
+      alert("Password must be at least 6 characters long and contain at least one uppercase letter, one lowercase letter, and one digit");
+      return;
+    }
+
     // Hash the password before sending
     const hashedPassword = await bcrypt.hash(editPassword, 10);
 
@@ -1114,6 +1121,23 @@ return (
                         onChange={(e) => setEditPassword(e.target.value)}
                         className="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500"
                       />
+                      <div className="mt-1 text-xs text-gray-500">
+                        Password must contain:
+                        <ul className="list-disc pl-5">
+                          <li className={editPassword?.length >= 6 ? "text-green-500" : ""}>
+                            At least 6 characters
+                          </li>
+                          <li className={editPassword && /[A-Z]/.test(editPassword) ? "text-green-500" : ""}>
+                            At least one uppercase letter
+                          </li>
+                          <li className={editPassword && /[a-z]/.test(editPassword) ? "text-green-500" : ""}>
+                            At least one lowercase letter
+                          </li>
+                          <li className={editPassword && /\d/.test(editPassword) ? "text-green-500" : ""}>
+                            At least one digit
+                          </li>
+                        </ul>
+                      </div>
                     </div>
                     <div className="flex gap-2 pt-4">
                       <button 
