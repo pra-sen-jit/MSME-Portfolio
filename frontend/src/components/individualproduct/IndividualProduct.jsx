@@ -172,12 +172,12 @@ function ProductDetails({ product }) {
         </div>
 
         {/* Thumbnails */}
-        <div className="flex flex-wrap justify-center gap-4 max-w-md mx-auto">
+        <div className="flex justify-center gap-2 max-w-md mx-auto w-full">
           {product.images.map((img, index) => (
             <button
               key={index}
               onClick={() => handleThumbnailClick(index)}
-              className={`w-16 h-16 md:w-20 md:h-20 overflow-hidden rounded-xl transition-all duration-200 ${
+              className={`flex-shrink-0 w-1/5 aspect-square overflow-hidden rounded-xl transition-all duration-200 ${
                 selectedImage === index
                   ? "ring-3 ring-emerald-500 scale-105"
                   : "ring-1 ring-gray-300 hover:ring-emerald-300"
