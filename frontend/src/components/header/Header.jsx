@@ -120,7 +120,7 @@ const Navbar = () => {
               </Link>
             ) : (
               // Custom user dropdown
-              <div className="relative" ref={dropdownRef}>
+              <div className="relative pointer-events-auto" ref={dropdownRef}>
                 <button
                   onClick={toggleDropdown}
                   className="flex items-center gap-2 text-gray-700 font-medium focus:outline-none group"
@@ -148,51 +148,62 @@ const Navbar = () => {
                   </svg>
                 </button>
 
-                {/* Custom dropdown menu */}
+                {/* Custom dropdown menu with backdrop */}
                 {dropdownOpen && (
-                  <div className="absolute right-0 mt-3 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden">
-                    <div className="py-1">
-                      <Link
-                        to="/artisan"
-                        className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
-                        onClick={() => setDropdownOpen(false)}
-                      >
-                        <svg
-                          className="w-5 h-5 mr-3 text-gray-500"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
+                  <>
+                    {/* Invisible backdrop to prevent clicks */}
+                    <div
+                      className="fixed inset-0 z-[9998]"
+                      onClick={() => setDropdownOpen(false)}
+                    ></div>
+
+                    {/* Dropdown menu */}
+                    <div className="absolute right-0 mt-3 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-[9999] overflow-hidden backdrop-blur-sm">
+                      <div className="py-1 bg-white">
+                        {" "}
+                        {/* Ensure solid background */}
+                        <Link
+                          to="/artisan"
+                          className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
+                          onClick={() => setDropdownOpen(false)}
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                          ></path>
-                        </svg>
-                        <span>Profile</span>
-                      </Link>
-                      <button
-                        onClick={handleLogout}
-                        className="flex items-center w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
-                      >
-                        <svg
-                          className="w-5 h-5 mr-3 text-gray-500"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
+                          <svg
+                            className="w-5 h-5 mr-3 text-gray-500"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                            ></path>
+                          </svg>
+                          <span>Profile</span>
+                        </Link>
+                        <button
+                          onClick={handleLogout}
+                          className="flex items-center w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                          ></path>
-                        </svg>
-                        <span>Logout</span>
-                      </button>
+                          <svg
+                            className="w-5 h-5 mr-3 text-gray-500"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                            ></path>
+                          </svg>
+                          <span>Logout</span>
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  </>
                 )}
               </div>
             )
@@ -249,10 +260,14 @@ const Navbar = () => {
       <nav
         className={`bg-gradient-to-r from-black via-gray-900 to-black text-white shadow-lg transition-transform duration-500 ease-in-out ${
           showHeader ? "" : "transform -translate-y-full"
-        }`}
+        } ${dropdownOpen ? "pointer-events-none" : ""}`}
       >
         {/* Desktop Menu */}
-        <ul className="hidden md:flex justify-around items-center h-16">
+        <ul
+          className={`hidden md:flex justify-around items-center h-16 ${
+            dropdownOpen ? "pointer-events-none" : "pointer-events-auto"
+          }`}
+        >
           {navItems.map(({ label, path }) => (
             <li key={label} className="relative mx-1 lg:mx-4 group">
               <Link
