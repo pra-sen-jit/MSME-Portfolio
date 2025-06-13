@@ -33,7 +33,7 @@ function ContactSection() {
               </div>
               <div>
                 <h4 className="font-medium text-gray-700 text-1xl">Working Hours:</h4>
-                <p className="text-gray-600 text-1xl">Monday - Saturday: 9:00 AM - 6:00 PM</p>
+                <p className="text-gray-600 text-1xl">Tuesday - Sunday: 9:00 AM - 6:00 PM</p>
               </div>
             </div>
 

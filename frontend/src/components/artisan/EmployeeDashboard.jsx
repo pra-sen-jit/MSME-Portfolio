@@ -11,7 +11,7 @@ function AdditionalImages({ productNumber, images, onImageChange, disabled }) {
   return (
     <div className="mb-4">
       <h3 className="text-sm font-normal leading-tight text-black mb-2">
-        Add more pictures
+        আরও ছবি যুক্ত করুন
       </h3>
       <div className="flex flex-wrap gap-2">
         {[0, 1, 2, 3].map((index) => (
@@ -105,8 +105,8 @@ function ProductSpecifications({
 
   return (
     <div className="w-full mb-4">
-      <h3 className="text-sm font-normal text-black mb-3">
-        Product Specifications
+      <h3 className="text-sm font-semibold text-black mb-3">
+        পণ্য বিবরণী
       </h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div>
@@ -491,7 +491,7 @@ function ProductForm({
       }
       alert(
         response.data.message ||
-          `Product ${isUpdate ? "updated" : "saved"} successfully!`
+          `আপনার পণ্য সফলভাবে${isUpdate ? "আপডেট হয়েছে" : "সেভ হয়েছে"} !!`
       );
     } catch (error) {
       const errorMessage =
@@ -504,8 +504,8 @@ function ProductForm({
 
   const handleDelete = async () => {
     const confirmMsg = isNewSlot
-      ? "Discard this draft?"
-      : "Delete this product permanently?";
+      ? "আপনি কি এই খসড়াটি বাতিল করতে চান?"
+      : "আপনি কি এই পণ্যটি স্থায়ীভাবে ডিলিট করতে চান?";
     if (window.confirm(confirmMsg)) {
       try {
         if (!isNewSlot) {
@@ -529,7 +529,7 @@ function ProductForm({
     <section className="w-full mb-8 relative bg-gray-50 p-6 rounded-lg border border-gray-200">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-normal text-black">
-          Product No: {productNumber}
+          পণ্য নম্বর: {productNumber}
         </h2>
         <div className="flex gap-2">
           {!isEditing && (
@@ -538,7 +538,7 @@ function ProductForm({
               className="flex items-center gap-1 bg-black text-white px-3 py-2 rounded hover:bg-gray-800"
               disabled={saveDisabled}
             >
-              <Edit2 size={16} /> Edit
+              <Edit2 size={16} /> সংশোধন
             </button>
           )}
           {isEditing && (
@@ -546,7 +546,7 @@ function ProductForm({
               onClick={handleSave}
               className="flex items-center gap-1 bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700"
             >
-              <Save size={16} /> Save
+              <Save size={16} /> সেভ
             </button>
           )}
           {(product?.id || isEditing) && (
@@ -554,7 +554,7 @@ function ProductForm({
               onClick={product?.id ? handleDelete : () => setIsEditing(false)}
               className="flex items-center gap-1 bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700"
             >
-              <Trash2 size={16} /> {product?.id ? "Delete" : "Cancel"}
+              <Trash2 size={16} /> {product?.id ? "ডিলিট" : "বাতিল"}
             </button>
           )}
         </div>
@@ -725,7 +725,7 @@ function EmployeeTable() {
         response.data.profile.specialization || ""
       );
 
-      alert("Profile updated successfully!");
+      alert("আপনার পণ্য সফলভাবে আপডেট হয়েছে!");
     } catch (error) {
       const errorMessage = error.response?.data?.message;
       if (errorMessage?.includes("already exists")) {
@@ -780,10 +780,10 @@ function EmployeeTable() {
     <section className="w-full mb-6 bg-white border border-solid border-neutral-200 rounded-lg">
       {/* Table Header */}
       <div className="grid grid-cols-12 gap-2 py-3 px-4 md:px-6 text-sm font-medium text-neutral-700 bg-neutral-50 border-b border-neutral-200 rounded-t-lg">
-        <div className="col-span-3">Name</div>
-        <div className="col-span-4">Specialization</div>
-        <div className="col-span-4">Contact Details</div>
-        <div className="col-span-1 text-center">Actions</div>
+        <div className="col-span-3">নাম</div>
+        <div className="col-span-4">আপনার বিশেষীকরণ</div>
+        <div className="col-span-4">ফোন নম্বর</div>
+        <div className="col-span-1 text-center">অ্যাকশন</div>
       </div>
 
       {/* Profile Row */}
@@ -1008,7 +1008,7 @@ export default function EmployeeDashboard() {
             >
               <UploadCloud size={16} />
               {products[0]?.is_listed
-                ? "Update Listing"
+                ? "তালিকা আপডেট"
                 : `List ${products.length} Product${
                     products.length > 1 ? "s" : ""
                   }`}
@@ -1018,14 +1018,14 @@ export default function EmployeeDashboard() {
           <div className="mt-8 w-full">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl md:text-2xl font-semibold text-black">
-                Manage Products
+                পণ্য পরিচালনা করুন
               </h2>
               {products.length + drafts.length < 3 && (
                 <button
                   onClick={handleAddSlot}
                   className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
                 >
-                  <Plus size={16} /> Add More Products
+                  <Plus size={16} /> আরও পণ্য যুক্ত করুন
                 </button>
               )}
             </div>

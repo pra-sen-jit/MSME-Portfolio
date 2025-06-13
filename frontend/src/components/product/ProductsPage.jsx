@@ -49,13 +49,13 @@ function Sidebar({ activeFilters, setActiveFilters, priceRange, setPriceRange })
 
   const resetFilters = () => {
     setActiveFilters({ categories: [], materials: [] });
-    setPriceRange(15000);
+    setPriceRange(100000);
   };
 
   const activeFiltersCount =
     activeFilters.categories.length +
     activeFilters.materials.length +
-    (priceRange < 15000 ? 1 : 0);
+    (priceRange < 100000 ? 1 : 0);
 
   // Material mapping for display vs value
   const materials = [
@@ -277,15 +277,15 @@ function Sidebar({ activeFilters, setActiveFilters, priceRange, setPriceRange })
               <input
                 type="range"
                 min="0"
-                max="15000"
+                max="100000"
                 step="500"
                 value={priceRange}
                 onChange={handlePriceChange}
                 className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer focus:outline-none"
                 style={{
                   background: `linear-gradient(to right, #4f46e5 0%, #4f46e5 ${
-                    (priceRange / 15000) * 100
-                  }%, #e5e7eb ${(priceRange / 15000) * 100}%, #e5e7eb 100%)`,
+                    (priceRange / 100000) * 100
+                  }%, #e5e7eb ${(priceRange / 100000) * 100}%, #e5e7eb 100%)`,
                 }}
               />
               <div className="flex justify-between text-sm font-medium text-gray-600 mt-4">
@@ -293,7 +293,7 @@ function Sidebar({ activeFilters, setActiveFilters, priceRange, setPriceRange })
                 <span className="bg-indigo-100 text-indigo-800 px-2 py-1 rounded-md">
                   ₹{priceRange.toLocaleString()}
                 </span>
-                <span>₹15,000</span>
+                <span>₹1,00,000</span>
               </div>
             </div>
           </div>
@@ -532,7 +532,7 @@ function ProductGrid({ refreshTrigger, filters, resetFilters }) {
     const areFiltersActive = 
       filters.categories.length > 0 ||
       filters.materials.length > 0 ||
-      filters.priceRange < 15000 ||
+      filters.priceRange < 100000 ||
       (filters.searchQuery && filters.searchQuery.trim() !== "");
     
     if (!areFiltersActive) {
@@ -593,7 +593,7 @@ function ProductGrid({ refreshTrigger, filters, resetFilters }) {
       }
       
       // Price filter - only apply if user changed from default
-      if (filters.priceRange < 15000 && 
+      if (filters.priceRange < 100000 && 
           product.productPrice > filters.priceRange) {
         return false;
       }
@@ -669,7 +669,7 @@ function ProductsPage() {
   const [filters, setFilters] = useState({
     categories: [],
     materials: [],
-    priceRange: 15000, // Set to max by default
+    priceRange: 100000, // Set to max by default
     searchQuery: ""
   });
 
@@ -677,7 +677,7 @@ function ProductsPage() {
     setFilters({
       categories: [],
       materials: [],
-      priceRange: 15000, // Reset to max
+      priceRange: 100000, // Reset to max
       searchQuery: ""
     });
   };
