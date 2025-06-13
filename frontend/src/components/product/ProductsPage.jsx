@@ -62,7 +62,7 @@ function Sidebar({ activeFilters, setActiveFilters, priceRange, setPriceRange })
     { display: "Silver", value: "Silver" },
     { display: "Mixed Metals", value: "Mixed Metals" },
     { display: "Gold", value: "Gold" },
-    { display: "Other", value: "Other" },
+    { display: "Other", value: "Others" },
   ];
 
   return (
@@ -544,16 +544,52 @@ function ProductGrid({ refreshTrigger, filters, resetFilters }) {
     const filtered = allProducts.filter(product => {
       // Category filter - use the product's category field
       if (filters.categories.length > 0) {
-        if (!filters.categories.includes(product.category)) {
-          return false;
+        if (filters.categories.includes("Others")) {
+          let categoryMatches = false;
+          if (product.category === "Others") {
+            categoryMatches = true;
+          }
+          const otherSelectedCategories = filters.categories.filter(c => c !== "Others");
+          if (otherSelectedCategories.length > 0 && otherSelectedCategories.includes(product.category)) {
+            categoryMatches = true;
+          }
+          if (!categoryMatches) {
+            return false;
+          }
+        } else {
+          if (!filters.categories.includes(product.category)) {
+            return false;
+          }
         }
       }
       
       // Material filter - FIXED
       if (filters.materials.length > 0) {
-        if (!filters.materials.includes(product.material)) {
-          return false;
+        console.log("Material filter active. filters.materials:", filters.materials);
+        console.log("Current product material:", product.material);
+        const standardBackendMaterials = ["Silver", "Gold", "Mixed Metals"];
+        if (filters.materials.includes("Others")) {
+          let materialMatches = false;
+          if (!standardBackendMaterials.includes(product.material)) {
+            materialMatches = true;
+            console.log("Product material is not standard, materialMatches true (for Others)");
+          }
+          const otherSelectedMaterials = filters.materials.filter(m => m !== "Others");
+          if (otherSelectedMaterials.length > 0 && otherSelectedMaterials.includes(product.material)) {
+            materialMatches = true;
+            console.log("Product material matches other selected materials.");
+          }
+          if (!materialMatches) {
+            console.log("Material filter: No match, returning false.");
+            return false;
+          }
+        } else {
+          if (!filters.materials.includes(product.material)) {
+            console.log("Material filter: Specific material not included, returning false.");
+            return false;
+          }
         }
+        console.log("Material filter: Match, returning true.");
       }
       
       // Price filter - only apply if user changed from default

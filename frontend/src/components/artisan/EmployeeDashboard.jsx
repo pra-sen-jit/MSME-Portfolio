@@ -684,6 +684,11 @@ function EmployeeTable() {
     { value: "Metalworking", label: "Metalworking" },
     { value: "Utensils", label: "Utensils" },
     { value: "Premium Products", label: "Premium Products" },
+    { value: "Meenakari/Mina Work", label: "Meenakari/Mina Work" },
+    { value: "Tribal Jewelry", label: "Tribal Jewelry" },
+    { value: "Home Decor", label: "Home Decor" },
+    { value: "Mixed Metal", label: "Mixed Metal" },
+    { value: "Sculpture Maker", label: "Sculpture Maker" },
     { value: "Others", label: "Others" },
   ];
 
@@ -984,7 +989,8 @@ export default function EmployeeDashboard() {
       <div className="flex flex-col min-h-screen bg-white">
         <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-center mt-4 mb-6 text-2xl md:text-3xl text-black font-normal">
-            Employee / Artisan Dash-Board
+            {/* Employee / Artisan Dash-Board */}
+            কর্মচারী / কারিগর ড্যাশ-বোর্ড
           </h1>
 
           <EmployeeTable />
