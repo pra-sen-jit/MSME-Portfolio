@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React from "react";
 import { motion } from "framer-motion";
 import premImage from "../assets/prem.png";
 import Debu from "../assets/debangshu.png";
@@ -16,54 +16,9 @@ function TeamSection() {
     { id: 6, image: subho, name: "Subhobrata Maity" },
   ];
 
-  const [isPaused, setIsPaused] = useState(false);
-  const sliderRef = useRef(null);
-  const [scrollPosition, setScrollPosition] = useState(0);
-  const scrollSpeed = 0.3;
-
-  // Duplicate items for seamless looping
-  const sliderItems = [...teamMembers, ...teamMembers];
-
-  useEffect(() => {
-    if (!sliderRef.current || sliderItems.length === 0) return;
-
-    let animationFrameId;
-    let lastTimestamp = performance.now();
-
-    const animate = (timestamp) => {
-      if (!lastTimestamp) lastTimestamp = timestamp;
-      const delta = timestamp - lastTimestamp;
-      lastTimestamp = timestamp;
-
-      if (!isPaused) {
-        setScrollPosition((prev) => {
-          const newPosition = prev + (scrollSpeed * delta) / 16;
-          const sliderWidth = sliderRef.current.scrollWidth / 2;
-          
-          if (newPosition >= sliderWidth) {
-            return 0;
-          }
-          return newPosition;
-        });
-      }
-
-      animationFrameId = requestAnimationFrame(animate);
-    };
-
-    animationFrameId = requestAnimationFrame(animate);
-
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, [isPaused, sliderItems.length]);
-
   return (
-    <section 
-      className="bg-white pt-0 pb-0  overflow-hidden relative" 
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-    >
-      <div className="max-w-1xl mx-auto text-center relative"> {/* Increased max-width */}
+    <section className="bg-white pt-0 pb-0 relative">
+      <div className="max-w-6xl mx-auto text-center">
         <motion.h2
           id="team-heading"
           className="text-3xl font-bold text-black mb-12"
@@ -74,29 +29,22 @@ function TeamSection() {
           Meet The Development Team
         </motion.h2>
 
-        <div className="relative pt-1 overflow-hidden h-72"> {/* Increased height */}
-          <div
-            ref={sliderRef}
-            className="flex gap-40 w-max" // Increased gap between items (gap-20)
-            style={{
-              transform: `translateX(-${scrollPosition}px)`,
-              transition: isPaused ? "transform 0.5s ease" : "none",
-            }}
-          >
-            {sliderItems.map((member, index) => (
+        <div className="relative h-72">
+          <div className="flex justify-center gap-30 w-full">
+            {teamMembers.map((member) => (
               <motion.div
-                key={`${member.id}-${index}`}
-                className="flex-shrink-0 w-40 flex flex-col items-center" // Increased width (w-40)
+                key={member.id}
+                className="flex flex-col items-center"
                 whileHover={{ scale: 1.05 }}
               >
-                <div className="w-40 h-40 rounded-full border-2 border-gray-200 shadow-lg overflow-hidden mb-3"> {/* Increased size */}
+                <div className="w-40 h-40 rounded-full border-2 border-gray-200 shadow-lg overflow-hidden mb-3">
                   <img
                     src={member.image}
                     alt={member.name}
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <p className="text-base font-medium text-gray-800"> {/* Slightly larger text */}
+                <p className="text-base font-medium text-gray-800">
                   {member.name}
                 </p>
               </motion.div>
