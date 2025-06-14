@@ -1,5 +1,5 @@
 "use client";
-import React, { Component } from "react";
+import { Component } from "react";
 
 export default class AppErrorBoundary extends Component {
   state = {
@@ -16,8 +16,7 @@ export default class AppErrorBoundary extends Component {
     console.error("💥 ErrorBoundary caught an error:", error, errorInfo);
   }
 
-  toggleDetails = () =>
-    this.setState((s) => ({ showDetails: !s.showDetails }));
+  toggleDetails = () => this.setState((s) => ({ showDetails: !s.showDetails }));
 
   render() {
     const { hasError, error, showDetails } = this.state;

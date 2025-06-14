@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useRouteError, isRouteErrorResponse } from "react-router-dom";
 
 export default function ErrorPage() {
@@ -14,19 +14,13 @@ export default function ErrorPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6">
       <div className="w-full max-w-md bg-white shadow-lg rounded-lg p-6 text-center">
-        <h1 className="text-3xl font-extrabold text-red-600 mb-2">
-          Oops!
-        </h1>
+        <h1 className="text-3xl font-extrabold text-red-600 mb-2">Oops!</h1>
         {status && (
           <p className="text-xl font-semibold text-gray-800 mb-4">
             {status} — {message}
           </p>
         )}
-        {!status && (
-          <p className="text-gray-700 mb-4">
-            {message}
-          </p>
-        )}
+        {!status && <p className="text-gray-700 mb-4">{message}</p>}
 
         <button
           onClick={() => setShowDetails((s) => !s)}
