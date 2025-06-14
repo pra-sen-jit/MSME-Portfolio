@@ -38,6 +38,12 @@ function ArtisanDatabase() {
     "Metalworking",
     "Utensils",
     "Premium Products",
+    "Meenakari/Mina Work",
+    "Sculpture Maker",
+    "Mixed Metal",
+    "Home Decor",
+    "Tribal Jewelry",
+    "Other"
   ];
 
   const handleSubmitGeneralFeedback = async (e) => {
@@ -155,7 +161,7 @@ function ArtisanDatabase() {
     const matchesSpecialization =
       specializationFilter === "All Specializations" ||
       (artisan.specialization &&
-        artisan.specialization === specializationFilter);
+        artisan.specialization.split(',').map(s => s.trim()).includes(specializationFilter));
 
     return matchesSearch && matchesSpecialization;
   });

@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import AnimatedPage from "../AnimatedPage";
 import axios from "axios";
-import { Edit2, Save, UploadCloud, Trash2, Plus } from "lucide-react";
+import { UploadCloud, Plus, PhoneCall } from "lucide-react";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 const productUrl = `${backendUrl}/products`;
@@ -538,7 +538,7 @@ function ProductForm({
               className="flex items-center gap-1 bg-black text-white px-3 py-2 rounded hover:bg-gray-800"
               disabled={saveDisabled}
             >
-              <Edit2 size={16} /> সংশোধন
+              সংশোধন
             </button>
           )}
           {isEditing && (
@@ -546,7 +546,7 @@ function ProductForm({
               onClick={handleSave}
               className="flex items-center gap-1 bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700"
             >
-              <Save size={16} /> সেভ
+              সেভ
             </button>
           )}
           {(product?.id || isEditing) && (
@@ -554,7 +554,7 @@ function ProductForm({
               onClick={product?.id ? handleDelete : () => setIsEditing(false)}
               className="flex items-center gap-1 bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700"
             >
-              <Trash2 size={16} /> {product?.id ? "ডিলিট" : "বাতিল"}
+              {product?.id ? "ডিলিট" : "বাতিল"}
             </button>
           )}
         </div>
@@ -669,13 +669,19 @@ function ProductForm({
 }
 
 function EmployeeTable() {
-  const [profile, setProfile] = useState({
-    name: localStorage.getItem("username") || "",
-    specialization:
-      localStorage.getItem("specialization") || "Silver Ornaments Expert",
-    contact: localStorage.getItem("phoneNumber") || "",
-    artisanId: localStorage.getItem("ArtisanId") || "",
-    isEditing: false,
+  const [profile, setProfile] = useState(() => {
+    const storedSpecialization = localStorage.getItem("specialization");
+    let initialSpecializations = [];
+    if (storedSpecialization) {
+      initialSpecializations = storedSpecialization.split(',').map(s => s.trim()).filter(s => s !== "" && s !== "Not Specified");
+    }
+    return {
+      name: localStorage.getItem("username") || "",
+      specialization: initialSpecializations,
+      contact: localStorage.getItem("phoneNumber") || "",
+      artisanId: localStorage.getItem("ArtisanId") || "",
+      isEditing: false,
+    };
   });
 
   const specializationOptions = [
@@ -696,6 +702,28 @@ function EmployeeTable() {
     setProfile((prev) => ({ ...prev, isEditing: !prev.isEditing }));
   };
 
+  const handleSpecializationAdd = (value) => {
+    setProfile((prev) => {
+      const currentSpecializations = prev.specialization || [];
+      if (currentSpecializations.length < 3 && !currentSpecializations.includes(value)) {
+        return {
+          ...prev,
+          specialization: [...currentSpecializations, value],
+        };
+      }
+      return prev;
+    });
+  };
+
+  const handleSpecializationRemove = (valueToRemove) => {
+    setProfile((prev) => ({
+      ...prev,
+      specialization: prev.specialization.filter(
+        (spec) => spec !== valueToRemove
+      ),
+    }));
+  };
+
   const handleSaveProfile = async () => {
     try {
       if (profile.contact.length !== 10) {
@@ -707,16 +735,23 @@ function EmployeeTable() {
       const response = await axios.put(
         `${backendUrl}/auth/profile`,
         {
-          specialization: profile.specialization?.trim() || null,
+          specialization: profile.specialization.join(', ') || null,
           PhoneNumber: profile.contact,
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      setProfile({
-        ...response.data.profile,
-        isEditing: false,
-        specialization: response.data.profile.specialization || "Not Specified",
+      setProfile((prev) => {
+        const newSpecialization = response.data.profile.specialization;
+        let processedSpecializations = [];
+        if (newSpecialization) {
+          processedSpecializations = newSpecialization.split(',').map(s => s.trim()).filter(s => s !== "" && s !== "Not Specified");
+        }
+        return {
+          ...prev,
+          isEditing: false,
+          specialization: processedSpecializations,
+        };
       });
 
       // Update local storage
@@ -746,19 +781,26 @@ function EmployeeTable() {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        setProfile({
-          ...response.data.profile,
+        const fetchedSpecialization = response.data.profile.specialization;
+        let processedSpecializations = [];
+        if (fetchedSpecialization) {
+          processedSpecializations = fetchedSpecialization.split(',').map(s => s.trim()).filter(s => s !== "" && s !== "Not Specified");
+        }
+
+        setProfile((prev) => ({
+          ...prev,
           isEditing: false,
-          specialization:
-            response.data.profile.specialization || "Silver Ornaments Expert",
-        });
+          specialization: processedSpecializations,
+          name: response.data.profile.name,
+          contact: response.data.profile.contact
+        }));
 
         // Update local storage
         localStorage.setItem("username", response.data.profile.name);
         localStorage.setItem("phoneNumber", response.data.profile.contact);
         localStorage.setItem(
           "specialization",
-          response.data.profile.specialization || ""
+          fetchedSpecialization || ""
         );
       } catch (error) {
         console.error("Profile fetch error:", error);
@@ -787,7 +829,7 @@ function EmployeeTable() {
       </div>
 
       {/* Profile Row */}
-      <div className="grid grid-cols-12 gap-2 py-3 px-4 md:px-6 text-sm">
+      <div className="grid grid-cols-12 gap-2 py-3 px-4 md:px-6 text-sm items-center">
         <div className="col-span-3 flex items-center gap-3">
           <div className="w-8 h-8 bg-zinc-300 rounded-full flex items-center justify-center">
             {profile.name?.[0]?.toUpperCase() || "A"}
@@ -807,40 +849,78 @@ function EmployeeTable() {
 
         <div className="col-span-4 flex items-center font-normal text-neutral-600">
           {profile.isEditing ? (
-            <select
-              value={profile.specialization || ""}
-              onChange={(e) =>
-                setProfile((p) => ({
-                  ...p,
-                  specialization: e.target.value,
-                }))
-              }
-              className="border rounded px-2 py-1 w-full"
-            >
-              {specializationOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
+            <div className="flex flex-col w-full">
+              <select
+                value={profile.specialization.length < 3 ? "" : ""} // Controlled by adding to the array, not direct select value
+                onChange={(e) => handleSpecializationAdd(e.target.value)}
+                className="border rounded px-2 py-1 w-full"
+                disabled={profile.specialization.length >= 3}
+              >
+                <option value="" disabled>
+                  Select Specialization
                 </option>
-              ))}
-            </select>
+                {specializationOptions.map((option) => (
+                  <option
+                    key={option.value}
+                    value={option.value}
+                    disabled={profile.specialization.includes(option.value)}
+                  >
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <div className="flex flex-wrap gap-2 items-center">
+                {profile.specialization.map((spec) => (
+                  <span
+                    key={spec}
+                    className="flex items-center gap-1 px-3 py-1 rounded-full text-green-800 bg-green-100 text-sm font-medium"
+                  >
+                    {spec}
+                    <button
+                      type="button"
+                      onClick={() => handleSpecializationRemove(spec)}
+                      className="ml-1 text-green-600 hover:text-green-800 focus:outline-none"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="lucide lucide-x"
+                      >
+                        <path d="M18 6 6 18" />
+                        <path d="m6 6 12 12" />
+                      </svg>
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
           ) : (
-            profile.specialization || "Not Specified"
+            <div className="flex flex-wrap gap-2">
+              {profile.specialization.length > 0 ? (
+                profile.specialization.map((spec) => (
+                  <span
+                    key={spec}
+                    className="px-3 py-1 rounded-full text-green-800 bg-green-100 text-sm font-medium"
+                  >
+                    {spec}
+                  </span>
+                ))
+              ) : (
+                "Not Specified"
+              )}
+            </div>
           )}
         </div>
 
         <div className="col-span-4 flex items-center gap-2">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <rect width="20" height="16" x="2" y="4" rx="2" />
-            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-          </svg>
+          <PhoneCall size={16} stroke="black" fill="none" />
           {profile.isEditing ? (
             <input
               value={profile.contact}
@@ -867,14 +947,14 @@ function EmployeeTable() {
                 className="p-1 text-green-600 hover:text-green-800"
                 title="Save"
               >
-                <Save size={16} />
+                <span style={{ fontSize: '20px' }}>✅</span>
               </button>
               <button
                 onClick={handleEditToggle}
                 className="p-1 text-gray-600 hover:text-gray-800"
                 title="Cancel"
               >
-                ✕
+                ❌
               </button>
             </>
           ) : (
@@ -883,7 +963,7 @@ function EmployeeTable() {
               className="p-1 text-blue-600 hover:text-blue-800"
               title="Edit"
             >
-              <Edit2 size={16} />
+              সংশোধন
             </button>
           )}
         </div>
