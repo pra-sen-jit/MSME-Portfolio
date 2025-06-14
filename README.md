@@ -1,6 +1,6 @@
-# Catalogue MSME - Backend & Frontend System
+# 🧵 Catalogue MSME – Full-Stack Platform for Magrahat Silver Filigree Artisans
 
-A full-stack application for managing MSME product catalogs with user authentication and image upload capabilities.
+**Catalogue_MSME** is a full-stack web application developed during an internship project with **NASSCOM** and **MSME, West Bengal**. The platform enables **Magrahat Silver Filigree** artisans to digitally showcase and sell their handcrafted products, simulating an online marketplace experience.
 
 ## 🚀 Prerequisites
 
@@ -47,12 +47,6 @@ VITE_EMAIL_KEY="your_web3forms.com_api_key"
 
 ```
 
-## File Storage Setup
-```bash
-mkdir backend/uploads
-```
-
-
 ## 🖥️ Deployment
 ```bash
 # 1.Start backend server:
@@ -83,3 +77,9 @@ Backend API: http://localhost:3000
   - Check credentials in .env
   - Ensure MySQL user has proper privileges
 - Clear npm cache and reinstall dependencies if installation fails
+
+## 👨‍💼 Project Context
+This platform was built as part of an internship project in collaboration with:
+- NASSCOM (National Association of Software and Service Companies)
+- Ministry of Micro, Small & Medium Enterprises(MSME), Government of West Bengal
+It aims to empower local artisans by bringing traditional craftsmanship into the digital economy.
