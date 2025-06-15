@@ -5,9 +5,9 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 function ArtisanDatabase() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [specializationFilter, setSpecializationFilter] = useState(
-    "All Specializations"
-  );
+  const [specializationFilter, setSpecializationFilter] = useState([]);
+  const [isSpecializationDropdownOpen, setIsSpecializationDropdownOpen] = useState(false);
+  const specializationDropdownRef = useRef(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [artisans, setArtisans] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,7 +32,6 @@ function ArtisanDatabase() {
   const feedbackScrollSpeed = 0.5;
 
   const specializations = [
-    "All Specializations",
     "Ornaments",
     "Idol Maker",
     "Metalworking",
@@ -45,6 +44,38 @@ function ArtisanDatabase() {
     "Tribal Jewelry",
     "Other"
   ];
+
+  const handleSpecializationToggle = (specialization) => {
+    setSpecializationFilter((prev) => {
+      const newFilters = prev.includes(specialization)
+        ? prev.filter((s) => s !== specialization)
+        : prev.length < 3
+        ? [...prev, specialization]
+        : prev;
+
+      setCurrentPage(1);
+      return newFilters;
+    });
+  };
+
+  const removeSpecialization = (specializationToRemove) => {
+    setSpecializationFilter((prev) =>
+      prev.filter((s) => s !== specializationToRemove)
+    );
+    setCurrentPage(1);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (specializationDropdownRef.current && !specializationDropdownRef.current.contains(event.target)) {
+        setIsSpecializationDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleSubmitGeneralFeedback = async (e) => {
     e.preventDefault();
@@ -72,7 +103,7 @@ function ArtisanDatabase() {
       setFeedbackLoading(true);
       const response = await axios.get(`${backendUrl}/api/feedback`);
       setFeedbacks(response.data);
-      setFeedbackScrollPosition(0); // Reset scroll position when new feedbacks load
+      setFeedbackScrollPosition(0);
     } catch (error) {
       console.error("Error fetching feedbacks:", error);
     } finally {
@@ -86,14 +117,13 @@ function ArtisanDatabase() {
         const response = await axios.get(`${backendUrl}/api/users/artisans`);
 
         if (response.data.success) {
-          // Fetch profile image for each artisan
           const artisansWithImagesPromises = response.data.data.map(async (artisan) => {
             try {
               const profileRes = await axios.get(`${backendUrl}/public/artisans/${artisan.artisanId}`);
               return { ...artisan, profileImage: profileRes.data.profileImage };
             } catch (profileErr) {
               console.error(`Error fetching profile image for ${artisan.artisanId}:`, profileErr);
-              return { ...artisan, profileImage: null }; // Return artisan with null image on error
+              return { ...artisan, profileImage: null };
             }
           });
           const artisansWithImages = await Promise.all(artisansWithImagesPromises);
@@ -170,9 +200,11 @@ function ArtisanDatabase() {
       artisan.artisanId.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesSpecialization =
-      specializationFilter === "All Specializations" ||
-      (artisan.specialization &&
-        artisan.specialization.split(',').map(s => s.trim()).includes(specializationFilter));
+      specializationFilter.length === 0 ||
+      specializationFilter.some((filter) =>
+        artisan.specialization &&
+        artisan.specialization.split(',').map(s => s.trim()).includes(filter)
+      );
 
     return matchesSearch && matchesSpecialization;
   });
@@ -279,20 +311,86 @@ function ArtisanDatabase() {
               </svg>
             </div>
           </div>
-          <select
-            className="px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-            value={specializationFilter}
-            onChange={(e) => {
-              setSpecializationFilter(e.target.value);
-              setCurrentPage(1);
-            }}
-          >
-            {specializations.map((spec) => (
-              <option key={spec} value={spec}>
-                {spec}
-              </option>
-            ))}
-          </select>
+          <div className="relative w-full sm:w-auto" ref={specializationDropdownRef}>
+            <button
+              onClick={() => setIsSpecializationDropdownOpen((prev) => !prev)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-left flex justify-between items-center bg-white cursor-pointer"
+              aria-haspopup="listbox"
+              aria-expanded={isSpecializationDropdownOpen}
+            >
+              {specializationFilter.length > 0
+                ? specializationFilter.join(", ")
+                : "Select Specializations"}
+              <svg
+                className={`w-4 h-4 text-gray-500 transform transition-transform duration-200 ${
+                  isSpecializationDropdownOpen ? "rotate-180" : ""
+                }`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M19 9l-7 7-7-7"
+                ></path>
+              </svg>
+            </button>
+            {isSpecializationDropdownOpen && (
+              <div className="absolute z-10 mt-1 w-full bg-white rounded-md shadow-lg border border-gray-200 max-h-60 overflow-y-auto">
+                {specializations.map((spec) => (
+                  <button
+                    key={spec}
+                    onClick={() => handleSpecializationToggle(spec)}
+                    className={`block w-full text-left px-4 py-2 text-sm
+                      ${
+                        specializationFilter.includes(spec)
+                          ? "bg-blue-100 text-blue-800 font-semibold"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
+                    disabled={specializationFilter.length >= 3 && !specializationFilter.includes(spec)}
+                  >
+                    {spec}
+                  </button>
+                ))}
+              </div>
+            )}
+            {specializationFilter.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {specializationFilter.map((spec) => (
+                  <span
+                    key={spec}
+                    className="flex items-center gap-1 px-3 py-1 rounded-full text-green-800 bg-green-100 text-sm font-medium"
+                  >
+                    {spec}
+                    <button
+                      type="button"
+                      onClick={() => removeSpecialization(spec)}
+                      className="ml-1 text-green-600 hover:text-green-800 focus:outline-none"
+                      aria-label={`Remove ${spec}`}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="lucide lucide-x"
+                      >
+                        <path d="M18 6 6 18" />
+                        <path d="m6 6 12 12" />
+                      </svg>
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="bg-white shadow overflow-hidden rounded-lg mb-4">
