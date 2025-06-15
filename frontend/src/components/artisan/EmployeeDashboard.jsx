@@ -423,7 +423,6 @@ function ProductSpecifications({
             >
               <option value="">{t("selectCategory")}</option>
               {categoryOptions.map((option) => {
-                console.log(`Dropdown option: value=${option.value}, label=${option.label}`);
                 return (
                   <option key={option.value} value={option.value}>
                     {option.label}
@@ -903,6 +902,27 @@ function EmployeeTable({ t, language, artisanProfile, onProfileUpdate }) {
     }
   });
 
+  // useEffect to sync local profile state with artisanProfile prop
+  useEffect(() => {
+    if (artisanProfile) {
+      let processedSpecializations = [];
+      if (artisanProfile.specialization) {
+        processedSpecializations = artisanProfile.specialization
+          .split(",")
+          .map((s) => s.trim())
+          .filter((s) => s !== "" && s !== "Not Specified");
+      }
+      setProfile({
+        name: artisanProfile.name || "",
+        specialization: processedSpecializations,
+        contact: artisanProfile.contact || "",
+        artisanId: artisanProfile.artisanId || "",
+        profileImage: artisanProfile.profileImage || null,
+        isEditing: false,
+      });
+    }
+  }, [artisanProfile]);
+
   const specializationOptions = [
     { value: "Ornaments", label: t("Ornaments") },
     { value: "Idol Maker", label: t("Idol Maker") },
@@ -1291,7 +1311,7 @@ export default function EmployeeDashboard() {
 
     fetchProducts();
     fetchArtisanProfile(); // Fetch artisan profile on mount/token change
-  }, [language]); // Depend on language to re-fetch if language changes (though not directly related to login, good for consistency)
+  }, [localStorage.getItem("token")]); // Depend on token to re-fetch on user change
 
   const fetchArtisanProfile = async () => {
     try {
@@ -1404,7 +1424,15 @@ export default function EmployeeDashboard() {
             </button>
           </div>
 
-          <EmployeeTable t={t} language={language} artisanProfile={artisanProfile} />
+          {artisanProfile && (
+            <EmployeeTable
+              key={artisanProfile.artisanId || "no-artisan"}
+              t={t}
+              language={language}
+              artisanProfile={artisanProfile}
+              onProfileUpdate={fetchArtisanProfile}
+            />
+          )}
 
           <div className="mt-4 flex justify-end gap-4">
             <button

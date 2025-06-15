@@ -22,8 +22,6 @@ const Navbar = () => {
     setUsername(storedUsername || "");
     setRole(storedRole || "");
     setProfileImage(storedProfileImage || null);
-    console.log("Header: profileImage from localStorage:", storedProfileImage);
-    console.log("Header: setProfileImage state to:", storedProfileImage || null);
   }, [location]);
 
   useEffect(() => {
