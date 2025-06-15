@@ -134,6 +134,7 @@ router.post("/login", async (req, res) => {
       token,
       username: user.username,
       artisanId: user.artisanId,
+      profileImage: user.profileImage || null,
     });
   } catch (err) {
     return res.status(500).json({ message: `Server error: ${err.message}` });
@@ -274,12 +275,12 @@ router.put(
 
 // Artisan Forgot Password
 router.post("/forgot-password/artisan", async (req, res) => {
-  const { name, phoneNumber } = req.body;
+  const { artisanId, phoneNumber } = req.body;
   try {
     const db = await connectToDatabase();
     const [users] = await db.query(
-      "SELECT * FROM users WHERE username = ? AND PhoneNumber = ?",
-      [name, phoneNumber]
+      "SELECT * FROM users WHERE artisanId = ? AND PhoneNumber = ?",
+      [artisanId, phoneNumber]
     );
 
     if (!users.length)
@@ -322,8 +323,6 @@ const generateRandomPassword = () => {
     .sort(() => Math.random() - 0.5)
     .join("");
 };
-
-// Admin Forgot Password route (updated with better error handling)
 
 // Updated retry handler for SMTP
 const sendWithRetry = async (mailOptions, retries = 3) => {

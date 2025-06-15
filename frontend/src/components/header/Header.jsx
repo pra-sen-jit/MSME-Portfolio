@@ -22,6 +22,8 @@ const Navbar = () => {
     setUsername(storedUsername || "");
     setRole(storedRole || "");
     setProfileImage(storedProfileImage || null);
+    console.log("Header: profileImage from localStorage:", storedProfileImage);
+    console.log("Header: setProfileImage state to:", storedProfileImage || null);
   }, [location]);
 
   useEffect(() => {
@@ -51,6 +53,7 @@ const Navbar = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("username");
+    localStorage.removeItem("profileImage");
     setUsername("");
     setDropdownOpen(false);
     navigate("/");
@@ -125,7 +128,7 @@ const Navbar = () => {
               </Link>
             ) : (
               // Custom user dropdown
-              <div className="relative pointer-events-auto" ref={dropdownRef}>
+              <div className="relative pointer-events-auto" ref={dropdownRef} key={username + role}>
                 <button
                   onClick={toggleDropdown}
                   className="flex items-center gap-2 text-gray-700 font-medium focus:outline-none group"

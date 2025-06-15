@@ -18,6 +18,7 @@ export default function LoginPage() {
   const [phone, setPhone] = useState('');
   const [adminId, setAdminId] = useState('');
   const [email, setEmail] = useState('');
+  const [artisanIdForForgot, setArtisanIdForForgot] = useState('');
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -56,10 +57,23 @@ export default function LoginPage() {
 
       const response = await axios.post(loginUrl, payload);
       if (response.status === 200) {
+        // Clear all potentially stale user-related data from localStorage BEFORE setting new ones
+        localStorage.removeItem("token");
+        localStorage.removeItem("username");
+        localStorage.removeItem("ArtisanId");
+        localStorage.removeItem("role");
+        localStorage.removeItem("phoneNumber");
+        localStorage.removeItem("profileImage");
+
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("username", response.data.username);
         localStorage.setItem("ArtisanId", response.data.artisanId);
         localStorage.setItem("role", loginType);
+        if (response.data.profileImage) {
+          localStorage.setItem("profileImage", response.data.profileImage);
+        } else {
+          localStorage.removeItem("profileImage");
+        }
         navigate("/");
         
         if(loginType === 'admin') {
@@ -68,6 +82,12 @@ export default function LoginPage() {
         } else {
           localStorage.setItem("username", response.data.username);
           localStorage.setItem("ArtisanId", response.data.artisanId);
+          localStorage.setItem("phoneNumber", response.data.PhoneNumber);
+          if (response.data.profileImage) {
+            localStorage.setItem("profileImage", response.data.profileImage);
+          } else {
+            localStorage.removeItem("profileImage");
+          }
           navigate("/");
         }
         alert("Login successful!");
@@ -87,7 +107,7 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       const response = await axios.post(`${backendUrl}/auth/forgot-password/artisan`, {
-        name,
+        artisanId: artisanIdForForgot,
         phoneNumber: phone
       });
       if (response.data.success) {
@@ -133,7 +153,7 @@ export default function LoginPage() {
           <button
             onClick={() => {
               setShowSuccessPopup(false);
-              setAdminId('');
+              setArtisanIdForForgot('');
               setEmail('');
             }}
             className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors"
@@ -273,12 +293,12 @@ export default function LoginPage() {
           {loginType === 'artisan' ? (
             <form onSubmit={handleArtisanForgotSubmit}>
               <div className="mb-4">
-                <label className="block text-gray-700 mb-2">Full Name</label>
+                <label className="block text-gray-700 mb-2">Artisan ID</label>
                 <input
                   type="text"
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  value={artisanIdForForgot}
+                  onChange={(e) => setArtisanIdForForgot(e.target.value)}
                   required
                 />
               </div>
@@ -333,8 +353,8 @@ export default function LoginPage() {
                 <input
                   type="text"
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                  value={adminId}
-                  onChange={(e) => setAdminId(e.target.value)}
+                  value={artisanIdForForgot}
+                  onChange={(e) => setArtisanIdForForgot(e.target.value)}
                   required
                 />
               </div>

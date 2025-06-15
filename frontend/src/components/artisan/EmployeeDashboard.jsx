@@ -861,26 +861,46 @@ function ProductForm({
   );
 }
 
-function EmployeeTable({ t, language }) {
+function EmployeeTable({ t, language, artisanProfile, onProfileUpdate }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [profile, setProfile] = useState(() => {
-    const storedSpecialization = localStorage.getItem("specialization");
-    let initialSpecializations = [];
-    if (storedSpecialization) {
-      initialSpecializations = storedSpecialization
-        .split(",")
-        .map((s) => s.trim())
-        .filter((s) => s !== "" && s !== "Not Specified");
+    // Initialize from prop or localStorage if prop is null
+    if (artisanProfile) {
+      let initialSpecializations = [];
+      if (artisanProfile.specialization) {
+        initialSpecializations = artisanProfile.specialization
+          .split(",")
+          .map((s) => s.trim())
+          .filter((s) => s !== "" && s !== "Not Specified");
+      }
+      return {
+        name: artisanProfile.name || "",
+        specialization: initialSpecializations,
+        contact: artisanProfile.contact || "",
+        artisanId: artisanProfile.artisanId || "",
+        profileImage: artisanProfile.profileImage || null,
+        isEditing: false,
+      };
+    } else {
+      // Fallback to localStorage if prop not yet available (e.g., initial render)
+      const storedSpecialization = localStorage.getItem("specialization");
+      let initialSpecializations = [];
+      if (storedSpecialization) {
+        initialSpecializations = storedSpecialization
+          .split(",")
+          .map((s) => s.trim())
+          .filter((s) => s !== "" && s !== "Not Specified");
+      }
+      return {
+        name: localStorage.getItem("username") || "",
+        specialization: initialSpecializations,
+        contact: localStorage.getItem("phoneNumber") || "",
+        artisanId: localStorage.getItem("ArtisanId") || "",
+        profileImage: localStorage.getItem("profileImage") || null,
+        isEditing: false,
+      };
     }
-    return {
-      name: localStorage.getItem("username") || "",
-      specialization: initialSpecializations,
-      contact: localStorage.getItem("phoneNumber") || "",
-      artisanId: localStorage.getItem("ArtisanId") || "",
-      profileImage: localStorage.getItem("profileImage") || null,
-      isEditing: false,
-    };
   });
 
   const specializationOptions = [
@@ -979,7 +999,7 @@ function EmployeeTable({ t, language }) {
           ...prev,
           isEditing: false,
           specialization: processedSpecializations,
-          profileImage: response.data.profile.profileImage || prev.profileImage,
+          profileImage: response.data.profile.profileImage || null,
         };
       });
 
@@ -988,16 +1008,21 @@ function EmployeeTable({ t, language }) {
         "specialization",
         response.data.profile.specialization || ""
       );
-
+      localStorage.setItem("phoneNumber", response.data.profile.contact || ""); // Ensure phone number is also updated
       // Store profile image in localStorage if available
       if (response.data.profile.profileImage) {
         localStorage.setItem(
           "profileImage",
           response.data.profile.profileImage
         );
+      } else {
+        localStorage.removeItem("profileImage");
       }
 
       alert(t("profileUpdatedSuccessfully"));
+      if (onProfileUpdate) {
+        onProfileUpdate(); // Callback to parent to re-fetch/update profile data
+      }
     } catch (error) {
       const errorMessage = error.response?.data?.message;
       if (errorMessage?.includes("already exists")) {
@@ -1007,63 +1032,6 @@ function EmployeeTable({ t, language }) {
       }
     }
   };
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get(`${backendUrl}/auth/profile`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        const fetchedProfile = response.data.profile;
-        let processedSpecializations = [];
-        if (fetchedProfile.specialization) {
-          processedSpecializations = fetchedProfile.specialization
-            .split(",")
-            .map((s) => s.trim())
-            .filter((s) => s !== "" && s !== "Not Specified");
-        }
-
-        setProfile((prev) => ({
-          ...prev,
-          isEditing: false,
-          specialization: processedSpecializations,
-          name: fetchedProfile.name,
-          contact: fetchedProfile.contact,
-          profileImage: fetchedProfile.profileImage || null, // Add this
-        }));
-
-        localStorage.setItem("username", fetchedProfile.name);
-        localStorage.setItem("phoneNumber", fetchedProfile.contact);
-        localStorage.setItem(
-          "specialization",
-          fetchedProfile.specialization || ""
-        );
-        if (fetchedProfile.profileImage) {
-          localStorage.setItem("profileImage", fetchedProfile.profileImage);
-        } else {
-          localStorage.removeItem("profileImage");
-        }
-      } catch (error) {
-        console.error("Profile fetch error:", error);
-      }
-    };
-
-    const token = localStorage.getItem("token");
-    if (token) {
-      try {
-        const decoded = JSON.parse(atob(token.split(".")[1]));
-        const expirationTime = decoded.exp * 1000;
-        if (Date.now() > expirationTime) {
-          localStorage.removeItem("token");
-          window.location.href = "/login";
-        }
-      } catch (error) {
-        console.error("Token decode error:", error);
-      }
-    }
-  }, []);
 
   useEffect(() => {
     return () => {
@@ -1296,6 +1264,7 @@ export default function EmployeeDashboard() {
   const [products, setProducts] = useState([]);
   const [drafts, setDrafts] = useState([{ id: "initial-draft" }]);
   const [language, setLanguage] = useState("bn"); // Default to Bengali
+  const [artisanProfile, setArtisanProfile] = useState(null); // New state for artisan profile
 
   const t = (key) => translations[language][key] || key; // Translation function
 
@@ -1312,14 +1281,46 @@ export default function EmployeeDashboard() {
       if (Date.now() > expirationTime) {
         localStorage.removeItem("token");
         window.location.href = "/login";
+        return;
       }
     } catch (error) {
       localStorage.removeItem("token");
       window.location.href = "/login";
+      return;
     }
 
     fetchProducts();
-  }, []);
+    fetchArtisanProfile(); // Fetch artisan profile on mount/token change
+  }, [language]); // Depend on language to re-fetch if language changes (though not directly related to login, good for consistency)
+
+  const fetchArtisanProfile = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${backendUrl}/auth/profile`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const fetchedProfile = response.data.profile;
+      // Update localStorage with fetched profile details
+      localStorage.setItem("username", fetchedProfile.name);
+      localStorage.setItem("phoneNumber", fetchedProfile.contact);
+      localStorage.setItem("specialization", fetchedProfile.specialization || "");
+      if (fetchedProfile.profileImage) {
+        localStorage.setItem("profileImage", fetchedProfile.profileImage);
+      } else {
+        localStorage.removeItem("profileImage");
+      }
+      setArtisanProfile(fetchedProfile); // Set the new artisan profile state
+    } catch (error) {
+      console.error("Profile fetch error:", error);
+      // Handle error, e.g., redirect to login if token is invalid
+      if (error.response?.status === 401) {
+        localStorage.removeItem("token");
+        alert(t("sessionExpired"));
+        window.location.href = "/login";
+      }
+    }
+  };
 
   const fetchProducts = async () => {
     try {
@@ -1403,7 +1404,7 @@ export default function EmployeeDashboard() {
             </button>
           </div>
 
-          <EmployeeTable t={t} language={language} />
+          <EmployeeTable t={t} language={language} artisanProfile={artisanProfile} />
 
           <div className="mt-4 flex justify-end gap-4">
             <button
