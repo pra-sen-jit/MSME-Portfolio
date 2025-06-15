@@ -107,7 +107,7 @@ async function createTables() {
     CREATE TABLE IF NOT EXISTS feedback (
       id INT AUTO_INCREMENT PRIMARY KEY,
       name VARCHAR(255) NOT NULL,
-      email VARCHAR(255) NOT NULL,
+      phonenumber VARCHAR(255) DEFAULT NULL,
       artisanName VARCHAR(255) DEFAULT NULL,
       message TEXT NOT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

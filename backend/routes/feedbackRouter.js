@@ -55,16 +55,16 @@ router.get("/:artisanId", async (req, res) => {
 
 // Submit new feedback
 router.post("/", async (req, res) => {
-  const { name, email, artisanName, feedback } = req.body;
-  if (!name || !email || !feedback) {
+  const { name, phonenumber, artisanName, feedback } = req.body;
+  if (!name || !feedback) {
     return res.status(400).json({ message: "Missing required fields" });
   }
 
   try {
     const db = await connectToDatabase();
     await db.query(
-      "INSERT INTO feedback (name, email, artisanName, message) VALUES (?, ?, ?, ?)",
-      [name, email, artisanName || null, feedback]
+      "INSERT INTO feedback (name, phonenumber, artisanName, message) VALUES (?, ?, ?, ?)",
+      [name, phonenumber, artisanName || null, feedback]
     );
     res.status(201).json({ message: "Feedback submitted successfully" });
   } catch (error) {
