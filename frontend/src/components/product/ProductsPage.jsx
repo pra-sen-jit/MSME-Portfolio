@@ -5,19 +5,32 @@ import axios from "axios";
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 import AnimatedPage from "../AnimatedPage";
 
-function Sidebar({ activeFilters, setActiveFilters, priceRange, setPriceRange }) {
+function Sidebar({
+  activeFilters,
+  setActiveFilters,
+  priceRange,
+  setPriceRange,
+}) {
   const [hoveredCategory, setHoveredCategory] = useState(null);
   const [isExpanded, setIsExpanded] = useState(true);
   const [showAllCategories, setShowAllCategories] = useState(false);
-  
+
   // Define categories with additional options
   const allCategories = [
-    "Earrings", "Necklaces", "Showpieces", 
-    "Idol", "Ornaments", "Utensils", "Bracelets",
-    "Rings", "Sculptures", "Home Decor", "Others"
+    "Earrings",
+    "Necklaces",
+    "Showpieces",
+    "Idol",
+    "Ornaments",
+    "Utensils",
+    "Bracelets",
+    "Rings",
+    "Sculptures",
+    "Home Decor",
+    "Others",
   ];
-  const displayedCategories = showAllCategories 
-    ? allCategories 
+  const displayedCategories = showAllCategories
+    ? allCategories
     : allCategories.slice(0, 3);
 
   const handlePriceChange = (e) => setPriceRange(parseInt(e.target.value));
@@ -182,13 +195,19 @@ function Sidebar({ activeFilters, setActiveFilters, priceRange, setPriceRange })
                 className="text-sm text-indigo-600 hover:text-indigo-800 pl-8 flex items-center"
               >
                 {showAllCategories ? "Show less" : "Show more"}
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  className={`h-4 w-4 ml-1 transition-transform ${showAllCategories ? "rotate-180" : ""}`}
-                  viewBox="0 0 20 20" 
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={`h-4 w-4 ml-1 transition-transform ${
+                    showAllCategories ? "rotate-180" : ""
+                  }`}
+                  viewBox="0 0 20 20"
                   fill="currentColor"
                 >
-                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                  <path
+                    fillRule="evenodd"
+                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               </button>
             )}
@@ -317,15 +336,23 @@ function ArtisanSection({ artisan, index }) {
     >
       {/* Artisan Header */}
       <div className="flex items-center gap-4 mb-6">
-        <div
-          className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center border-2"
-          style={{ borderColor: color }}
-        >
-          <span className="text-xl font-bold" style={{ color }}>
-            {initial}
-          </span>
-        </div>
-
+        {artisan.profileImage ? (
+          <img
+            src={`${backendUrl}${artisan.profileImage}`}
+            alt={artisan.username}
+            className="w-12 h-12 rounded-full object-cover border-2"
+            style={{ borderColor: color }}
+          />
+        ) : (
+          <div
+            className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center border-2"
+            style={{ borderColor: color }}
+          >
+            <span className="text-xl font-bold" style={{ color }}>
+              {initial}
+            </span>
+          </div>
+        )}
         <div>
           <h2 className="text-2xl font-bold text-gray-800">{username}</h2>
           <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -442,7 +469,9 @@ function FilteredProductsGrid({ products, resetFilters }) {
   if (products.length === 0) {
     return (
       <div className="text-center py-12">
-        <h3 className="text-xl text-gray-600">No products match your filters</h3>
+        <h3 className="text-xl text-gray-600">
+          No products match your filters
+        </h3>
         <button
           onClick={resetFilters}
           className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-md"
@@ -477,42 +506,41 @@ function ProductGrid({ refreshTrigger, filters, resetFilters }) {
       try {
         setLoading(true);
         const artisansRes = await axios.get(`${backendUrl}/public/artisans`);
-        
+
         // Filter out demo artisans (artisanId 1 and 2)
         const realArtisans = artisansRes.data.filter(
-          artisan => ![1, 2].includes(artisan.artisanId)
-        );
-        
-        const artisanPromises = realArtisans.map(
-          async (artisan) => {
-            try {
-              const productsRes = await axios.get(
-                `${backendUrl}/public/artisans/${artisan.artisanId}/products`
-              );
-              // Filter out demo products within each artisan
-              const realProducts = productsRes.data.filter(
-                product => ![1, 2].includes(product.artisanId)
-              );
-              return { ...artisan, products: realProducts };
-            } catch (error) {
-              console.error(
-                `Error fetching products for ${artisan.artisanId}:`,
-                error
-              );
-              return null;
-            }
-          }
+          (artisan) => ![1, 2].includes(artisan.artisanId)
         );
 
-        const artisansWithProducts = (await Promise.all(artisanPromises))
-          .filter(artisan => artisan !== null && artisan.products.length > 0);
+        const artisanPromises = realArtisans.map(async (artisan) => {
+          try {
+            const productsRes = await axios.get(
+              `${backendUrl}/public/artisans/${artisan.artisanId}/products`
+            );
+            // Filter out demo products within each artisan
+            const realProducts = productsRes.data.filter(
+              (product) => ![1, 2].includes(product.artisanId)
+            );
+            return { ...artisan, products: realProducts };
+          } catch (error) {
+            console.error(
+              `Error fetching products for ${artisan.artisanId}:`,
+              error
+            );
+            return null;
+          }
+        });
+
+        const artisansWithProducts = (
+          await Promise.all(artisanPromises)
+        ).filter((artisan) => artisan !== null && artisan.products.length > 0);
 
         // Flatten all products for filtering
-        const allProducts = artisansWithProducts.flatMap(artisan => 
-          artisan.products.map(product => ({
+        const allProducts = artisansWithProducts.flatMap((artisan) =>
+          artisan.products.map((product) => ({
             ...product,
             artisanName: artisan.username,
-            artisanId: artisan.artisanId
+            artisanId: artisan.artisanId,
           }))
         );
 
@@ -529,19 +557,19 @@ function ProductGrid({ refreshTrigger, filters, resetFilters }) {
 
   // Apply filters when filters change
   useEffect(() => {
-    const areFiltersActive = 
+    const areFiltersActive =
       filters.categories.length > 0 ||
       filters.materials.length > 0 ||
       filters.priceRange < 100000 ||
       (filters.searchQuery && filters.searchQuery.trim() !== "");
-    
+
     if (!areFiltersActive) {
       setIsFiltered(false);
       return;
     }
-    
+
     setIsFiltered(true);
-    const filtered = allProducts.filter(product => {
+    const filtered = allProducts.filter((product) => {
       // Category filter - use the product's category field
       if (filters.categories.length > 0) {
         if (filters.categories.includes("Others")) {
@@ -549,8 +577,13 @@ function ProductGrid({ refreshTrigger, filters, resetFilters }) {
           if (product.category === "Others") {
             categoryMatches = true;
           }
-          const otherSelectedCategories = filters.categories.filter(c => c !== "Others");
-          if (otherSelectedCategories.length > 0 && otherSelectedCategories.includes(product.category)) {
+          const otherSelectedCategories = filters.categories.filter(
+            (c) => c !== "Others"
+          );
+          if (
+            otherSelectedCategories.length > 0 &&
+            otherSelectedCategories.includes(product.category)
+          ) {
             categoryMatches = true;
           }
           if (!categoryMatches) {
@@ -562,20 +595,30 @@ function ProductGrid({ refreshTrigger, filters, resetFilters }) {
           }
         }
       }
-      
+
       // Material filter - FIXED
       if (filters.materials.length > 0) {
-        console.log("Material filter active. filters.materials:", filters.materials);
+        console.log(
+          "Material filter active. filters.materials:",
+          filters.materials
+        );
         console.log("Current product material:", product.material);
         const standardBackendMaterials = ["Silver", "Gold", "Mixed Metals"];
         if (filters.materials.includes("Others")) {
           let materialMatches = false;
           if (!standardBackendMaterials.includes(product.material)) {
             materialMatches = true;
-            console.log("Product material is not standard, materialMatches true (for Others)");
+            console.log(
+              "Product material is not standard, materialMatches true (for Others)"
+            );
           }
-          const otherSelectedMaterials = filters.materials.filter(m => m !== "Others");
-          if (otherSelectedMaterials.length > 0 && otherSelectedMaterials.includes(product.material)) {
+          const otherSelectedMaterials = filters.materials.filter(
+            (m) => m !== "Others"
+          );
+          if (
+            otherSelectedMaterials.length > 0 &&
+            otherSelectedMaterials.includes(product.material)
+          ) {
             materialMatches = true;
             console.log("Product material matches other selected materials.");
           }
@@ -585,19 +628,23 @@ function ProductGrid({ refreshTrigger, filters, resetFilters }) {
           }
         } else {
           if (!filters.materials.includes(product.material)) {
-            console.log("Material filter: Specific material not included, returning false.");
+            console.log(
+              "Material filter: Specific material not included, returning false."
+            );
             return false;
           }
         }
         console.log("Material filter: Match, returning true.");
       }
-      
+
       // Price filter - only apply if user changed from default
-      if (filters.priceRange < 100000 && 
-          product.productPrice > filters.priceRange) {
+      if (
+        filters.priceRange < 100000 &&
+        product.productPrice > filters.priceRange
+      ) {
         return false;
       }
-      
+
       // Search filter - search in name, description, and artisan name
       if (filters.searchQuery) {
         const lowerQuery = filters.searchQuery.toLowerCase();
@@ -609,10 +656,10 @@ function ProductGrid({ refreshTrigger, filters, resetFilters }) {
           return false;
         }
       }
-      
+
       return true;
     });
-    
+
     setFilteredProducts(filtered);
   }, [filters, allProducts]);
 
@@ -629,13 +676,25 @@ function ProductGrid({ refreshTrigger, filters, resetFilters }) {
             onClick={resetFilters}
             className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors flex items-center gap-2"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clipRule="evenodd" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z"
+                clipRule="evenodd"
+              />
             </svg>
             Clear Filters
           </button>
         </div>
-        <FilteredProductsGrid products={filteredProducts} resetFilters={resetFilters} />
+        <FilteredProductsGrid
+          products={filteredProducts}
+          resetFilters={resetFilters}
+        />
       </div>
     );
   }
@@ -664,13 +723,13 @@ function ProductGrid({ refreshTrigger, filters, resetFilters }) {
 function ProductsPage() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  
+
   // State for filters
   const [filters, setFilters] = useState({
     categories: [],
     materials: [],
     priceRange: 100000, // Set to max by default
-    searchQuery: ""
+    searchQuery: "",
   });
 
   const resetFilters = () => {
@@ -678,12 +737,12 @@ function ProductsPage() {
       categories: [],
       materials: [],
       priceRange: 100000, // Reset to max
-      searchQuery: ""
+      searchQuery: "",
     });
   };
 
   const handleSearchChange = (e) => {
-    setFilters(prev => ({ ...prev, searchQuery: e.target.value }));
+    setFilters((prev) => ({ ...prev, searchQuery: e.target.value }));
   };
 
   return (
@@ -699,7 +758,7 @@ function ProductsPage() {
                 Discover our curated collection of quality items
               </p>
             </div>
-            
+
             {/* Search Form - Moved to top right */}
             <div className="w-full md:w-auto">
               <div className="relative">
@@ -736,11 +795,13 @@ function ProductsPage() {
                 filterOpen ? "block" : "hidden"
               } md:hidden w-full bg-white p-4 rounded-lg shadow-sm mb-4`}
             >
-              <Sidebar 
+              <Sidebar
                 activeFilters={filters}
                 setActiveFilters={setFilters}
                 priceRange={filters.priceRange}
-                setPriceRange={(value) => setFilters(prev => ({ ...prev, priceRange: value }))}
+                setPriceRange={(value) =>
+                  setFilters((prev) => ({ ...prev, priceRange: value }))
+                }
               />
             </div>
 
@@ -748,11 +809,13 @@ function ProductsPage() {
             <div className="hidden md:block w-full md:w-1/4 lg:w-1/5 flex-shrink-0">
               <div className="sticky top-8">
                 <div className="bg-white p-6 rounded-lg shadow-sm">
-                  <Sidebar 
+                  <Sidebar
                     activeFilters={filters}
                     setActiveFilters={setFilters}
                     priceRange={filters.priceRange}
-                    setPriceRange={(value) => setFilters(prev => ({ ...prev, priceRange: value }))}
+                    setPriceRange={(value) =>
+                      setFilters((prev) => ({ ...prev, priceRange: value }))
+                    }
                   />
                 </div>
               </div>
@@ -761,7 +824,7 @@ function ProductsPage() {
             {/* Product Grid */}
             <div className="w-full md:w-3/4 lg:w-4/5">
               <div className="bg-white rounded-lg shadow-sm p-6">
-                <ProductGrid 
+                <ProductGrid
                   refreshTrigger={refreshTrigger}
                   filters={filters}
                   resetFilters={resetFilters}

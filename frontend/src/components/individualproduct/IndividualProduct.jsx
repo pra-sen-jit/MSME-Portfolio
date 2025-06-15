@@ -231,17 +231,12 @@ function ArtisanInfo({ artisan }) {
     <div className="mt-8 border-t border-gray-200 pt-8">
       <h2 className="text-xl font-semibold text-gray-900">About the Artisan</h2>
       <div className="mt-6 flex items-start gap-4">
-        <div className="h-16 w-16 rounded-full bg-gray-200 overflow-hidden">
+        <div className="h-16 w-16 rounded-full bg-gray-200 overflow-hidden border-2 border-gray-300">
           {artisan.profileImageUrl ? (
-            <ImageWithFallback
+            <img
               src={artisan.profileImageUrl}
               alt={artisan.username}
               className="h-full w-full object-cover"
-              fallback={
-                <span className="text-2xl text-gray-600 flex items-center justify-center h-full">
-                  {artisan.username?.[0]?.toUpperCase() || "A"}
-                </span>
-              }
             />
           ) : (
             <span className="text-2xl text-gray-600 flex items-center justify-center h-full">

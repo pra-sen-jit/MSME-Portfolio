@@ -105,9 +105,7 @@ function ProductSpecifications({
 
   return (
     <div className="w-full mb-4">
-      <h3 className="text-sm font-semibold text-black mb-3">
-        পণ্য বিবরণী
-      </h3>
+      <h3 className="text-sm font-semibold text-black mb-3">পণ্য বিবরণী</h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div>
           <label
@@ -669,17 +667,23 @@ function ProductForm({
 }
 
 function EmployeeTable() {
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [profile, setProfile] = useState(() => {
     const storedSpecialization = localStorage.getItem("specialization");
     let initialSpecializations = [];
     if (storedSpecialization) {
-      initialSpecializations = storedSpecialization.split(',').map(s => s.trim()).filter(s => s !== "" && s !== "Not Specified");
+      initialSpecializations = storedSpecialization
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => s !== "" && s !== "Not Specified");
     }
     return {
       name: localStorage.getItem("username") || "",
       specialization: initialSpecializations,
       contact: localStorage.getItem("phoneNumber") || "",
       artisanId: localStorage.getItem("ArtisanId") || "",
+      profileImage: localStorage.getItem("profileImage") || null,
       isEditing: false,
     };
   });
@@ -699,13 +703,18 @@ function EmployeeTable() {
   ];
 
   const handleEditToggle = () => {
+    setSelectedFile(null);
+    setPreviewUrl(null);
     setProfile((prev) => ({ ...prev, isEditing: !prev.isEditing }));
   };
 
   const handleSpecializationAdd = (value) => {
     setProfile((prev) => {
       const currentSpecializations = prev.specialization || [];
-      if (currentSpecializations.length < 3 && !currentSpecializations.includes(value)) {
+      if (
+        currentSpecializations.length < 3 &&
+        !currentSpecializations.includes(value)
+      ) {
         return {
           ...prev,
           specialization: [...currentSpecializations, value],
@@ -724,6 +733,14 @@ function EmployeeTable() {
     }));
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith("image/")) {
+      setSelectedFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
   const handleSaveProfile = async () => {
     try {
       if (profile.contact.length !== 10) {
@@ -732,25 +749,42 @@ function EmployeeTable() {
       }
 
       const token = localStorage.getItem("token");
-      const response = await axios.put(
-        `${backendUrl}/auth/profile`,
-        {
-          specialization: profile.specialization.join(', ') || null,
-          PhoneNumber: profile.contact,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
+      const formData = new FormData();
+
+      // Add existing data to formData
+      formData.append(
+        "specialization",
+        profile.specialization.join(", ") || ""
       );
+      formData.append("PhoneNumber", profile.contact);
+
+      // Add profile image if selected
+      if (selectedFile) {
+        formData.append("profileImage", selectedFile);
+      }
+
+      const response = await axios.put(`${backendUrl}/auth/profile`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       setProfile((prev) => {
         const newSpecialization = response.data.profile.specialization;
         let processedSpecializations = [];
         if (newSpecialization) {
-          processedSpecializations = newSpecialization.split(',').map(s => s.trim()).filter(s => s !== "" && s !== "Not Specified");
+          processedSpecializations = newSpecialization
+            .split(",")
+            .map((s) => s.trim())
+            .filter((s) => s !== "" && s !== "Not Specified");
         }
+
         return {
           ...prev,
           isEditing: false,
           specialization: processedSpecializations,
+          profileImage: response.data.profile.profileImage || prev.profileImage,
         };
       });
 
@@ -759,6 +793,14 @@ function EmployeeTable() {
         "specialization",
         response.data.profile.specialization || ""
       );
+
+      // Store profile image in localStorage if available
+      if (response.data.profile.profileImage) {
+        localStorage.setItem(
+          "profileImage",
+          response.data.profile.profileImage
+        );
+      }
 
       alert("আপনার পণ্য সফলভাবে আপডেট হয়েছে!");
     } catch (error) {
@@ -781,27 +823,35 @@ function EmployeeTable() {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        const fetchedSpecialization = response.data.profile.specialization;
+        const fetchedProfile = response.data.profile;
         let processedSpecializations = [];
-        if (fetchedSpecialization) {
-          processedSpecializations = fetchedSpecialization.split(',').map(s => s.trim()).filter(s => s !== "" && s !== "Not Specified");
+        if (fetchedProfile.specialization) {
+          processedSpecializations = fetchedProfile.specialization
+            .split(",")
+            .map((s) => s.trim())
+            .filter((s) => s !== "" && s !== "Not Specified");
         }
 
         setProfile((prev) => ({
           ...prev,
           isEditing: false,
           specialization: processedSpecializations,
-          name: response.data.profile.name,
-          contact: response.data.profile.contact
+          name: fetchedProfile.name,
+          contact: fetchedProfile.contact,
+          profileImage: fetchedProfile.profileImage || null, // Add this
         }));
 
-        // Update local storage
-        localStorage.setItem("username", response.data.profile.name);
-        localStorage.setItem("phoneNumber", response.data.profile.contact);
+        localStorage.setItem("username", fetchedProfile.name);
+        localStorage.setItem("phoneNumber", fetchedProfile.contact);
         localStorage.setItem(
           "specialization",
-          fetchedSpecialization || ""
+          fetchedProfile.specialization || ""
         );
+        if (fetchedProfile.profileImage) {
+          localStorage.setItem("profileImage", fetchedProfile.profileImage);
+        } else {
+          localStorage.removeItem("profileImage");
+        }
       } catch (error) {
         console.error("Profile fetch error:", error);
       }
@@ -818,6 +868,14 @@ function EmployeeTable() {
     }
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
   return (
     <section className="w-full mb-6 bg-white border border-solid border-neutral-200 rounded-lg">
       {/* Table Header */}
@@ -831,13 +889,74 @@ function EmployeeTable() {
       {/* Profile Row */}
       <div className="grid grid-cols-12 gap-2 py-3 px-4 md:px-6 text-sm items-center">
         <div className="col-span-3 flex items-center gap-3">
-          <div className="w-8 h-8 bg-zinc-300 rounded-full flex items-center justify-center">
-            {profile.name?.[0]?.toUpperCase() || "A"}
+          <div className="relative">
+            {profile.isEditing ? (
+              <label className="cursor-pointer">
+                {previewUrl ? (
+                  <img
+                    src={previewUrl}
+                    alt="Preview"
+                    className="w-8 h-8 rounded-full object-cover border-2 border-blue-500"
+                  />
+                ) : profile.profileImage ? (
+                  <img
+                    src={`${backendUrl}${profile.profileImage}`}
+                    alt={profile.name}
+                    className="w-8 h-8 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-8 h-8 bg-zinc-300 rounded-full flex items-center justify-center">
+                    {profile.name?.[0]?.toUpperCase() || "A"}
+                  </div>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageChange}
+                />
+                {previewUrl && (
+                  <div
+                    className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedFile(null);
+                      setPreviewUrl(null);
+                    }}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-3 w-3"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                )}
+              </label>
+            ) : profile.profileImage ? (
+              <img
+                src={`${backendUrl}${profile.profileImage}`}
+                alt={profile.name}
+                className="w-8 h-8 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-8 h-8 bg-zinc-300 rounded-full flex items-center justify-center">
+                {profile.name?.[0]?.toUpperCase() || "A"}
+              </div>
+            )}
           </div>
+
+          {/* Name field */}
           {profile.isEditing ? (
             <input
               value={profile.name}
-              disabled // Disable name editing
+              disabled
               className="border rounded px-2 py-1 w-32 bg-gray-100"
             />
           ) : (
@@ -903,18 +1022,16 @@ function EmployeeTable() {
             </div>
           ) : (
             <div className="flex flex-wrap gap-2">
-              {profile.specialization.length > 0 ? (
-                profile.specialization.map((spec) => (
-                  <span
-                    key={spec}
-                    className="px-3 py-1 rounded-full text-green-800 bg-green-100 text-sm font-medium"
-                  >
-                    {spec}
-                  </span>
-                ))
-              ) : (
-                "Not Specified"
-              )}
+              {profile.specialization.length > 0
+                ? profile.specialization.map((spec) => (
+                    <span
+                      key={spec}
+                      className="px-3 py-1 rounded-full text-green-800 bg-green-100 text-sm font-medium"
+                    >
+                      {spec}
+                    </span>
+                  ))
+                : "Not Specified"}
             </div>
           )}
         </div>
@@ -947,7 +1064,7 @@ function EmployeeTable() {
                 className="p-1 text-green-600 hover:text-green-800"
                 title="Save"
               >
-                <span style={{ fontSize: '20px' }}>✅</span>
+                <span style={{ fontSize: "20px" }}>✅</span>
               </button>
               <button
                 onClick={handleEditToggle}
