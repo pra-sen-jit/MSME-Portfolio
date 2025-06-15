@@ -329,6 +329,10 @@ function ArtisanSection({ artisan, index }) {
   const initial = username[0]?.toUpperCase() || "A";
   const color = `hsl(${index * 60}, 70%, 30%)`;
 
+  const profileImageUrl = artisan.profileImage
+    ? `${backendUrl}${artisan.profileImage}`
+    : null;
+
   return (
     <section
       className="bg-white p-6 rounded-xl shadow-sm mb-8 transition-all duration-300 hover:shadow-md"
@@ -336,10 +340,10 @@ function ArtisanSection({ artisan, index }) {
     >
       {/* Artisan Header */}
       <div className="flex items-center gap-4 mb-6">
-        {artisan.profileImage ? (
+        {profileImageUrl ? (
           <img
-            src={`${backendUrl}${artisan.profileImage}`}
-            alt={artisan.username}
+            src={profileImageUrl}
+            alt={username}
             className="w-12 h-12 rounded-full object-cover border-2"
             style={{ borderColor: color }}
           />
@@ -507,7 +511,7 @@ function ProductGrid({ refreshTrigger, filters, resetFilters }) {
         setLoading(true);
         const artisansRes = await axios.get(`${backendUrl}/public/artisans`);
 
-        // Filter out demo artisans (artisanId 1 and 2)
+        // Filter out demo artisans and include profileImage
         const realArtisans = artisansRes.data.filter(
           (artisan) => ![1, 2].includes(artisan.artisanId)
         );
@@ -517,11 +521,15 @@ function ProductGrid({ refreshTrigger, filters, resetFilters }) {
             const productsRes = await axios.get(
               `${backendUrl}/public/artisans/${artisan.artisanId}/products`
             );
-            // Filter out demo products within each artisan
+            // Filter out demo products
             const realProducts = productsRes.data.filter(
               (product) => ![1, 2].includes(product.artisanId)
             );
-            return { ...artisan, products: realProducts };
+            return {
+              ...artisan,
+              profileImage: artisan.profileImage,
+              products: realProducts,
+            };
           } catch (error) {
             console.error(
               `Error fetching products for ${artisan.artisanId}:`,

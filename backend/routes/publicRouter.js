@@ -5,16 +5,15 @@ import { verifyToken } from "./authRouter.js";
 const router = express.Router();
 
 // Get all listed artisans
-// Get all listed artisans
 router.get("/artisans", async (req, res) => {
   try {
     const db = await connectToDatabase();
     const [artisans] = await db.query(`
-      SELECT u.username, u.artisanId 
+      SELECT u.username, u.artisanId, u.profileImage
       FROM users u
       WHERE u.listed = true
       ORDER BY 
-        SUBSTRING_INDEX(u.username, ' ', 1) ASC, -- Sort by first name
+        SUBSTRING_INDEX(u.username, ' ', 1) ASC,
         u.username ASC
     `);
     res.json(artisans);
