@@ -86,6 +86,7 @@ const translations = {
     mainImageRequired: "Main image is required",
     productPriceRequired: "Product price is required",
     phoneNumberRequiredForProduct: "Please complete your profile by adding a valid 10-digit phone number.",
+    artisanIdLabel: "Artisan ID",
   },
   bn: {
     dashboardTitle: "কর্মচারী / কারিগর ড্যাশ-বোর্ড",
@@ -165,6 +166,7 @@ const translations = {
     mainImageRequired: "মূল ছবি প্রয়োজন",
     productPriceRequired: "পণ্যের মূল্য প্রয়োজন",
     phoneNumberRequiredForProduct: "আপনার প্রোফাইলে একটি বৈধ 10-সংখ্যার ফোন নম্বর যোগ করে সম্পূর্ণ করুন।",
+    artisanIdLabel: "কারিগর আইডি",
   },
 };
 
@@ -1075,15 +1077,16 @@ function EmployeeTable({ t, language }) {
     <section className="w-full mb-6 bg-white border border-solid border-neutral-200 rounded-lg">
       {/* Table Header */}
       <div className="grid grid-cols-12 gap-2 py-3 px-4 md:px-6 text-sm font-medium text-neutral-700 bg-neutral-50 border-b border-neutral-200 rounded-t-lg">
-        <div className="col-span-3">{t("name")}</div>
+        <div className="col-span-2">{t("name")}</div>
         <div className="col-span-4">{t("specialization")}</div>
-        <div className="col-span-4">{t("phoneNumber")}</div>
+        <div className="col-span-3">{t("artisanIdLabel")}</div>
+        <div className="col-span-2">{t("phoneNumber")}</div>
         <div className="col-span-1 text-center">{t("action")}</div>
       </div>
 
       {/* Profile Row */}
       <div className="grid grid-cols-12 gap-2 py-3 px-4 md:px-6 text-sm items-center">
-        <div className="col-span-3 flex items-center gap-3">
+        <div className="col-span-2 flex items-center gap-3">
           <div className="relative">
             {profile.isEditing ? (
               <label className="cursor-pointer">
@@ -1231,7 +1234,12 @@ function EmployeeTable({ t, language }) {
           )}
         </div>
 
-        <div className="col-span-4 flex items-center gap-2">
+        <div className="col-span-3 flex items-center gap-2">
+          <span className="text-neutral-600 font-bold">ID:</span>
+          <span className="text-neutral-600">{profile.artisanId || "N/A"}</span>
+        </div>
+
+        <div className="col-span-2 flex items-center gap-2">
           <PhoneCall size={16} stroke="black" fill="none" />
           {profile.isEditing ? (
             <input

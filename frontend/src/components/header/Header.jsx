@@ -2,6 +2,8 @@ import { useEffect, useState, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import AdminIcon from "../../assets/admin.svg"; // Adjust the path as necessary
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL; // Ensure this line is present
+
 const Navbar = () => {
   const [showHeader, setShowHeader] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -11,12 +13,15 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [role, setRole] = useState("");
+  const [profileImage, setProfileImage] = useState(null);
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
     const storedRole = localStorage.getItem("role");
+    const storedProfileImage = localStorage.getItem("profileImage");
     setUsername(storedUsername || "");
     setRole(storedRole || "");
+    setProfileImage(storedProfileImage || null);
   }, [location]);
 
   useEffect(() => {
@@ -125,11 +130,19 @@ const Navbar = () => {
                   onClick={toggleDropdown}
                   className="flex items-center gap-2 text-gray-700 font-medium focus:outline-none group"
                 >
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200">
-                    <span className="text-gray-600 font-medium">
-                      {username.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
+                  {profileImage ? (
+                    <img
+                      src={`${backendUrl}${profileImage}`}
+                      alt="Profile"
+                      className="w-8 h-8 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200">
+                      <span className="text-gray-600 font-medium">
+                        {username.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  )}
                   <span className="hidden md:inline">{username}</span>
                   <svg
                     className={`w-4 h-4 transform transition-transform duration-200 ${

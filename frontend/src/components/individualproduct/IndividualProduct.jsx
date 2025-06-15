@@ -21,10 +21,26 @@ function IndividualProduct() {
           axios.get(`${backendUrl}/api/public/products/${productId}/related`),
         ]);
 
+        let artisanData = { profileImage: null, username: "", contact: "" };
+        if (productRes.data.artisanId) {
+          try {
+            const artisanRes = await axios.get(`${backendUrl}/public/artisans/${productRes.data.artisanId}`);
+            artisanData = artisanRes.data;
+            console.log("Artisan Data received:", artisanData);
+          } catch (artisanErr) {
+            console.error("Error fetching artisan details:", artisanErr);
+            // Continue without artisan data if fetching fails
+          }
+        }
+
         setProduct({
           ...productRes.data,
           images: productRes.data.images || ["/placeholder-product.jpg"],
+          profileImageUrl: artisanData?.profileImage ? `${backendUrl}${artisanData.profileImage}` : null,
+          username: artisanData?.username || "",
+          PhoneNumber: artisanData?.PhoneNumber || "",
         });
+        console.log("Final Product State (after assignment):", product);
 
         setRelatedProducts(
           relatedRes.data.map((p) => ({
@@ -249,7 +265,7 @@ function ArtisanInfo({ artisan }) {
             {artisan.username}
           </h3>
           <p className="text-sm text-gray-500 mt-2">{artisan.specialization}</p>
-          <p className="text-gray-600 mt-2">Contact: {artisan.PhoneNumber}</p>
+          <p className="text-gray-600 mt-2">Contact: {artisan.PhoneNumber ? `+91${artisan.PhoneNumber}` : 'No contact provided'}</p>
         </div>
       </div>
     </div>

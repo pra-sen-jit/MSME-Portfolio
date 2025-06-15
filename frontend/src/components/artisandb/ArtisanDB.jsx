@@ -86,7 +86,18 @@ function ArtisanDatabase() {
         const response = await axios.get(`${backendUrl}/api/users/artisans`);
 
         if (response.data.success) {
-          setArtisans(response.data.data);
+          // Fetch profile image for each artisan
+          const artisansWithImagesPromises = response.data.data.map(async (artisan) => {
+            try {
+              const profileRes = await axios.get(`${backendUrl}/public/artisans/${artisan.artisanId}`);
+              return { ...artisan, profileImage: profileRes.data.profileImage };
+            } catch (profileErr) {
+              console.error(`Error fetching profile image for ${artisan.artisanId}:`, profileErr);
+              return { ...artisan, profileImage: null }; // Return artisan with null image on error
+            }
+          });
+          const artisansWithImages = await Promise.all(artisansWithImagesPromises);
+          setArtisans(artisansWithImages);
         } else {
           setError("Failed to fetch artisans");
         }
@@ -293,9 +304,6 @@ function ArtisanDatabase() {
                     Name
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Artisan ID
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Specialization
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -308,23 +316,29 @@ function ArtisanDatabase() {
                   currentArtisans.map((artisan) => (
                     <tr key={artisan.id}>
                       <td className="px-3 py-3 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-500">
-                        {artisan.name}
-                      </td>
-                      <td className="px-3 py-3 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-500">
-                        {artisan.artisanId}
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full overflow-hidden bg-zinc-300 flex items-center justify-center text-sm font-semibold text-gray-700">
+                            {artisan.profileImage ? (
+                              <img src={`${backendUrl}${artisan.profileImage}`} alt={artisan.name} className="w-full h-full object-cover" />
+                            ) : (
+                              artisan.name?.[0]?.toUpperCase() || 'A'
+                            )}
+                          </div>
+                          {artisan.name}
+                        </div>
                       </td>
                       <td className="px-3 py-3 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-500">
                         {artisan.specialization || "Not specified"}
                       </td>
                       <td className="px-3 py-3 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-500">
-                        {artisan.contact}
+                        {`+91${artisan.contact}`}
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
                     <td
-                      colSpan="4"
+                      colSpan="3"
                       className="px-6 py-4 text-center text-sm text-gray-500"
                     >
                       No artisans found matching your criteria
