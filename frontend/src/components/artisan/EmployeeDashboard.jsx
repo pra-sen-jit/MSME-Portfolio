@@ -426,7 +426,7 @@ function ProductSpecifications({
                 return (
                   <option key={option.value} value={option.value}>
                     {option.label}
-                  </option>
+                </option>
                 );
               })}
             </select>
@@ -883,22 +883,22 @@ function EmployeeTable({ t, language, artisanProfile, onProfileUpdate }) {
       };
     } else {
       // Fallback to localStorage if prop not yet available (e.g., initial render)
-      const storedSpecialization = localStorage.getItem("specialization");
-      let initialSpecializations = [];
-      if (storedSpecialization) {
-        initialSpecializations = storedSpecialization
-          .split(",")
-          .map((s) => s.trim())
-          .filter((s) => s !== "" && s !== "Not Specified");
-      }
-      return {
-        name: localStorage.getItem("username") || "",
-        specialization: initialSpecializations,
-        contact: localStorage.getItem("phoneNumber") || "",
-        artisanId: localStorage.getItem("ArtisanId") || "",
-        profileImage: localStorage.getItem("profileImage") || null,
-        isEditing: false,
-      };
+    const storedSpecialization = localStorage.getItem("specialization");
+    let initialSpecializations = [];
+    if (storedSpecialization) {
+      initialSpecializations = storedSpecialization
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => s !== "" && s !== "Not Specified");
+    }
+    return {
+      name: localStorage.getItem("username") || "",
+      specialization: initialSpecializations,
+      contact: localStorage.getItem("phoneNumber") || "",
+      artisanId: localStorage.getItem("ArtisanId") || "",
+      profileImage: localStorage.getItem("profileImage") || null,
+      isEditing: false,
+    };
     }
   });
 
@@ -1415,7 +1415,7 @@ export default function EmployeeDashboard() {
           <div className="flex justify-between items-center mt-4 mb-6">
             <h1 className="text-2xl md:text-3xl text-black font-normal">
               {t("dashboardTitle")}
-            </h1>
+          </h1>
             <button
               onClick={() => setLanguage(language === "en" ? "bn" : "en")}
               className="px-3 py-1 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors"
