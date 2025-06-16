@@ -39,7 +39,7 @@ DB_NAME="mydatabase"
 JWT_KEY=your_random_secret_key
 CORS_ORIGIN=http://localhost:5173
 SENDGRID_API_KEY=your_sendgrid_key
-EMAIL_FROM=your_verified_email@domain.com
+EMAIL_FROM=your_verified_email@domain.com ( which is verified in sendgrid )
 
 ## Frontend (create .env in /frontend)
 VITE_BACKEND_URL=http://localhost:3000
